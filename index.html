@@ -954,27 +954,93 @@ function clearThumb() {
   document.getElementById('thumb-clear').style.display = 'none';
   document.getElementById('thumb-input').value = '';
 }
-function confirmUpload() {
+async function confirmUpload() {
   if (!pendingFiles.length) return;
   if (!pendingCat) { showToast('カテゴリーを選択してください'); return; }
-  var thu = pendingThumbUrl;
-  for (var i = 0; i < pendingFiles.length; i++) {
-    (function(f) {
-      var url = URL.createObjectURL(f); var id = uid();
-      var t = {id:id, name:f.name.replace(/\.[^.]+$/,''), file:f, url:url, duration:0, cat:pendingCat, thumbUrl:thu, isVideo:isVid(f), uploader:user.name};
-      tracks.push(t); commentsData[id] = []; plays[id] = {daily:0,weekly:0,monthly:0}; supaTrack[id] = [];
-      var tmp = t.isVideo ? document.createElement('video') : new Audio(url);
-      tmp.src = url;
-      tmp.onloadedmetadata = function() { t.duration = tmp.duration; renderTracks(); renderRanking(); renderUserPage(); };
-    })(pendingFiles[i]);
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+
+  // ボタンを無効化してアップロード中を表示
+  var uploadBtn = document.querySelector('.upload-confirm button');
+  if (uploadBtn) { uploadBtn.disabled = true; uploadBtn.innerHTML = '<i class="ti ti-loader"></i> アップロード中...'; }
+  showToast('アップロード中... しばらくお待ちください');
+
+  var thumbFile = document.getElementById('thumb-input') && document.getElementById('thumb-input').files[0] || null;
+  var cat = pendingCat;
+  var filesToUpload = pendingFiles.slice();
+
+  // サムネイルを先にアップロード（全曲共通）
+  var finalThumbUrl = null;
+  if (thumbFile) {
+    var thumbExt = thumbFile.name.split('.').pop();
+    var thumbPath = currentAuthUser.id + '/' + uid() + '.' + thumbExt;
+    var thumbRes = await sb.storage.from('thumbnails').upload(thumbPath, thumbFile, { upsert: true });
+    if (!thumbRes.error) {
+      finalThumbUrl = sb.storage.from('thumbnails').getPublicUrl(thumbPath).data.publicUrl;
+    }
   }
+
+  var successCount = 0;
+  var failCount = 0;
+
+  for (var i = 0; i < filesToUpload.length; i++) {
+    var f = filesToUpload[i];
+    try {
+      // 1. 音声/動画ファイルをStorageにアップロード
+      var ext = f.name.split('.').pop();
+      var filePath = currentAuthUser.id + '/' + uid() + '.' + ext;
+      var fileRes = await sb.storage.from('tracks').upload(filePath, f, { upsert: true });
+      if (fileRes.error) { failCount++; continue; }
+      var fileUrl = sb.storage.from('tracks').getPublicUrl(filePath).data.publicUrl;
+
+      // 2. 曲の長さを取得
+      var duration = await new Promise(function(resolve) {
+        var tmp = f.type.indexOf('video/') === 0 ? document.createElement('video') : new Audio();
+        tmp.src = URL.createObjectURL(f);
+        tmp.onloadedmetadata = function() { resolve(tmp.duration || 0); };
+        tmp.onerror = function() { resolve(0); };
+        setTimeout(function() { resolve(0); }, 5000); // 5秒タイムアウト
+      });
+
+      // 3. tracksテーブルにinsert
+      var trackName = f.name.replace(/\.[^.]+$/, '');
+      var insertRes = await sb.from('tracks').insert({
+        name: trackName,
+        file_url: fileUrl,
+        thumb_url: finalThumbUrl,
+        cat: cat,
+        is_video: f.type.indexOf('video/') === 0,
+        uploader_name: user.name,
+        uploader_id: currentAuthUser.id,
+        duration: Math.round(duration)
+      });
+
+      if (insertRes.error) { failCount++; continue; }
+      successCount++;
+    } catch(e) {
+      failCount++;
+    }
+  }
+
+  // リセット
   pendingFiles = []; pendingCat = null; pendingThumbUrl = null;
-  document.getElementById('upload-options').style.display = 'none';
-  document.getElementById('pending-files').innerHTML = '';
-  document.getElementById('file-input').value = '';
+  var opts = document.getElementById('upload-options');
+  if (opts) opts.style.display = 'none';
+  var pf = document.getElementById('pending-files');
+  if (pf) pf.innerHTML = '';
+  var fi = document.getElementById('file-input');
+  if (fi) fi.value = '';
   clearThumb();
-  renderTracks(); renderRanking(); renderFilterBar(); renderUserPage();
-  showToast('アップロードしました！');
+
+  // 結果を表示してDBから再読み込み
+  if (failCount === 0) {
+    showToast('🎵 ' + successCount + '曲をアップロードしました！');
+  } else if (successCount > 0) {
+    showToast(successCount + '曲成功、' + failCount + '曲失敗しました');
+  } else {
+    showToast('アップロードに失敗しました。Storageの設定を確認してください');
+  }
+
+  await loadTracks(); // DBから最新データを再取得
 }
 
 /* ---- filter ---- */

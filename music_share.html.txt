@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>みゅーじっく音友</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f8f6;color:#1a1a1a;min-height:100vh}
+header{background:#fff;border-bottom:0.5px solid #e0e0d8;height:56px;position:sticky;top:0;z-index:100}
+.main{max-width:860px;margin:0 auto;padding:2rem 1.5rem 10rem}
+.tab-content{display:none}.tab-content.active{display:block}
+.site-hero{text-align:center;padding:2rem 0 1.5rem;border-bottom:0.5px solid #e8e8e0;margin-bottom:2rem}
+.bottom-nav{position:fixed;bottom:72px;left:0;right:0;background:#fff;border-top:0.5px solid #e0e0d8;display:flex;z-index:99}
+.bottom-nav button{flex:1;background:none;border:none;cursor:pointer;color:#aaa;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;transition:color .15s}
+.bottom-nav button.active{color:#1a1a1a}
+.bottom-nav button i{font-size:20px}
+.player{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:0.5px solid #e0e0d8;padding:0 1.2rem;height:72px;display:flex;align-items:center;gap:10px}
+.player-thumb{width:40px;height:40px;border-radius:8px;background:#e8e8e0;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.player-thumb img{width:100%;height:100%;object-fit:cover}
+.player-thumb i{font-size:16px;color:#999}
+.player-info{min-width:120px;max-width:160px;flex-shrink:0}
+.player-title{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-artist{font-size:10px;color:#999}
+.player-controls{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.ctrl-btn{background:none;border:none;cursor:pointer;color:#888;padding:4px;display:flex;align-items:center;font-size:18px;border-radius:6px}
+.ctrl-btn:hover{color:#1a1a1a}
+.ctrl-btn.main-ctrl{color:#1a1a1a;font-size:22px}
+.progress-area{flex:1;display:flex;align-items:center;gap:6px}
+.time{font-size:10px;color:#bbb;min-width:26px}.time.right{text-align:right}
+.progress-bar{flex:1;height:3px;background:#e8e8e0;border-radius:2px;cursor:pointer}
+.progress-fill{height:100%;background:#1a1a1a;border-radius:2px;pointer-events:none}
+.volume-area{display:flex;align-items:center;gap:4px}
+.vol-slider{width:50px;height:3px;background:#e8e8e0;border-radius:2px;appearance:none;cursor:pointer}
+.vol-slider::-webkit-slider-thumb{appearance:none;width:11px;height:11px;border-radius:50%;background:#1a1a1a}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:14px;padding:2rem;width:90%;max-width:460px;position:relative;max-height:90vh;overflow-y:auto}
+.modal h2{font-size:17px;font-weight:500;margin-bottom:1.2rem}
+.modal-close{position:absolute;top:12px;right:12px;background:none;border:none;cursor:pointer;font-size:18px;color:#aaa}
+.form-row{margin-bottom:1rem}
+.form-row label{display:block;font-size:12px;color:#888;margin-bottom:5px}
+.form-row input,.form-row textarea{width:100%;border:0.5px solid #e0e0d8;border-radius:8px;padding:8px 11px;font-size:13px;outline:none;background:#f9f9f7;font-family:inherit;resize:vertical}
+.form-row input:focus,.form-row textarea:focus{border-color:#888}
+.form-row textarea{min-height:64px}
+.avatar-pick{display:flex;align-items:center;gap:12px}
+.avatar-circle{width:56px;height:56px;border-radius:50%;background:#f0f0ec;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;cursor:pointer;border:1.5px dashed #d0d0c8}
+.avatar-circle img{width:100%;height:100%;object-fit:cover}
+.avatar-circle i{font-size:20px;color:#ccc}
+.btn-primary{background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;cursor:pointer;width:100%}
+.btn-primary:hover{opacity:.8}
+.btn-ghost{background:none;border:0.5px solid #e0e0d8;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;color:#555}
+.btn-ghost:hover{background:#f4f4f0}
+.follow-btn{border:none;border-radius:20px;padding:7px 16px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
+.follow-btn.following{background:#f0f0ec;color:#555;border:0.5px solid #e0e0d8}
+.follow-btn.following:hover{background:#ffe8e8;color:#e24b4a;border-color:#e24b4a}
+.follow-btn.not-following{background:#1a1a1a;color:#fff}
+.follow-btn.not-following:hover{opacity:.8}
+.follow-list{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto}
+.follow-user-row{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;background:#fafaf8}
+.follow-user-av{width:38px;height:38px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#f0f0ec;display:flex;align-items:center;justify-content:center}
+.follow-user-av img{width:100%;height:100%;object-fit:cover}
+.supa-target{display:flex;align-items:center;gap:10px;background:#f8f8f6;border-radius:10px;padding:10px;margin-bottom:1rem}
+.supa-target-thumb,.supa-target-avatar{width:40px;height:40px;background:#e8e8e0;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+.supa-target-thumb{border-radius:8px}.supa-target-avatar{border-radius:50%}
+.supa-target-thumb img,.supa-target-avatar img{width:100%;height:100%;object-fit:cover}
+.supa-target-name{font-size:13px;font-weight:500}
+.supa-target-sub{font-size:11px;color:#999}
+.amount-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:.8rem}
+.amount-btn{background:#f4f4f0;border:0.5px solid #e0e0d8;border-radius:8px;padding:9px 4px;font-size:12px;cursor:pointer;text-align:center;font-weight:500}
+.amount-btn.selected{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.amount-btn small{display:block;font-size:10px;opacity:.65;font-weight:400}
+.supa-msg-input{width:100%;border:0.5px solid #e0e0d8;border-radius:8px;padding:7px 11px;font-size:12px;outline:none;background:#f9f9f7;font-family:inherit;margin-bottom:.8rem}
+.supa-send-btn{width:100%;padding:9px;border:0.5px solid #e0e0d8;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500;display:flex;align-items:center;justify-content:center;gap:6px;background:#f4f4f0;color:#aaa}
+.supa-list{margin-top:1rem;border-top:0.5px solid #f0f0ec;padding-top:.8rem}
+.supa-list-title{font-size:11px;color:#bbb;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.supa-entries{display:flex;flex-direction:column;gap:5px}
+.supa-entry{border-radius:7px;padding:7px 9px;display:flex;align-items:flex-start;gap:7px}
+.supa-entry-rank{font-size:11px;font-weight:500;min-width:18px;padding-top:1px}
+.supa-entry-av{width:22px;height:22px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.supa-entry-av img{width:100%;height:100%;object-fit:cover}
+.supa-entry-body{flex:1;min-width:0}
+.supa-entry-top{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.supa-entry-name,.supa-entry-pts{font-size:11px;font-weight:500}
+.supa-entry-msg{font-size:11px;margin-top:2px;line-height:1.4;word-break:break-word}
+.user-hero{background:#fff;border:0.5px solid #e8e8e0;border-radius:12px;padding:1.5rem;margin-bottom:1.2rem}
+.user-hero-top{display:flex;align-items:flex-start;gap:1.2rem;flex-wrap:wrap}
+.user-avatar-lg{width:80px;height:80px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#f0f0ec;display:flex;align-items:center;justify-content:center}
+.user-avatar-lg img{width:100%;height:100%;object-fit:cover}
+.user-avatar-lg i{font-size:30px;color:#ccc}
+.user-meta{flex:1;min-width:0}
+.user-name{font-size:20px;font-weight:500;margin-bottom:4px}
+.user-bio{font-size:13px;color:#666;line-height:1.6;margin-bottom:8px}
+.user-stats{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+.stat{font-size:12px;color:#888}.stat strong{color:#1a1a1a;font-weight:500}
+.stat.clickable{cursor:pointer}.stat.clickable:hover strong{text-decoration:underline}
+.supa-btn{background:#fff8e1;border:0.5px solid #f0c040;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:#b8860b;display:inline-flex;align-items:center;gap:4px}
+.wall-box{background:#fff;border:0.5px solid #e8e8e0;border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.2rem}
+.wall-title{font-size:12px;font-weight:500;color:#888;letter-spacing:.5px;text-transform:uppercase;margin-bottom:.8rem;display:flex;align-items:center;gap:6px}
+.wall-comments{max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:0;margin-bottom:.8rem}
+.wall-comments::-webkit-scrollbar{width:3px}
+.wall-comments::-webkit-scrollbar-thumb{background:#e0e0d8;border-radius:2px}
+.wall-comment{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:0.5px solid #f4f4f0}
+.wall-comment:last-child{border:none}
+.wall-av{width:26px;height:26px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#f0f0ec;display:flex;align-items:center;justify-content:center}
+.wall-av img{width:100%;height:100%;object-fit:cover}
+.wall-body{flex:1;min-width:0}
+.wall-uname{font-size:11px;font-weight:500;color:#555}
+.wall-text{font-size:12px;color:#333;line-height:1.5;margin-top:1px;word-break:break-word}
+.wall-time{font-size:10px;color:#bbb;margin-top:2px}
+.wall-input-row{display:flex;gap:7px;align-items:center}
+.wall-input{flex:1;border:0.5px solid #e0e0d8;border-radius:20px;padding:6px 12px;font-size:12px;outline:none;background:#f9f9f7;font-family:inherit}
+.wall-input:focus{border-color:#888}
+.wall-send{background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:13px}
+.wall-empty{font-size:12px;color:#bbb;text-align:center;padding:.8rem 0}
+.feed-tabs{display:flex;gap:0;margin-bottom:1.2rem;border-bottom:0.5px solid #e8e8e0}
+.feed-tab{background:none;border:none;cursor:pointer;font-size:13px;color:#aaa;padding:8px 16px;border-bottom:2px solid transparent;transition:all .15s;margin-bottom:-1px}
+.feed-tab.active{color:#1a1a1a;border-bottom-color:#1a1a1a}
+.track-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.grid-card{background:#fff;border:0.5px solid #e8e8e0;border-radius:10px;overflow:hidden;cursor:pointer;transition:all .15s}
+.grid-card:hover{border-color:#ccc}
+.grid-card.playing{border-color:#1a1a1a}
+.grid-thumb{width:100%;aspect-ratio:1;background:#f0f0ec;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.grid-thumb img{width:100%;height:100%;object-fit:cover}
+.grid-thumb i{font-size:30px;color:#ddd}
+.grid-ov{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background .15s}
+.grid-card:hover .grid-ov,.grid-card.playing .grid-ov{background:rgba(0,0,0,.28)}
+.grid-ov i{color:#fff;font-size:26px;opacity:0;transition:opacity .15s}
+.grid-card:hover .grid-ov i,.grid-card.playing .grid-ov i{opacity:1}
+.grid-info{padding:7px 9px 9px}
+.grid-title{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid-meta{font-size:10px;color:#aaa;margin-top:2px;display:flex;align-items:center;gap:3px}
+.upload-zone{background:#fff;border:1.5px dashed #d0d0c8;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;transition:border-color .2s}
+.upload-zone.drag{border-color:#888;background:#fafaf8}
+.upload-drop{text-align:center;cursor:pointer}
+.upload-drop i{font-size:26px;color:#bbb;margin-bottom:6px;display:block}
+.upload-drop p{font-size:13px;color:#888;margin-bottom:3px}
+.upload-drop small{font-size:11px;color:#bbb}
+.pending-files{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:.6rem}
+.pending-tag{background:#f0f0ec;border-radius:6px;padding:3px 9px;font-size:11px;color:#666;display:flex;align-items:center;gap:3px}
+.pending-tag .rm{cursor:pointer;color:#bbb}.pending-tag .rm:hover{color:#e24b4a}
+.upload-section{margin-top:1rem;border-top:0.5px solid #f0f0ec;padding-top:1rem}
+.upload-section-title{font-size:11px;color:#999;margin-bottom:6px;text-align:center}
+.cat-btns{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.cat-btn{background:#f4f4f0;border:0.5px solid #e0e0d8;border-radius:20px;padding:4px 12px;font-size:11px;cursor:pointer;color:#666}
+.cat-btn.selected{color:#fff;border-color:transparent}
+.thumb-picker{display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap}
+.thumb-preview{width:56px;height:56px;border-radius:8px;object-fit:cover;display:none}
+.thumb-preview.show{display:block}
+.thumb-ph{width:56px;height:56px;border-radius:8px;border:1.5px dashed #d0d0c8;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#f9f9f7}
+.thumb-ph i{font-size:20px;color:#ccc}
+.thumb-info{font-size:11px;color:#999}
+.thumb-info span{display:block;font-size:10px;color:#bbb;margin-top:1px}
+.upload-confirm{display:flex;justify-content:center;margin-top:.8rem}
+.upload-confirm button{background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:7px 20px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px}
+.locked-upload{background:#fff;border:0.5px solid #e8e8e0;border-radius:12px;padding:1.5rem;text-align:center;margin-bottom:1.5rem;color:#aaa}
+.locked-upload i{font-size:26px;margin-bottom:6px;display:block}
+.locked-upload p{font-size:13px;margin-bottom:10px}
+.cat-badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;flex-shrink:0}
+.section-title{font-size:12px;font-weight:500;color:#888;letter-spacing:.5px;text-transform:uppercase;margin-bottom:.8rem}
+.filter-bar{display:flex;gap:5px;margin-bottom:1rem;flex-wrap:wrap}
+.filter-btn{background:#fff;border:0.5px solid #e0e0d8;border-radius:20px;padding:4px 12px;font-size:11px;cursor:pointer;color:#666}
+.filter-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.track-list{display:flex;flex-direction:column;gap:7px}
+.track{background:#fff;border:0.5px solid #e8e8e0;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:9px;transition:border-color .15s}
+.track:hover{border-color:#ccc}
+.track.playing{border-color:#d0d0c8;background:#fafaf8}
+.track-thumb{width:40px;height:40px;border-radius:7px;flex-shrink:0;background:#f0f0ec;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.track-thumb img{width:100%;height:100%;object-fit:cover}
+.track-thumb i{font-size:16px;color:#ccc}
+.play-btn{width:30px;height:30px;border-radius:50%;background:#1a1a1a;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.play-btn i{color:#fff;font-size:12px;margin-left:1px}
+.track-info{flex:1;min-width:0;cursor:pointer}
+.track-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track-meta{font-size:11px;color:#999;margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.track-actions{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.icon-btn{background:none;border:none;cursor:pointer;color:#bbb;padding:3px;border-radius:5px;display:flex;align-items:center;font-size:15px}
+.icon-btn:hover{color:#555;background:#f0f0ec}
+.icon-btn.liked{color:#e24b4a}
+.like-count,.comment-count{font-size:10px;color:#bbb;min-width:12px}
+.supa-icon-btn{background:none;border:none;cursor:pointer;padding:3px 5px;border-radius:5px;font-size:12px;color:#c4980a}
+.supa-icon-btn:hover{background:#fff8e1}
+.rank-controls{display:flex;gap:6px;margin-bottom:1.2rem;flex-wrap:wrap}
+.period-btn{background:#fff;border:0.5px solid #e0e0d8;border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;color:#888}
+.period-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.rank-list{display:flex;flex-direction:column;gap:7px}
+.rank-item{background:#fff;border:0.5px solid #e8e8e0;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.rank-item:hover{border-color:#ccc}
+.rank-badge{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.rank-1 .rank-badge{background:#f5e6b0;color:#a07800}
+.rank-2 .rank-badge{background:#e4e4e4;color:#666}
+.rank-3 .rank-badge{background:#f0ddd0;color:#9a5c30}
+.rank-other .rank-badge{background:#f4f4f0;color:#888}
+.rank-thumb{width:36px;height:36px;border-radius:6px;flex-shrink:0;background:#f0f0ec;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.rank-thumb img{width:100%;height:100%;object-fit:cover}
+.rank-thumb i{font-size:14px;color:#ccc}
+.rank-info{flex:1;min-width:0}
+.rank-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-plays{font-size:11px;color:#999;margin-top:2px;display:flex;align-items:center;gap:5px}
+.rank-bar-wrap{flex:1;max-width:100px;height:3px;background:#f0f0ec;border-radius:2px;overflow:hidden}
+.rank-bar{height:100%;border-radius:2px;transition:width .4s}
+.rank-play-btn{width:26px;height:26px;border-radius:50%;background:#1a1a1a;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rank-play-btn i{color:#fff;font-size:11px;margin-left:1px}
+.search-box{position:relative;margin-bottom:1rem}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:15px;color:#bbb;pointer-events:none}
+.search-box input{width:100%;border:0.5px solid #e0e0d8;border-radius:10px;padding:9px 11px 9px 34px;font-size:13px;outline:none;background:#fff;font-family:inherit}
+.search-box input:focus{border-color:#888}
+.sf-btns{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:.8rem}
+.sf-btn{background:#fff;border:0.5px solid #e0e0d8;border-radius:20px;padding:4px 12px;font-size:11px;cursor:pointer;color:#666}
+.sf-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.search-selects{display:flex;gap:7px;margin-bottom:1rem;flex-wrap:wrap}
+.search-selects select{border:0.5px solid #e0e0d8;border-radius:8px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer}
+.user-result{background:#fff;border:0.5px solid #e8e8e0;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.user-result:hover{border-color:#ccc}
+.user-result-av{width:40px;height:40px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#f0f0ec;display:flex;align-items:center;justify-content:center}
+.user-result-av img{width:100%;height:100%;object-fit:cover}
+.search-section-lbl{font-size:11px;color:#aaa;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:4px}
+.empty,.empty-rank,.no-results{text-align:center;padding:2.5rem;color:#bbb}
+.empty i,.empty-rank i,.no-results i{font-size:36px;margin-bottom:10px;display:block}
+.empty p,.empty-rank p,.no-results p{font-size:13px}
+.not-registered{text-align:center;padding:3rem 1rem}
+.not-registered i{font-size:44px;color:#ddd;margin-bottom:14px;display:block}
+.not-registered p{font-size:14px;color:#888;margin-bottom:18px}
+.comments-panel{display:none;position:fixed;right:0;top:56px;bottom:144px;width:290px;background:#fff;border-left:0.5px solid #e0e0d8;flex-direction:column;z-index:50}
+.comments-panel.open{display:flex}
+.cp-header{padding:14px;border-bottom:0.5px solid #e0e0d8;display:flex;align-items:center;justify-content:space-between}
+.cp-title{font-size:13px;font-weight:500}
+.cp-body{flex:1;overflow-y:auto;padding:10px}
+.comment{padding:7px 0;border-bottom:0.5px solid #f0f0ec}
+.comment:last-child{border:none}
+.comment-user{font-size:11px;font-weight:500;margin-bottom:2px}
+.comment-text{font-size:12px;color:#555;line-height:1.5}
+.comment-time{font-size:10px;color:#bbb;margin-top:2px}
+.cp-input{padding:10px;border-top:0.5px solid #e0e0d8;display:flex;gap:7px}
+.cp-input input{flex:1;border:0.5px solid #e0e0d8;border-radius:6px;padding:6px 9px;font-size:12px;outline:none;background:#f9f9f7;font-family:inherit}
+.cp-input input:focus{border-color:#888}
+.cp-input button{background:#1a1a1a;color:#fff;border:none;border-radius:6px;padding:0 10px;cursor:pointer;font-size:13px}
+.toast{position:fixed;bottom:155px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:12px;padding:7px 16px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:400;white-space:nowrap}
+.toast.show{opacity:1}
+audio{display:none}
+</style>
+</head>
+<body>
+<!-- 認証オーバーレイ -->
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-box">
+    <h2 id="auth-title">ログイン</h2>
+    <p id="auth-sub">みゅーじっく音友へようこそ</p>
+    <div class="auth-error" id="auth-error"></div>
+    <input type="email" class="auth-input" id="auth-email" placeholder="メールアドレス">
+    <input type="password" class="auth-input" id="auth-password" placeholder="パスワード（6文字以上）">
+    <button class="auth-btn" id="auth-submit-btn" onclick="authSubmit()">ログイン</button>
+    <div class="auth-switch" id="auth-switch-text" onclick="toggleAuthMode()">
+      アカウントがない方は<span>新規登録</span>
+    </div>
+  </div>
+</div>
+
+<header></header>
+<div class="main">
+  <div id="tab-feed" class="tab-content active">
+    <div class="site-hero">
+      <svg viewBox="0 0 520 130" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:480px;height:120px">
+        <defs><filter id="ink" x="-8%" y="-8%" width="116%" height="116%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="5" seed="7" result="noise"/>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.2" xChannelSelector="R" yChannelSelector="G" result="dist"/>
+          <feComponentTransfer in="dist"><feFuncA type="gamma" amplitude="1" exponent="0.7" offset="0"/></feComponentTransfer>
+        </filter></defs>
+        <rect x="10" y="6" width="500" height="118" rx="4" fill="none" stroke="#2a1a0a" stroke-width="1.2" opacity="0.18"/>
+        <rect x="16" y="12" width="488" height="106" rx="2" fill="none" stroke="#2a1a0a" stroke-width="0.5" opacity="0.1"/>
+        <text x="50%" y="54" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="40" font-weight="400" letter-spacing="10" fill="#1a1a1a">みゅーじっく</text>
+        <text x="50%" y="106" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="52" font-weight="400" letter-spacing="18" fill="#1a1a1a">音　友</text>
+      </svg>
+      <div style="font-size:12px;color:#aaa;margin-top:4px;letter-spacing:3px;font-family:'Shippori Mincho',serif">Music On You</div>
+    </div>
+    <div id="upload-area"></div>
+    <div class="feed-tabs">
+      <button class="feed-tab active" id="ftab-all" onclick="switchFeedTab('all')">みんなの音楽</button>
+      <button class="feed-tab" id="ftab-follow" onclick="switchFeedTab('follow')">フォロー中</button>
+    </div>
+    <div id="follow-wall-area"></div>
+    <div class="filter-bar" id="feed-filter-bar"></div>
+    <div class="track-list" id="track-list"></div>
+  </div>
+  <div id="tab-ranking" class="tab-content">
+    <div class="rank-controls" style="flex-wrap:wrap;gap:6px;margin-bottom:.8rem">
+      <button class="period-btn active" onclick="switchPeriod('daily',this)">今日</button>
+      <button class="period-btn" onclick="switchPeriod('weekly',this)">今週</button>
+      <button class="period-btn" onclick="switchPeriod('monthly',this)">今月</button>
+      <button class="period-btn" onclick="switchPeriod('yearly',this)">今年</button>
+      <button class="period-btn" onclick="switchPeriod('alltime',this)">今まで</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.8rem">
+      <select id="rank-cat-select" onchange="setRankCat(this.value)" style="border:0.5px solid #e0e0d8;border-radius:8px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">
+        <option value="">カテゴリーを絞る</option>
+      </select>
+      <select id="rank-genre-select" onchange="setRankGenre(this.value)" style="border:0.5px solid #e0e0d8;border-radius:8px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">
+        <option value="">ジャンルを絞る</option>
+      </select>
+    </div>
+    <div id="rank-sections"></div>
+  </div>
+  <div id="tab-search" class="tab-content"><div id="search-page"></div></div>
+  <div id="tab-playlist-inline" class="tab-content">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
+      <div class="section-title" style="margin:0">プレイリスト (<span id="pl-count">0</span>曲)</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.8rem">
+      <select id="pl-cat-select" onchange="setPlCat(this.value)" style="border:0.5px solid #e0e0d8;border-radius:8px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">
+        <option value="">カテゴリーで絞る</option>
+      </select>
+      <select id="pl-genre-select" onchange="setPlGenre(this.value)" style="border:0.5px solid #e0e0d8;border-radius:8px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">
+        <option value="">ジャンルで絞る</option>
+      </select>
+    </div>
+    <div id="pl-sections"></div>
+  </div>
+  <div id="tab-user" class="tab-content"><div id="user-page-content"></div></div>
+</div>
+
+<div class="bottom-nav">
+  <button class="active" id="bnav-feed" onclick="switchTab('feed')"><i class="ti ti-music"></i>すべて</button>
+  <button id="bnav-ranking" onclick="switchTab('ranking')"><i class="ti ti-trophy"></i>ランキング</button>
+  <button id="bnav-search" onclick="switchTab('search')"><i class="ti ti-search"></i>検索</button>
+  <button id="bnav-playlist" onclick="switchTab('playlist')"><i class="ti ti-playlist"></i>プレイリスト</button>
+  <button id="bnav-user" onclick="switchTab('user')"><i class="ti ti-user-circle"></i>ユーザー</button>
+  <button id="bnav-comments" onclick="toggleComments()"><i class="ti ti-message"></i>コメント</button>
+</div><div class="player">
+  <div class="player-thumb" id="p-thumb"><i class="ti ti-music"></i></div>
+  <div class="player-info">
+    <div class="player-title" id="p-title">曲を選んでください</div>
+    <div class="player-artist" id="p-artist">—</div>
+  </div>
+  <div class="player-controls">
+    <button class="ctrl-btn" onclick="prevTrack()"><i class="ti ti-player-skip-back"></i></button>
+    <button class="ctrl-btn main-ctrl" id="main-play-btn" onclick="togglePlay()"><i class="ti ti-player-play"></i></button>
+    <button class="ctrl-btn" onclick="nextTrack()"><i class="ti ti-player-skip-forward"></i></button>
+  </div>
+  <div class="progress-area">
+    <span class="time" id="p-cur">0:00</span>
+    <div class="progress-bar" onclick="seek(event)" id="prog-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    <span class="time right" id="p-dur">0:00</span>
+  </div>
+  <div class="volume-area">
+    <button class="ctrl-btn" style="font-size:15px"><i class="ti ti-volume"></i></button>
+    <input type="range" class="vol-slider" min="0" max="100" value="80" oninput="setVolume(this.value)">
+  </div>
+</div>
+
+<div class="comments-panel" id="comments-panel">
+  <div class="cp-header">
+    <span class="cp-title" id="cp-title">コメント</span>
+    <button class="icon-btn" onclick="toggleComments()"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="cp-body" id="cp-body"></div>
+  <div class="cp-input">
+    <input type="text" id="comment-input" placeholder="コメントを追加..." onkeydown="if(event.key==='Enter')addComment()">
+    <button onclick="addComment()"><i class="ti ti-send"></i></button>
+  </div>
+</div>
+
+<!-- 登録モーダル -->
+<div class="modal-overlay" id="reg-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('reg-modal')"><i class="ti ti-x"></i></button>
+    <h2 id="modal-title">ユーザー登録</h2>
+    <div class="form-row">
+      <label>アイコン画像</label>
+      <div class="avatar-pick">
+        <div class="avatar-circle" onclick="document.getElementById('avatar-input').click()" id="avatar-circle"><i class="ti ti-user-circle"></i></div>
+        <input type="file" id="avatar-input" accept="image/*" onchange="onAvatarSelect(this)" style="display:none">
+        <div style="font-size:11px;color:#888">クリックして選択</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>ユーザー名 <span style="color:#e24b4a">*</span></label>
+      <input type="text" id="reg-name" placeholder="例：音楽太郎" maxlength="30">
+    </div>
+    <div class="form-row">
+      <label>自己紹介</label>
+      <textarea id="reg-bio" placeholder="好きな音楽のジャンルなど…" maxlength="200"></textarea>
+    </div>
+    <button class="btn-primary" onclick="saveUser()">登録する</button>
+  </div>
+</div>
+
+<!-- フォローリストモーダル -->
+<div class="modal-overlay" id="follow-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('follow-modal')"><i class="ti ti-x"></i></button>
+    <h2 id="follow-modal-title">フォロー中</h2>
+    <div class="follow-list" id="follow-modal-list"></div>
+  </div>
+</div>
+
+<!-- 投げ銭モーダル -->
+<div class="modal-overlay" id="supa-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('supa-modal')"><i class="ti ti-x"></i></button>
+    <h2><i class="ti ti-coin" style="color:#c4980a;margin-right:6px"></i>サポートする</h2>
+    <div class="supa-target" id="supa-target-info"></div>
+    <div class="form-row">
+      <label>金額を選択（100円 = 1ポイント）</label>
+      <div class="amount-grid">
+        <button class="amount-btn" onclick="selectAmt(100)">¥100<small>1pt</small></button>
+        <button class="amount-btn" onclick="selectAmt(300)">¥300<small>3pt</small></button>
+        <button class="amount-btn" onclick="selectAmt(500)">¥500<small>5pt</small></button>
+        <button class="amount-btn" onclick="selectAmt(1000)">¥1,000<small>10pt</small></button>
+        <button class="amount-btn" onclick="selectAmt(3000)">¥3,000<small>30pt</small></button>
+        <button class="amount-btn" onclick="selectAmt(5000)">¥5,000<small>50pt</small></button>
+        <button class="amount-btn" onclick="selectAmt(10000)">¥10,000<small>100pt</small></button>
+        <button class="amount-btn" onclick="selectAmt(30000)">¥30,000<small>300pt</small></button>
+        <button class="amount-btn" onclick="selectAmt(50000)">¥50,000<small>500pt</small></button>
+      </div>
+    </div>
+    <input type="text" class="supa-msg-input" id="supa-msg" placeholder="メッセージ（任意）" maxlength="80">
+    <button class="supa-send-btn" id="supa-send-btn" onclick="sendSupa()">金額を選んでください</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<audio id="audio"></audio>
+
+<script>
+// Supabase初期化
+var SUPABASE_URL = 'https://fgraifiuroqjraglwkyw.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_HoxgMGvJq9AAiqGq-CqPDQ_oooNlGdG';
+var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+var authMode = 'login'; // 'login' or 'signup'
+var currentAuthUser = null;
+
+// 認証状態の監視
+sb.auth.onAuthStateChange(function(event, session) {
+  var overlay = document.getElementById('auth-overlay');
+  if (session && session.user) {
+    currentAuthUser = session.user;
+    overlay.classList.remove('open');
+    overlay.style.display = 'none';
+    loadUserProfile(session.user);
+  } else {
+    currentAuthUser = null;
+    overlay.style.display = 'flex';
+    overlay.classList.add('open');
+    user = null;
+    updateNavUser();
+    renderUploadArea();
+    renderUserPage();
+  }
+});
+
+async function loadTracks() {
+  var res = await sb.from('tracks').select('*').order('created_at', {ascending: false});
+  if (res.error || !res.data) return;
+  tracks = [];
+  for (var i = 0; i < res.data.length; i++) {
+    var d = res.data[i];
+    var t = {
+      id: d.id,
+      name: d.name,
+      url: d.file_url,
+      thumbUrl: d.thumb_url,
+      cat: d.cat || 'other',
+      isVideo: d.is_video,
+      uploader: d.uploader_name,
+      uploader_id: d.uploader_id,
+      duration: d.duration || 0
+    };
+    tracks.push(t);
+    commentsData[t.id] = commentsData[t.id] || [];
+    plays[t.id] = plays[t.id] || {daily:0,weekly:0,monthly:0,yearly:0,alltime:0};
+    supaTrack[t.id] = supaTrack[t.id] || [];
+  }
+  renderTracks(); renderRanking(); renderFilterBar(); renderUserPage();
+}
+
+async function loadUserProfile(authUser) {
+  var res = await sb.from('profiles').select('*').eq('id', authUser.id).single();
+  if (res.data) {
+    user = {
+      id: authUser.id,
+      name: res.data.name,
+      bio: res.data.bio || '',
+      avatarUrl: res.data.avatar_url || null
+    };
+  } else {
+    // プロフィール未作成の場合は登録モーダルを開く
+    user = {id: authUser.id, name: '', bio: '', avatarUrl: null};
+    openRegModal(false);
+  }
+  updateNavUser();
+  renderUploadArea();
+  renderUserPage();
+  renderTracks();
+  loadTracks();
+}
+
+function toggleAuthMode() {
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  document.getElementById('auth-title').textContent = authMode === 'login' ? 'ログイン' : '新規登録';
+  document.getElementById('auth-sub').textContent = authMode === 'login' ? 'みゅーじっく音友へようこそ' : 'アカウントを作成してください';
+  document.getElementById('auth-submit-btn').textContent = authMode === 'login' ? 'ログイン' : '登録する';
+  document.getElementById('auth-switch-text').innerHTML = authMode === 'login'
+    ? 'アカウントがない方は<span>新規登録</span>'
+    : 'すでにアカウントをお持ちの方は<span>ログイン</span>';
+  document.getElementById('auth-error').textContent = '';
+}
+
+async function authSubmit() {
+  var email = document.getElementById('auth-email').value.trim();
+  var password = document.getElementById('auth-password').value.trim();
+  var errEl = document.getElementById('auth-error');
+  errEl.textContent = '';
+  if (!email || !password) { errEl.textContent = 'メールとパスワードを入力してください'; return; }
+  if (password.length < 6) { errEl.textContent = 'パスワードは6文字以上にしてください'; return; }
+
+  document.getElementById('auth-submit-btn').textContent = '処理中...';
+  document.getElementById('auth-submit-btn').disabled = true;
+
+  var res;
+  if (authMode === 'login') {
+    res = await sb.auth.signInWithPassword({email: email, password: password});
+  } else {
+    res = await sb.auth.signUp({email: email, password: password});
+  }
+
+  document.getElementById('auth-submit-btn').disabled = false;
+  document.getElementById('auth-submit-btn').textContent = authMode === 'login' ? 'ログイン' : '登録する';
+
+  if (res.error) {
+    var msg = res.error.message;
+    if (msg.indexOf('Invalid login') >= 0) msg = 'メールアドレスまたはパスワードが違います';
+    if (msg.indexOf('already registered') >= 0) msg = 'このメールアドレスはすでに登録済みです';
+    if (msg.indexOf('weak') >= 0) msg = 'パスワードが弱すぎます';
+    errEl.textContent = msg;
+  } else if (authMode === 'signup' && res.data && !res.data.session) {
+    errEl.style.color = '#2e7d32';
+    errEl.textContent = '確認メールを送りました。メールを確認してください。';
+  }
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  showToast('ログアウトしました');
+}
+
+// saveUser をSupabase対応に上書き
+var _origSaveUser = saveUser;
+saveUser = async function() {
+  var name = document.getElementById('reg-name').value.trim();
+  if (!name) { showToast('ユーザー名を入力してください'); return; }
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+
+  var bio = document.getElementById('reg-bio').value.trim();
+  var avatarUrl = tempAvatarUrl || (user ? user.avatarUrl : null);
+
+  // アバター画像をStorageにアップロード
+  if (tempAvatarUrl && tempAvatarUrl.startsWith('blob:')) {
+    var resp = await fetch(tempAvatarUrl);
+    var blob = await resp.blob();
+    var ext = blob.type.split('/')[1] || 'jpg';
+    var path = currentAuthUser.id + '/avatar.' + ext;
+    var upRes = await sb.storage.from('avatars').upload(path, blob, {upsert:true});
+    if (!upRes.error) {
+      var urlRes = sb.storage.from('avatars').getPublicUrl(path);
+      avatarUrl = urlRes.data.publicUrl;
+    }
+  }
+
+  // profilesテーブルにupsert
+  var res = await sb.from('profiles').upsert({
+    id: currentAuthUser.id,
+    name: name,
+    bio: bio,
+    avatar_url: avatarUrl
+  });
+
+  if (res.error) { showToast('保存に失敗しました: ' + res.error.message); return; }
+
+  user = {id: currentAuthUser.id, name: name, bio: bio, avatarUrl: avatarUrl};
+  closeModal('reg-modal');
+  updateNavUser();
+  renderUploadArea();
+  renderUserPage();
+  renderTracks();
+  showToast('プロフィールを保存しました！');
+};
+
+// 初期化時に認証チェック
+sb.auth.getSession().then(function(res) {
+  if (!res.data.session) {
+    document.getElementById('auth-overlay').classList.add('open');
+  }
+});
+var tracks = [], currentIdx = -1, playlist = [];
+var commentsData = {}, openCommentTrackId = null;
+var likes = {}, plays = {};
+var currentPeriod = 'daily', feedFilter = 'all', feedTab = 'all';
+var rankCat = '', rankGenre = '';
+var pendingFiles = [], pendingCat = null, pendingThumbUrl = null;
+var user = null, tempAvatarUrl = null;
+var supaTrack = {}, supaUser = {};
+var supaTarget = null, supaType = null, supaAmt = 0;
+var searchQuery = '', searchFilter = 'all', searchCat = '', searchGenre = '';
+var following = {}, followerCounts = {};
+var wallComments = [];
+
+var CATS = [
+  {id:'original',label:'オリジナル',color:'#7b5ea7',bg:'#f0eaf8'},
+  {id:'cover',   label:'歌ってみた',color:'#c45c7a',bg:'#fceef3'},
+  {id:'play',    label:'演奏',      color:'#3a8fb5',bg:'#e8f4fb'},
+  {id:'remix',   label:'リミックス',color:'#d97c2b',bg:'#fdf0e4'},
+  {id:'other',   label:'その他',    color:'#5a7a5a',bg:'#edf5ed'}
+];
+var TIERS = [
+  {min:1,   bg:'#fff8e1',color:'#b8860b'},
+  {min:5,   bg:'#e8f5e9',color:'#2e7d32'},
+  {min:10,  bg:'#e3f2fd',color:'#1565c0'},
+  {min:30,  bg:'#fce4ec',color:'#c62828'},
+  {min:100, bg:'#f3e5f5',color:'#6a1b9a'}
+];
+var GENRES = ['ポップス','ロック','アニメ','ボーカロイド','EDM','ジャズ','クラシック','R&B','フォーク','メタル'];
+
+function catInfo(id) {
+  for (var i = 0; i < CATS.length; i++) if (CATS[i].id === id) return CATS[i];
+  return {label:'その他',color:'#888',bg:'#f4f4f0'};
+}
+function tierFor(pts) {
+  var t = TIERS[0];
+  for (var i = 0; i < TIERS.length; i++) if (pts >= TIERS[i].min) t = TIERS[i];
+  return t;
+}
+function uid() { return Math.random().toString(36).slice(2); }
+function fmtTime(s) {
+  if (!isFinite(s)) return '0:00';
+  var m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+function isVid(f) { return f && f.type && f.type.indexOf('video/') === 0; }
+function totalPts(arr) {
+  if (!arr) return 0;
+  var s = 0; for (var i = 0; i < arr.length; i++) s += arr[i].pts; return s;
+}
+function thumbHtml(t, sz) {
+  sz = sz || 40;
+  if (t.thumbUrl) return '<img src="' + t.thumbUrl + '" style="width:' + sz + 'px;height:' + sz + 'px;border-radius:7px;object-fit:cover">';
+  return '<i class="ti ti-' + (t.isVideo ? 'video' : 'music') + '" style="font-size:' + Math.round(sz * .38) + 'px;color:#ccc"></i>';
+}
+function avatarHtml(u, sz) {
+  sz = sz || 26;
+  if (u && u.avatarUrl) return '<img src="' + u.avatarUrl + '" style="width:' + sz + 'px;height:' + sz + 'px;border-radius:50%;object-fit:cover">';
+  return '<i class="ti ti-user" style="font-size:' + Math.round(sz * .5) + 'px;color:#ccc"></i>';
+}
+function nowTime() {
+  return new Date().toLocaleString('ja-JP', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+/* ---- follow ---- */
+function isFollowing(name) { return !!following[name]; }
+function toggleFollow(name) {
+  if (!user) { showToast('フォローにはユーザー登録が必要です'); return; }
+  if (name === user.name) { showToast('自分はフォローできません'); return; }
+  if (following[name]) {
+    following[name] = false;
+    followerCounts[name] = Math.max(0, (followerCounts[name] || 1) - 1);
+    showToast(name + ' のフォローを解除しました');
+  } else {
+    following[name] = true;
+    followerCounts[name] = (followerCounts[name] || 0) + 1;
+    showToast(name + ' をフォローしました！');
+  }
+  renderTracks(); renderUserPage();
+}
+function followingList() {
+  var list = [];
+  for (var k in following) if (following[k]) list.push(k);
+  return list;
+}
+function openFollowModal() {
+  var list = followingList();
+  document.getElementById('follow-modal-title').textContent = 'フォロー中 (' + list.length + ')';
+  var html = '';
+  if (!list.length) {
+    html = '<p style="font-size:13px;color:#bbb;text-align:center;padding:1.5rem">まだフォロー中のユーザーはいません</p>';
+  } else {
+    for (var i = 0; i < list.length; i++) {
+      var name = list[i];
+      var mc = 0;
+      for (var j = 0; j < tracks.length; j++) if (tracks[j].uploader === name) mc++;
+      var isF = isFollowing(name);
+      html += '<div class="follow-user-row">' +
+        '<div class="follow-user-av"><i class="ti ti-user" style="font-size:16px;color:#ccc"></i></div>' +
+        '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500">' + name + '</div>' +
+        '<div style="font-size:11px;color:#999">' + mc + '曲投稿</div></div>' +
+        '<button onclick="toggleFollow(\'' + name + '\');openFollowModal()" style="background:' + (isF ? '#f0f0ec' : '#1a1a1a') + ';color:' + (isF ? '#555' : '#fff') + ';border:0.5px solid ' + (isF ? '#e0e0d8' : '#1a1a1a') + ';border-radius:16px;padding:4px 12px;font-size:11px;cursor:pointer">' + (isF ? 'フォロー中' : 'フォロー') + '</button>' +
+        '</div>';
+    }
+  }
+  document.getElementById('follow-modal-list').innerHTML = html;
+  document.getElementById('follow-modal').classList.add('open');
+}
+
+/* ---- supachat ---- */
+function openSupaModal(type, id) {
+  if (!user) { showToast('投げ銭にはユーザー登録が必要です'); return; }
+  supaType = type; supaTarget = id; supaAmt = 0;
+  var btns = document.querySelectorAll('.amount-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('selected');
+  document.getElementById('supa-msg').value = '';
+  var btn = document.getElementById('supa-send-btn');
+  btn.textContent = '金額を選んでください';
+  btn.style.cssText = 'width:100%;padding:9px;border:0.5px solid #e0e0d8;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500;background:#f4f4f0;color:#aaa;display:flex;align-items:center;justify-content:center;gap:6px';
+  var info = document.getElementById('supa-target-info');
+  if (type === 'track') {
+    var t = null;
+    for (var i = 0; i < tracks.length; i++) if (tracks[i].id === id) { t = tracks[i]; break; }
+    info.innerHTML = '<div class="supa-target-thumb">' + (t && t.thumbUrl ? '<img src="' + t.thumbUrl + '">' : '<i class="ti ti-music" style="font-size:16px;color:#ccc"></i>') + '</div>' +
+      '<div><div class="supa-target-name">' + (t ? t.name : '—') + '</div><div class="supa-target-sub">' + (t && t.uploader ? t.uploader + ' への投げ銭' : '') + '</div></div>';
+  } else {
+    info.innerHTML = '<div class="supa-target-avatar"><i class="ti ti-user" style="font-size:15px;color:#ccc"></i></div>' +
+      '<div><div class="supa-target-name">' + id + '</div><div class="supa-target-sub">ユーザーへのサポート</div></div>';
+  }
+  document.getElementById('supa-modal').classList.add('open');
+}
+function selectAmt(v) {
+  supaAmt = v;
+  var btns = document.querySelectorAll('.amount-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('selected');
+  var lbl = '¥' + v.toLocaleString();
+  for (var i = 0; i < btns.length; i++) {
+    if (btns[i].textContent.replace(/\s/g,'').indexOf(lbl) >= 0) { btns[i].classList.add('selected'); break; }
+  }
+  var pts = v / 100; var tier = tierFor(pts);
+  var btn = document.getElementById('supa-send-btn');
+  btn.textContent = '¥' + v.toLocaleString() + ' (' + pts + 'pt) を送る 🪙';
+  btn.style.cssText = 'width:100%;padding:9px;border:0.5px solid ' + tier.color + ';border-radius:8px;font-size:13px;cursor:pointer;font-weight:500;background:' + tier.bg + ';color:' + tier.color + ';display:flex;align-items:center;justify-content:center;gap:6px';
+}
+var adminEarnings = 0;
+
+function sendSupa() {
+  if (!supaAmt) { showToast('金額を選んでください'); return; }
+  var gross = supaAmt;
+  var adminCut = Math.floor(gross * 0.1);
+  var creatorCut = gross - adminCut;
+  var pts = Math.floor(creatorCut / 100);
+  adminEarnings += adminCut;
+  var msg = document.getElementById('supa-msg').value.trim();
+  var entry = {from:user.name, fromAvatar:user.avatarUrl||null, pts:pts, amt:creatorCut, gross:gross, adminCut:adminCut, msg:msg};
+  if (supaType === 'track') {
+    if (!supaTrack[supaTarget]) supaTrack[supaTarget] = [];
+    supaTrack[supaTarget].push(entry);
+  } else {
+    if (!supaUser[supaTarget]) supaUser[supaTarget] = [];
+    supaUser[supaTarget].push(entry);
+  }
+  closeModal('supa-modal');
+  showToast('🪙 ¥' + creatorCut.toLocaleString() + ' (' + pts + 'pt) を送りました！（運営手数料 ¥' + adminCut.toLocaleString() + '）');
+  renderTracks(); renderUserPage();
+}
+function renderSupaList(entries, title) {
+  if (!entries || !entries.length) return '';
+  var byUser = {};
+  for (var i = 0; i < entries.length; i++) {
+    var e = entries[i];
+    if (!byUser[e.from]) byUser[e.from] = {from:e.from, fromAvatar:e.fromAvatar, pts:0, msgs:[]};
+    byUser[e.from].pts += e.pts;
+    if (e.msg) byUser[e.from].msgs.push(e.msg);
+  }
+  var arr = []; for (var k in byUser) arr.push(byUser[k]);
+  arr.sort(function(a,b){ return b.pts - a.pts; }); arr = arr.slice(0, 10);
+  var medals = ['🥇','🥈','🥉']; var rows = '';
+  for (var i = 0; i < arr.length; i++) {
+    var e = arr[i]; var tier = tierFor(e.pts); var lastMsg = e.msgs.length ? e.msgs[e.msgs.length-1] : '';
+    rows += '<div class="supa-entry" style="background:' + tier.bg + '">' +
+      '<span class="supa-entry-rank" style="color:' + tier.color + '">' + (i < 3 ? medals[i] : i+1) + '</span>' +
+      '<div class="supa-entry-av">' + (e.fromAvatar ? '<img src="' + e.fromAvatar + '">' : '<i class="ti ti-user" style="font-size:12px;color:' + tier.color + '"></i>') + '</div>' +
+      '<div class="supa-entry-body"><div class="supa-entry-top"><span class="supa-entry-name" style="color:' + tier.color + '">' + e.from + '</span><span class="supa-entry-pts" style="color:' + tier.color + '">🪙' + e.pts + 'pt</span></div>' +
+      (lastMsg ? '<div class="supa-entry-msg" style="color:' + tier.color + '">' + lastMsg + '</div>' : '') +
+      '</div></div>';
+  }
+  return '<div class="supa-list"><div class="supa-list-title"><i class="ti ti-coin" style="font-size:11px;color:#c4980a"></i>' + title + '</div><div class="supa-entries">' + rows + '</div></div>';
+}
+
+/* ---- wall (一言) ---- */
+function wallListHtml() {
+  if (!wallComments.length) return '<div class="wall-empty">まだ一言がありません。最初のコメントを書いてみよう！</div>';
+  var html = '';
+  for (var i = 0; i < wallComments.length; i++) {
+    var c = wallComments[i];
+    html += '<div class="wall-comment">' +
+      '<div class="wall-av">' + (c.avatarUrl ? '<img src="' + c.avatarUrl + '">' : '<i class="ti ti-user" style="font-size:12px;color:#ccc"></i>') + '</div>' +
+      '<div class="wall-body"><div class="wall-uname">' + c.user + '</div><div class="wall-text">' + c.text + '</div><div class="wall-time">' + c.time + '</div></div>' +
+      '</div>';
+  }
+  return html;
+}
+function addWallComment() {
+  if (!user) { showToast('コメントにはユーザー登録が必要です'); return; }
+  var inp = document.getElementById('wall-input');
+  if (!inp) return;
+  var text = inp.value.trim();
+  if (!text) return;
+  wallComments.push({user:user.name, avatarUrl:user.avatarUrl||null, text:text, time:nowTime()});
+  inp.value = '';
+  var list = document.getElementById('wall-comments-list');
+  if (list) { list.innerHTML = wallListHtml(); list.scrollTop = list.scrollHeight; }
+}
+
+/* ---- user ---- */
+function openRegModal(edit) {
+  document.getElementById('modal-title').textContent = edit ? 'プロフィール編集' : 'ユーザー登録';
+  if (edit && user) {
+    document.getElementById('reg-name').value = user.name;
+    document.getElementById('reg-bio').value = user.bio || '';
+    document.getElementById('avatar-circle').innerHTML = user.avatarUrl ? '<img src="' + user.avatarUrl + '">' : '<i class="ti ti-user-circle"></i>';
+    tempAvatarUrl = user.avatarUrl || null;
+  } else {
+    document.getElementById('reg-name').value = '';
+    document.getElementById('reg-bio').value = '';
+    document.getElementById('avatar-circle').innerHTML = '<i class="ti ti-user-circle"></i>';
+    tempAvatarUrl = null;
+  }
+  document.getElementById('reg-modal').classList.add('open');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function onAvatarSelect(inp) {
+  var f = inp.files[0]; if (!f) return;
+  tempAvatarUrl = URL.createObjectURL(f);
+  document.getElementById('avatar-circle').innerHTML = '<img src="' + tempAvatarUrl + '">';
+}
+function saveUser() {
+  var name = document.getElementById('reg-name').value.trim();
+  if (!name) { showToast('ユーザー名を入力してください'); return; }
+  var oldName = user ? user.name : null;
+  user = {name:name, bio:document.getElementById('reg-bio').value.trim(), avatarUrl:tempAvatarUrl||null};
+  if (oldName && oldName !== name) {
+    for (var i = 0; i < tracks.length; i++) if (tracks[i].uploader === oldName) tracks[i].uploader = name;
+    if (supaUser[oldName]) { supaUser[name] = supaUser[oldName]; delete supaUser[oldName]; }
+  }
+  closeModal('reg-modal');
+  updateNavUser(); renderUploadArea(); renderUserPage(); renderTracks();
+  showToast(!oldName ? '登録が完了しました！' : 'プロフィールを更新しました');
+}
+function updateNavUser() {
+  var btn = document.getElementById('bnav-user');
+  btn.innerHTML = (user && user.avatarUrl ? '<img src="' + user.avatarUrl + '" style="width:22px;height:22px;border-radius:50%;object-fit:cover">' : '<i class="ti ti-user-circle"></i>') + 'ユーザー';
+}
+
+/* ---- upload ---- */
+function renderUploadArea() {
+  var area = document.getElementById('upload-area');
+  if (!user) {
+    area.innerHTML = '<div class="locked-upload"><i class="ti ti-lock"></i><p>投稿するにはユーザー登録が必要です</p>' +
+      '<button class="btn-primary" style="width:auto;padding:7px 20px;margin:0 auto" onclick="openRegModal(false)">登録する</button></div>';
+    return;
+  }
+  area.innerHTML =
+    '<div class="upload-zone" id="upload-zone" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragleave="onDragLeave()">' +
+      '<div class="upload-drop" onclick="document.getElementById(\'file-input\').click()">' +
+        '<i class="ti ti-cloud-upload"></i>' +
+        '<p>クリックまたはドラッグ＆ドロップ</p>' +
+        '<small>音楽（MP3・WAV・M4A）・動画（MP4・MOV）対応</small>' +
+      '</div>' +
+      '<input type="file" id="file-input" accept="audio/*,video/*" multiple style="display:none">' +
+      '<div id="pending-files" class="pending-files"></div>' +
+      '<div id="upload-options" style="display:none">' +
+        '<div class="upload-section">' +
+          '<div class="upload-section-title">カテゴリーを選択</div>' +
+          '<div class="cat-btns" id="cat-btns"></div>' +
+        '</div>' +
+        '<div class="upload-section">' +
+          '<div class="upload-section-title">サムネイル（任意）</div>' +
+          '<div class="thumb-picker">' +
+            '<div class="thumb-ph" onclick="document.getElementById(\'thumb-input\').click()" id="thumb-ph"><i class="ti ti-photo-plus"></i></div>' +
+            '<img id="thumb-preview" class="thumb-preview" src="" alt="">' +
+            '<input type="file" id="thumb-input" accept="image/*" style="display:none">' +
+            '<div class="thumb-info">' +
+              '<span id="thumb-name" style="font-size:11px;color:#888">画像を選んでください</span>' +
+              '<span id="thumb-clear" style="display:none;color:#e24b4a;cursor:pointer;font-size:10px" onclick="clearThumb()">✕ 削除</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="upload-confirm"><button onclick="confirmUpload()"><i class="ti ti-upload"></i> アップロード</button></div>' +
+      '</div>' +
+    '</div>';
+
+  // イベントリスナーを直接設定
+  document.getElementById('file-input').addEventListener('change', function() {
+    onFileSelect(this.files);
+  });
+  document.getElementById('thumb-input').addEventListener('change', function() {
+    onThumbSelect(this);
+  });
+}
+function onFileSelect(files) {
+  pendingFiles = [];
+  for (var i = 0; i < files.length; i++) {
+    if (files[i].type.indexOf('audio/') === 0 || files[i].type.indexOf('video/') === 0) pendingFiles.push(files[i]);
+  }
+  if (!pendingFiles.length) { showToast('対応していないファイル形式です'); return; }
+  renderPendingFiles();
+  var opts = document.getElementById('upload-options');
+  if (opts) {
+    opts.style.display = 'block';
+    renderCatBtns();
+  } else {
+    // upload-optionsが見つからない場合はエリアを再描画
+    renderUploadArea();
+    setTimeout(function() {
+      renderPendingFiles();
+      var opts2 = document.getElementById('upload-options');
+      if (opts2) { opts2.style.display = 'block'; renderCatBtns(); }
+    }, 100);
+  }
+}
+function renderPendingFiles() {
+  var html = '';
+  for (var i = 0; i < pendingFiles.length; i++) {
+    var nm = pendingFiles[i].name.replace(/\.[^.]+$/, '');
+    html += '<div class="pending-tag"><i class="ti ti-' + (isVid(pendingFiles[i]) ? 'video' : 'music') + '" style="font-size:10px;color:#aaa"></i>' + nm + '<span class="rm" onclick="removePending(' + i + ')"><i class="ti ti-x"></i></span></div>';
+  }
+  document.getElementById('pending-files').innerHTML = html;
+}
+function removePending(i) {
+  pendingFiles.splice(i, 1);
+  if (!pendingFiles.length) { document.getElementById('upload-options').style.display = 'none'; document.getElementById('pending-files').innerHTML = ''; }
+  else renderPendingFiles();
+}
+function renderCatBtns() {
+  var html = '';
+  for (var i = 0; i < CATS.length; i++) {
+    var c = CATS[i]; var sel = pendingCat === c.id;
+    html += '<button class="cat-btn' + (sel ? ' selected' : '') + '" onclick="selectCat(\'' + c.id + '\')" style="' + (sel ? 'background:' + c.color + ';border-color:' + c.color : '') + '">' + c.label + '</button>';
+  }
+  document.getElementById('cat-btns').innerHTML = html;
+}
+function selectCat(id) { pendingCat = id; renderCatBtns(); }
+function onThumbSelect(inp) {
+  var f = inp.files[0]; if (!f) return;
+  if (pendingThumbUrl) URL.revokeObjectURL(pendingThumbUrl);
+  pendingThumbUrl = URL.createObjectURL(f);
+  var p = document.getElementById('thumb-preview'); p.src = pendingThumbUrl; p.classList.add('show');
+  document.getElementById('thumb-ph').style.display = 'none';
+  document.getElementById('thumb-name').textContent = f.name.length > 18 ? f.name.slice(0,16) + '…' : f.name;
+  document.getElementById('thumb-clear').style.display = 'inline';
+}
+function clearThumb() {
+  if (pendingThumbUrl) URL.revokeObjectURL(pendingThumbUrl); pendingThumbUrl = null;
+  var p = document.getElementById('thumb-preview'); p.classList.remove('show'); p.src = '';
+  document.getElementById('thumb-ph').style.display = 'flex';
+  document.getElementById('thumb-name').textContent = '画像を選んでください';
+  document.getElementById('thumb-clear').style.display = 'none';
+  document.getElementById('thumb-input').value = '';
+}
+function confirmUpload() {
+  if (!pendingFiles.length) return;
+  if (!pendingCat) { showToast('カテゴリーを選択してください'); return; }
+  var thu = pendingThumbUrl;
+  for (var i = 0; i < pendingFiles.length; i++) {
+    (function(f) {
+      var url = URL.createObjectURL(f); var id = uid();
+      var t = {id:id, name:f.name.replace(/\.[^.]+$/,''), file:f, url:url, duration:0, cat:pendingCat, thumbUrl:thu, isVideo:isVid(f), uploader:user.name};
+      tracks.push(t); commentsData[id] = []; plays[id] = {daily:0,weekly:0,monthly:0}; supaTrack[id] = [];
+      var tmp = t.isVideo ? document.createElement('video') : new Audio(url);
+      tmp.src = url;
+      tmp.onloadedmetadata = function() { t.duration = tmp.duration; renderTracks(); renderRanking(); renderUserPage(); };
+    })(pendingFiles[i]);
+  }
+  pendingFiles = []; pendingCat = null; pendingThumbUrl = null;
+  document.getElementById('upload-options').style.display = 'none';
+  document.getElementById('pending-files').innerHTML = '';
+  document.getElementById('file-input').value = '';
+  clearThumb();
+  renderTracks(); renderRanking(); renderFilterBar(); renderUserPage();
+  showToast('アップロードしました！');
+}
+
+/* ---- filter ---- */
+function renderFilterBar() {
+  var used = {};
+  for (var i = 0; i < tracks.length; i++) used[tracks[i].cat] = true;
+  var bar = document.getElementById('feed-filter-bar'); var any = false;
+  for (var k in used) { any = true; break; }
+  if (!any) { bar.innerHTML = ''; return; }
+  var html = '<button class="filter-btn' + (feedFilter === 'all' ? ' active' : '') + '" onclick="setFeedFilter(\'all\')">すべて</button>';
+  for (var i = 0; i < CATS.length; i++) {
+    var c = CATS[i]; if (!used[c.id]) continue; var a = feedFilter === c.id;
+    html += '<button class="filter-btn' + (a ? ' active' : '') + '" onclick="setFeedFilter(\'' + c.id + '\')" style="' + (a ? 'background:' + c.color + ';border-color:' + c.color : '') + '">' + c.label + '</button>';
+  }
+  bar.innerHTML = html;
+}
+function setFeedFilter(id) { feedFilter = id; renderFilterBar(); renderTracks(); }
+
+/* ---- feed tab ---- */
+function renderFollowWall() {
+  var area = document.getElementById('follow-wall-area');
+  if (!area) return;
+  if (feedTab !== 'follow') { area.innerHTML = ''; return; }
+  var fl = followingList();
+  if (!fl.length) { area.innerHTML = ''; return; }
+
+  var cards = '';
+  for (var i = 0; i < fl.length; i++) {
+    var name = fl[i];
+    // 最新の一言を取得（userが自分自身の場合はwallCommentsを使う、他ユーザーは今後拡張用）
+    var lastMsg = '';
+    if (user && name === user.name) {
+      lastMsg = wallComments.length ? wallComments[wallComments.length - 1].text : '';
+    }
+    // アバター画像: 登録済みユーザー（自分のみ）
+    var avHtml = '<i class="ti ti-user" style="font-size:20px;color:#ccc"></i>';
+    if (user && name === user.name && user.avatarUrl) {
+      avHtml = '<img src="' + user.avatarUrl + '">';
+    }
+    cards += '<div class="follow-wall-card" onclick="switchTab(\'user\')">' +
+      '<div class="follow-wall-av">' + avHtml + '</div>' +
+      '<div class="follow-wall-name">' + name + '</div>' +
+      '<div class="follow-wall-msg">' + (lastMsg || '<span class="follow-wall-empty">一言なし</span>') + '</div>' +
+      '</div>';
+  }
+  area.innerHTML = '<div class="follow-wall">' + cards + '</div>';
+}
+
+function switchFeedTab(tab) {
+  feedTab = tab;
+  document.getElementById('ftab-all').classList.toggle('active', tab === 'all');
+  document.getElementById('ftab-follow').classList.toggle('active', tab === 'follow');
+  renderFollowWall();
+  renderTracks();
+}
+
+/* ---- track row ---- */
+function trackRowHtml(t, idx, opts) {
+  opts = opts || {};
+  var playing = currentIdx === idx; var ci = catInfo(t.cat);
+  var liked = likes[t.id]; var lc = (commentsData[t.id] || []).length;
+  var inPl = false; for (var pi = 0; pi < playlist.length; pi++) if (playlist[pi].id === t.id) { inPl = true; break; }
+  var spPts = totalPts(supaTrack[t.id]);
+  return '<div class="track' + (playing ? ' playing' : '') + '" id="track-' + t.id + '">' +
+    '<div class="track-thumb">' + thumbHtml(t, 40) + '</div>' +
+    '<button class="play-btn" onclick="playTrack(' + idx + ')"><i class="ti ti-player-' + (playing && !audio.paused ? 'pause' : 'play') + '"></i></button>' +
+    '<div class="track-info" onclick="playTrack(' + idx + ')">' +
+      '<div class="track-title">' + t.name + '</div>' +
+      '<div class="track-meta">' +
+        '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' +
+        (t.uploader ? '<span style="font-size:10px;color:#bbb"><i class="ti ti-user" style="font-size:9px"></i> ' + t.uploader + '</span>' : '') +
+        (spPts > 0 ? '<span style="color:#c4980a;font-size:10px">🪙' + spPts + 'pt</span>' : '') +
+      '</div>' +
+    '</div>' +
+    '<div class="track-actions">' +
+      '<button class="supa-icon-btn" onclick="openSupaModal(\'track\',\'' + t.id + '\')">🪙</button>' +
+      '<button class="icon-btn' + (liked ? ' liked' : '') + '" onclick="toggleLike(\'' + t.id + '\')"><i class="ti ti-heart' + (liked ? '-filled' : '') + '"></i></button>' +
+      '<span class="like-count">' + (likes[t.id] || 0) + '</span>' +
+      (opts.noComment ? '' : '<button class="icon-btn" onclick="openComments(\'' + t.id + '\')"><i class="ti ti-message"></i></button><span class="comment-count">' + (lc || '') + '</span>') +
+      '<button class="icon-btn' + (inPl ? ' in-playlist' : '') + '" onclick="addToPlaylist(\'' + t.id + '\')"><i class="ti ti-playlist-add"></i></button>' +
+      (opts.noTrash ? '' : '<button class="icon-btn" onclick="removeTrack(\'' + t.id + '\')"><i class="ti ti-trash"></i></button>') +
+    '</div></div>' +
+    ((supaTrack[t.id] || []).length ? '<div style="padding:0 12px 8px;margin-top:-4px">' + renderSupaList(supaTrack[t.id], 'このトラックへの投げ銭') + '</div>' : '');
+}
+
+function renderTracks() {
+  var list = document.getElementById('track-list');
+  var src = tracks;
+  if (feedTab === 'follow') {
+    var fl = followingList();
+    src = [];
+    for (var i = 0; i < tracks.length; i++) {
+      for (var j = 0; j < fl.length; j++) if (fl[j] === tracks[i].uploader) { src.push(tracks[i]); break; }
+    }
+  }
+  var filtered = feedFilter === 'all' ? src : [];
+  if (feedFilter !== 'all') for (var i = 0; i < src.length; i++) if (src[i].cat === feedFilter) filtered.push(src[i]);
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty"><i class="ti ti-music-off"></i><p>' + (feedTab === 'follow' ? 'フォロー中のユーザーの投稿がありません' : 'まだ曲がありません') + '</p></div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < filtered.length; i++) html += trackRowHtml(filtered[i], tracks.indexOf(filtered[i]));
+  list.innerHTML = html;
+}
+
+/* ---- ranking ---- */
+function calcScore(t) {
+  var playPts  = (plays[t.id]||{})[currentPeriod] || 0;
+  var likePts  = (likes[t.id] || 0) * 5;
+  var supaPts  = totalPts(supaTrack[t.id] || []) * 50;
+  return playPts + likePts + supaPts;
+}
+function renderRankBlock(src, label, color) {
+  if (!src.length) return '';
+  var sorted = [];
+  for (var i = 0; i < src.length; i++) sorted.push({t:src[i], count:calcScore(src[i])});
+  sorted.sort(function(a,b){ return b.count - a.count; });
+  var max = sorted[0].count || 1; var medals = ['🥇','🥈','🥉']; var rows = '';
+  for (var i = 0; i < sorted.length; i++) {
+    var t = sorted[i].t; var cnt = sorted[i].count; var ci = catInfo(t.cat);
+    var tIdx = tracks.indexOf(t); var spPts = totalPts(supaTrack[t.id]);
+    rows += '<div class="rank-item ' + (i < 3 ? 'rank-' + (i+1) : 'rank-other') + '" onclick="playTrack(' + tIdx + ')">' +
+      '<div class="rank-badge">' + (i < 3 ? medals[i] : i+1) + '</div>' +
+      '<div class="rank-thumb">' + thumbHtml(t, 36) + '</div>' +
+      '<div class="rank-info"><div class="rank-title">' + t.name + '</div>' +
+      '<div class="rank-plays">' + (color !== '#888' ? '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' : '') +
+      '<i class="ti ti-player-play" style="font-size:9px"></i><span>' + (plays[t.id]||{})[currentPeriod]||0 + '再生</span>' +
+      '<span style="color:#e24b4a;font-size:10px">♥' + (likes[t.id]||0) + '</span>' +
+      '<span style="font-size:10px;color:#555;font-weight:500">合計 ' + cnt + 'pt</span>' +
+      (spPts > 0 ? '<span style="color:#c4980a;font-size:10px">🪙' + spPts + 'pt</span>' : '') + '</div></div>' +
+      '<div class="rank-bar-wrap"><div class="rank-bar" style="width:' + Math.round(cnt/max*100) + '%;background:' + color + '"></div></div>' +
+      '<button class="rank-play-btn" onclick="event.stopPropagation();playTrack(' + tIdx + ')"><i class="ti ti-player-play"></i></button></div>';
+  }
+  return '<div style="margin-bottom:1.5rem">' +
+    '<div style="display:flex;align-items:center;gap:6px;margin-bottom:.6rem">' +
+    (color !== '#888' ? '<span style="width:9px;height:9px;border-radius:50%;background:' + color + ';display:inline-block"></span>' : '<i class="ti ti-list-numbers" style="font-size:13px;color:#888"></i>') +
+    '<span style="font-size:12px;font-weight:500;color:' + color + '">' + label + '</span>' +
+    '<span style="font-size:10px;color:#bbb">' + src.length + '曲</span></div>' +
+    '<div class="rank-list">' + rows + '</div></div>';
+}
+function setRankCat(v) { rankCat = v; renderRanking(); }
+function setRankGenre(v) { rankGenre = v; renderRanking(); }
+
+function renderRanking() {
+  // セレクトの選択肢を更新
+  var catSel = document.getElementById('rank-cat-select');
+  var genSel = document.getElementById('rank-genre-select');
+  if (catSel) {
+    var catHtml = '<option value="">カテゴリーを絞る</option>';
+    for (var i = 0; i < CATS.length; i++) catHtml += '<option value="' + CATS[i].id + '">' + CATS[i].label + '</option>';
+    catSel.innerHTML = catHtml; catSel.value = rankCat;
+  }
+  if (genSel) {
+    var genHtml = '<option value="">ジャンルを絞る</option>';
+    for (var i = 0; i < GENRES.length; i++) genHtml += '<option value="' + GENRES[i] + '">' + GENRES[i] + '</option>';
+    genSel.innerHTML = genHtml; genSel.value = rankGenre;
+  }
+
+  var sections = document.getElementById('rank-sections');
+  if (!tracks.length) { sections.innerHTML = '<div class="empty-rank"><i class="ti ti-trophy"></i><p>曲をアップロードするとランキングが表示されます</p></div>'; return; }
+
+  // カテゴリー or ジャンルで絞り込み中なら総合のみ
+  if (rankCat || rankGenre) {
+    var filtered = tracks.filter(function(t) {
+      var inCat = !rankCat || t.cat === rankCat;
+      var inGen = !rankGenre || (t.genre && t.genre === rankGenre);
+      return inCat && inGen;
+    });
+    var label = '';
+    if (rankCat) { var ci = catInfo(rankCat); label = ci.label + 'ランキング'; }
+    if (rankGenre) label += (label ? ' / ' : '') + rankGenre + 'ランキング';
+    sections.innerHTML = filtered.length
+      ? renderRankBlock(filtered, label, rankCat ? catInfo(rankCat).color : '#3a8fb5')
+      : '<div class="empty-rank"><i class="ti ti-trophy"></i><p>この条件の曲がありません</p></div>';
+    return;
+  }
+
+  // 絞り込みなし → 総合 + カテゴリー別
+  var used = {};
+  for (var i = 0; i < tracks.length; i++) used[tracks[i].cat] = true;
+  var html = renderRankBlock(tracks, '総合ランキング', '#888');
+  for (var i = 0; i < CATS.length; i++) {
+    var c = CATS[i]; if (!used[c.id]) continue;
+    var src = tracks.filter(function(cid){ return function(t){ return t.cat === cid; }; }(c.id));
+    html += renderRankBlock(src, c.label + ' ランキング', c.color);
+  }
+  sections.innerHTML = html;
+}
+function switchPeriod(p, btn) {
+  currentPeriod = p;
+  var btns = document.querySelectorAll('.period-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+  btn.classList.add('active'); renderRanking();
+}
+
+/* ---- user page ---- */
+function renderUserPage() {
+  var content = document.getElementById('user-page-content');
+  if (!user) {
+    content.innerHTML = '<div class="not-registered"><i class="ti ti-user-circle"></i><p>ユーザー登録をするとプロフィールページが作れます</p>' +
+      '<button class="btn-primary" style="width:auto;padding:9px 24px;margin:0 auto" onclick="openRegModal(false)"><i class="ti ti-user-plus" style="margin-right:5px"></i>登録する</button></div>';
+    return;
+  }
+  var myTracks = [];
+  for (var i = 0; i < tracks.length; i++) if (tracks[i].uploader === user.name) myTracks.push(tracks[i]);
+  var totalPl = 0; for (var i = 0; i < myTracks.length; i++) { var p = plays[myTracks[i].id]; if (p) totalPl += p.daily; }
+  var totalLk = 0; for (var i = 0; i < myTracks.length; i++) totalLk += (likes[myTracks[i].id] || 0);
+  var uSupa = supaUser[user.name] || [];   var uPts = totalPts(uSupa);
+  var uAmt = 0; for (var i = 0; i < uSupa.length; i++) uAmt += uSupa[i].amt;
+  var flCount = followingList().length;
+  var frCount = followerCounts[user.name] || 0;
+
+  var gridHtml = '';
+  for (var i = 0; i < myTracks.length; i++) {
+    var t = myTracks[i]; var tIdx = tracks.indexOf(t); var playing = currentIdx === tIdx;
+    var ci = catInfo(t.cat); var spPts = totalPts(supaTrack[t.id]);
+    gridHtml += '<div class="grid-card' + (playing ? ' playing' : '') + '" onclick="playTrack(' + tIdx + ')">' +
+      '<div class="grid-thumb">' + (t.thumbUrl ? '<img src="' + t.thumbUrl + '">' : '<i class="ti ti-' + (t.isVideo ? 'video' : 'music') + '"></i>') +
+      '<div class="grid-ov"><i class="ti ti-' + (playing && !audio.paused ? 'player-pause' : 'player-play') + '"></i></div></div>' +
+      '<div class="grid-info"><div class="grid-title">' + t.name + '</div>' +
+      '<div class="grid-meta"><span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' + (t.duration ? fmtTime(t.duration) : '') + '</div>' +
+      (spPts > 0 ? '<div style="font-size:10px;color:#c4980a;margin-top:3px">🪙' + spPts + 'pt</div>' : '') +
+      '</div></div>';
+  }
+
+  content.innerHTML =
+    '<div class="user-hero">' +
+      '<div class="user-hero-top">' +
+        '<div class="user-avatar-lg">' + (user.avatarUrl ? '<img src="' + user.avatarUrl + '">' : '<i class="ti ti-user"></i>') + '</div>' +
+        '<div class="user-meta">' +
+          '<div class="user-name">' + user.name + '</div>' +
+          (user.bio ? '<div class="user-bio">' + user.bio + '</div>' : '') +
+          '<div class="user-stats">' +
+            '<div class="stat"><strong>' + myTracks.length + '</strong> 投稿</div>' +
+            '<div class="stat"><strong>' + totalPl + '</strong> 再生</div>' +
+            '<div class="stat"><strong>' + totalLk + '</strong> いいね</div>' +
+            
+            '<div class="stat clickable" onclick="openFollowModal()"><strong>' + flCount + '</strong> フォロー中</div>' +
+            '<div class="stat"><strong>' + frCount + '</strong> フォロワー</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:7px;align-self:flex-start">' +
+          '<button class="btn-ghost" onclick="openRegModal(true)"><i class="ti ti-edit" style="margin-right:3px"></i>編集</button>' +
+          '<button class="supa-btn" onclick="openSupaModal(\'user\',\'' + user.name + '\')"><i class="ti ti-coin"></i>投げ銭</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    (uSupa.length ? renderSupaList(uSupa, '受け取った投げ銭ランキング') : '') +
+    '<div class="wall-box">' +
+      '<div class="wall-title"><i class="ti ti-message-2" style="font-size:13px"></i>一言</div>' +
+      '<div class="wall-comments" id="wall-comments-list">' + wallListHtml() + '</div>' +
+      '<div class="wall-input-row">' +
+        '<input type="text" class="wall-input" id="wall-input" placeholder="一言コメントを書く..." maxlength="100" onkeydown="if(event.key===\'Enter\')addWallComment()">' +
+        '<button class="wall-send" onclick="addWallComment()"><i class="ti ti-send"></i></button>' +
+      '</div>' +
+    '</div>' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">' +
+      '<div class="section-title" style="margin:0">投稿した作品 (' + myTracks.length + ')</div>' +
+      '<button onclick="scrollToUpload()" style="background:#1a1a1a;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px"><i class="ti ti-upload"></i>投稿する</button>' +
+    '</div>' +
+    (myTracks.length === 0 ? '<div class="empty"><i class="ti ti-music-off"></i><p>まだ投稿がありません</p></div>' : '<div class="track-grid">' + gridHtml + '</div>');
+
+  var wlist = document.getElementById('wall-comments-list');
+  if (wlist) wlist.scrollTop = wlist.scrollHeight;
+}
+function scrollToUpload() {
+  switchTab('feed');
+  setTimeout(function() {
+    var area = document.getElementById('upload-area');
+    if (area) area.scrollIntoView({behavior:'smooth', block:'start'});
+    var zone = document.getElementById('upload-zone');
+    if (zone) { zone.style.borderColor = '#1a1a1a'; setTimeout(function(){ zone.style.borderColor = ''; }, 1200); }
+  }, 100);
+}
+
+/* ---- search ---- */
+function renderSearchPage() {
+  var page = document.getElementById('search-page');
+  var catOpts = '<option value="">カテゴリーを絞る</option>';
+  for (var i = 0; i < CATS.length; i++) catOpts += '<option value="' + CATS[i].id + '">' + CATS[i].label + '</option>';
+  var genOpts = '<option value="">ジャンルを絞る</option>';
+  for (var i = 0; i < GENRES.length; i++) genOpts += '<option value="' + GENRES[i] + '">' + GENRES[i] + '</option>';
+  page.innerHTML =
+    '<div class="search-box"><i class="ti ti-search search-icon"></i>' +
+    '<input type="text" id="search-input" placeholder="タイトル・ユーザー名・ジャンルで検索..." value="' + searchQuery + '" oninput="onSearchInput(this.value)"></div>' +
+    '<div class="sf-btns">' +
+    '<button class="sf-btn' + (searchFilter==='all'?' active':'') + '" onclick="setSearchFilter(\'all\')">すべて</button>' +
+    '<button class="sf-btn' + (searchFilter==='track'?' active':'') + '" onclick="setSearchFilter(\'track\')"><i class="ti ti-music" style="font-size:10px;margin-right:2px"></i>曲</button>' +
+    '<button class="sf-btn' + (searchFilter==='user'?' active':'') + '" onclick="setSearchFilter(\'user\')"><i class="ti ti-user" style="font-size:10px;margin-right:2px"></i>ユーザー</button>' +
+    '</div>' +
+    '<div class="search-selects"><select id="srch-cat" onchange="setSearchCat(this.value)">' + catOpts + '</select>' +
+    '<select id="srch-gen" onchange="setSearchGenre(this.value)">' + genOpts + '</select></div>' +
+    '<div id="search-results-area"></div>';
+  document.getElementById('srch-cat').value = searchCat;
+  document.getElementById('srch-gen').value = searchGenre;
+  runSearch();
+}
+function onSearchInput(v) { searchQuery = v; runSearch(); }
+function setSearchFilter(f) { searchFilter = f; renderSearchPage(); }
+function setSearchCat(v) { searchCat = v; runSearch(); }
+function setSearchGenre(v) { searchGenre = v; runSearch(); }
+function runSearch() {
+  var area = document.getElementById('search-results-area');
+  if (!area) return;
+  var q = searchQuery.trim().toLowerCase();
+  if (!q && !searchCat && !searchGenre) { area.innerHTML = '<div class="no-results"><i class="ti ti-search"></i><p>キーワードを入力して検索してみよう</p></div>'; return; }
+  var matchedTracks = [];
+  if (searchFilter !== 'user') {
+    for (var i = 0; i < tracks.length; i++) {
+      var t = tracks[i];
+      var inCat = !searchCat || t.cat === searchCat;
+      var inQ = !q || t.name.toLowerCase().indexOf(q) >= 0 || (t.uploader && t.uploader.toLowerCase().indexOf(q) >= 0);
+      if (inCat && inQ) matchedTracks.push(t);
+    }
+  }
+  var matchedUsers = [];
+  if (searchFilter !== 'track' && user) {
+    var uMatch = !q || user.name.toLowerCase().indexOf(q) >= 0 || (user.bio && user.bio.toLowerCase().indexOf(q) >= 0);
+    if (uMatch) matchedUsers.push(user);
+  }
+  if (!matchedTracks.length && !matchedUsers.length) { area.innerHTML = '<div class="no-results"><i class="ti ti-mood-sad"></i><p>「' + searchQuery + '」の結果は見つかりませんでした</p></div>'; return; }
+  var html = '';
+  if (matchedUsers.length) {
+    html += '<div class="search-section-lbl"><i class="ti ti-user" style="font-size:11px"></i>ユーザー</div>';
+    for (var i = 0; i < matchedUsers.length; i++) {
+      var u = matchedUsers[i];
+      var mc = 0; for (var j = 0; j < tracks.length; j++) if (tracks[j].uploader === u.name) mc++;
+      var isF = isFollowing(u.name);
+      html += '<div class="user-result">' +
+        '<div class="user-result-av">' + (u.avatarUrl ? '<img src="' + u.avatarUrl + '">' : '<i class="ti ti-user" style="font-size:16px;color:#ccc"></i>') + '</div>' +
+        '<div style="flex:1;min-width:0;cursor:pointer" onclick="switchTab(\'user\')">' +
+          '<div style="font-size:13px;font-weight:500">' + u.name + '</div>' +
+          '<div style="font-size:11px;color:#999">' + (u.bio||'自己紹介なし') + '</div>' +
+          '<div style="font-size:10px;color:#bbb;margin-top:2px">' + mc + '曲投稿</div>' +
+        '</div>' +
+        (user && u.name !== user.name ? '<button onclick="toggleFollow(\'' + u.name + '\')" class="follow-btn ' + (isF?'following':'not-following') + '">' + (isF?'<i class="ti ti-user-check"></i>フォロー中':'<i class="ti ti-user-plus"></i>フォロー') + '</button>' : '') +
+        '</div>';
+    }
+  }
+  if (matchedTracks.length) {
+    html += '<div class="search-section-lbl" style="margin-top:' + (matchedUsers.length?'1rem':'0') + '"><i class="ti ti-music" style="font-size:11px"></i>曲（' + matchedTracks.length + '件）</div>';
+    html += '<div class="track-list">';
+    for (var i = 0; i < matchedTracks.length; i++) html += trackRowHtml(matchedTracks[i], tracks.indexOf(matchedTracks[i]), {noTrash:true});
+    html += '</div>';
+  }
+  area.innerHTML = html;
+}
+
+/* ---- playback ---- */
+function playTrack(i) {
+  if (currentIdx === i) { togglePlay(); return; }
+  currentIdx = i; var t = tracks[i];
+  if (!plays[t.id]) plays[t.id] = {daily:0, weekly:0, monthly:0, yearly:0, alltime:0};
+  plays[t.id].daily++; plays[t.id].weekly++; plays[t.id].monthly++; plays[t.id].yearly++; plays[t.id].alltime++;
+  audio.src = t.url; audio.play();
+  document.getElementById('p-title').textContent = t.name;
+  document.getElementById('p-artist').textContent = catInfo(t.cat).label + (t.uploader ? ' · ' + t.uploader : '');
+  var pThumb = document.getElementById('p-thumb');
+  pThumb.innerHTML = t.thumbUrl ? '<img src="' + t.thumbUrl + '" style="width:40px;height:40px;object-fit:cover">' : '<i class="ti ti-' + (t.isVideo ? 'video' : 'music') + '"></i>';
+  document.getElementById('main-play-btn').innerHTML = '<i class="ti ti-player-pause"></i>';
+  renderTracks(); renderRanking(); renderPlaylist(); renderUserPage();
+}
+function togglePlay() {
+  if (!tracks.length) return;
+  if (currentIdx < 0) { playTrack(0); return; }
+  if (audio.paused) { audio.play(); document.getElementById('main-play-btn').innerHTML = '<i class="ti ti-player-pause"></i>'; }
+  else { audio.pause(); document.getElementById('main-play-btn').innerHTML = '<i class="ti ti-player-play"></i>'; }
+  renderTracks(); renderUserPage();
+}
+function prevTrack() { if (tracks.length) playTrack((currentIdx - 1 + tracks.length) % tracks.length); }
+function nextTrack() { if (tracks.length) playTrack((currentIdx + 1) % tracks.length); }
+audio.ontimeupdate = function() {
+  var pct = audio.duration ? (audio.currentTime / audio.duration * 100) : 0;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('p-cur').textContent = fmtTime(audio.currentTime);
+  document.getElementById('p-dur').textContent = fmtTime(audio.duration);
+};
+audio.onended = function() { nextTrack(); };
+function seek(e) { if (!audio.duration) return; var r = document.getElementById('prog-bar').getBoundingClientRect(); audio.currentTime = (e.clientX - r.left) / r.width * audio.duration; }
+function setVolume(v) { audio.volume = v / 100; }
+audio.volume = 0.8;
+
+function toggleLike(id) { likes[id] = (likes[id]||0) === 0 ? 1 : 0; renderTracks(); showToast(likes[id] ? 'いいね！' : 'いいねを取り消しました'); }
+function removeTrack(id) {
+  var i = -1; for (var j = 0; j < tracks.length; j++) if (tracks[j].id === id) { i = j; break; }
+  if (i < 0) return;
+  URL.revokeObjectURL(tracks[i].url);
+  if (tracks[i].thumbUrl) URL.revokeObjectURL(tracks[i].thumbUrl);
+  tracks.splice(i, 1); playlist = playlist.filter(function(p){ return p.id !== id; });
+  if (currentIdx === i) { audio.pause(); currentIdx = -1; } else if (currentIdx > i) currentIdx--;
+  renderTracks(); renderRanking(); renderPlaylist(); renderFilterBar(); renderUserPage();
+}
+function openComments(id) {
+  openCommentTrackId = id;
+  var t = null; for (var i = 0; i < tracks.length; i++) if (tracks[i].id === id) { t = tracks[i]; break; }
+  document.getElementById('cp-title').textContent = (t ? t.name : '') + 'のコメント';
+  renderComments(); document.getElementById('comments-panel').classList.add('open');
+}
+function toggleComments() { document.getElementById('comments-panel').classList.toggle('open'); }
+function renderComments() {
+  var body = document.getElementById('cp-body'); var cs = commentsData[openCommentTrackId] || [];
+  if (!cs.length) { body.innerHTML = '<p style="font-size:12px;color:#bbb;padding:8px">まだコメントがありません</p>'; return; }
+  var html = '';
+  for (var i = 0; i < cs.length; i++) html += '<div class="comment"><div class="comment-user">' + cs[i].user + '</div><div class="comment-text">' + cs[i].text + '</div><div class="comment-time">' + cs[i].time + '</div></div>';
+  body.innerHTML = html; body.scrollTop = body.scrollHeight;
+}
+function addComment() {
+  var inp = document.getElementById('comment-input'); var text = inp.value.trim();
+  if (!text || !openCommentTrackId) return;
+  commentsData[openCommentTrackId].push({user:user?user.name:'ゲスト', text:text, time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})});
+  inp.value = ''; renderComments(); renderTracks();
+}
+function addToPlaylist(id) {
+  var t = null; for (var i = 0; i < tracks.length; i++) if (tracks[i].id === id) { t = tracks[i]; break; }
+  if (!t) return;
+  var idx = -1; for (var i = 0; i < playlist.length; i++) if (playlist[i].id === id) { idx = i; break; }
+  if (idx >= 0) { playlist.splice(idx, 1); showToast('プレイリストから削除しました'); }
+  else { playlist.push(t); showToast('プレイリストに追加しました'); }
+  renderTracks(); renderPlaylist();
+}
+var plCat = '', plGenre = '';
+function setPlCat(v) { plCat = v; renderPlaylist(); }
+function setPlGenre(v) { plGenre = v; renderPlaylist(); }
+
+function renderPlaylist() {
+  document.getElementById('pl-count').textContent = playlist.length;
+
+  // セレクト更新
+  var catSel = document.getElementById('pl-cat-select');
+  var genSel = document.getElementById('pl-genre-select');
+  if (catSel) {
+    var ch = '<option value="">カテゴリーで絞る</option>';
+    for (var i = 0; i < CATS.length; i++) ch += '<option value="' + CATS[i].id + '">' + CATS[i].label + '</option>';
+    catSel.innerHTML = ch; catSel.value = plCat;
+  }
+  if (genSel) {
+    var gh = '<option value="">ジャンルで絞る</option>';
+    for (var i = 0; i < GENRES.length; i++) gh += '<option value="' + GENRES[i] + '">' + GENRES[i] + '</option>';
+    genSel.innerHTML = gh; genSel.value = plGenre;
+  }
+
+  var sections = document.getElementById('pl-sections');
+  if (!playlist.length) {
+    sections.innerHTML = '<div class="empty"><i class="ti ti-playlist"></i><p>プレイリストはまだ空です</p></div>';
+    return;
+  }
+
+  // 絞り込みフィルター適用
+  var filtered = playlist.filter(function(t) {
+    var inCat = !plCat || t.cat === plCat;
+    var inGen = !plGenre || (t.genre && t.genre === plGenre);
+    return inCat && inGen;
+  });
+
+  if (plCat || plGenre) {
+    // 絞り込み中は1セクションのみ
+    if (!filtered.length) {
+      sections.innerHTML = '<div class="empty"><i class="ti ti-playlist"></i><p>この条件の曲がありません</p></div>';
+      return;
+    }
+    sections.innerHTML = renderPlBlock(filtered, null);
+    return;
+  }
+
+  // 絞り込みなし → 総合 + カテゴリー別
+  var used = {};
+  for (var i = 0; i < playlist.length; i++) used[playlist[i].cat] = true;
+  var html = renderPlBlock(playlist, '総合');
+  for (var i = 0; i < CATS.length; i++) {
+    var c = CATS[i]; if (!used[c.id]) continue;
+    var src = playlist.filter(function(cid){ return function(t){ return t.cat === cid; }; }(c.id));
+    html += renderPlBlock(src, c.label, c.color);
+  }
+  sections.innerHTML = html;
+}
+
+function renderPlBlock(src, label, color) {
+  if (!src.length) return '';
+  var rows = '';
+  for (var i = 0; i < src.length; i++) {
+    rows += trackRowHtml(src[i], tracks.indexOf(src[i]), {noTrash:true});
+  }
+  var header = '';
+  if (label) {
+    header = '<div style="display:flex;align-items:center;gap:6px;margin-bottom:.5rem">' +
+      (color ? '<span style="width:9px;height:9px;border-radius:50%;background:' + color + ';display:inline-block;flex-shrink:0"></span>' : '<i class="ti ti-list-numbers" style="font-size:13px;color:#888"></i>') +
+      '<span style="font-size:12px;font-weight:500;color:' + (color||'#888') + '">' + label + '</span>' +
+      '<span style="font-size:10px;color:#bbb">' + src.length + '曲</span>' +
+      '</div>';
+  }
+  return '<div style="margin-bottom:1.4rem">' + header + '<div class="track-list">' + rows + '</div></div>';
+}
+function switchTab(tab) {
+  var tabIds = {feed:'tab-feed',ranking:'tab-ranking',playlist:'tab-playlist-inline',user:'tab-user',search:'tab-search'};
+  var allTabs = document.querySelectorAll('.tab-content');
+  for (var i = 0; i < allTabs.length; i++) allTabs[i].classList.remove('active');
+  var navBtns = document.querySelectorAll('.bottom-nav button');
+  for (var i = 0; i < navBtns.length; i++) navBtns[i].classList.remove('active');
+  if (tabIds[tab]) document.getElementById(tabIds[tab]).classList.add('active');
+  var bBtn = document.getElementById('bnav-' + tab);
+  if (bBtn) bBtn.classList.add('active');
+  document.getElementById('comments-panel').classList.remove('open');
+  if (tab === 'ranking') renderRanking();
+  if (tab === 'playlist') renderPlaylist();
+  if (tab === 'user') renderUserPage();
+  if (tab === 'search') renderSearchPage();
+}
+function showToast(msg) {
+  var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(function(){ t.classList.remove('show'); }, 5000);
+}
+function onDragOver(e) { e.preventDefault(); var z = document.getElementById('upload-zone'); if (z) z.classList.add('drag'); }
+function onDragLeave() { var z = document.getElementById('upload-zone'); if (z) z.classList.remove('drag'); }
+function onDrop(e) { e.preventDefault(); var z = document.getElementById('upload-zone'); if (z) z.classList.remove('drag'); onFileSelect(e.dataTransfer.files); }
+
+var mos = document.querySelectorAll('.modal-overlay');
+for (var i = 0; i < mos.length; i++) {
+  mos[i].addEventListener('click', function(e){ if (e.target === this) this.classList.remove('open'); });
+}
+
+renderUploadArea(); renderTracks(); renderRanking(); renderFilterBar(); renderUserPage();
+</script>
+</body>
+</html>

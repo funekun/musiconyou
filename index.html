@@ -1495,7 +1495,16 @@ function openComments(id) {
   openCommentTrackId = id;
   var t = null; for (var i = 0; i < tracks.length; i++) if (tracks[i].id === id) { t = tracks[i]; break; }
   document.getElementById('cp-title').textContent = (t ? t.name : '') + 'のコメント';
-  renderComments(); document.getElementById('comments-panel').classList.add('open');
+  // DBからコメント読み込み
+  sb.from('comments').select('*').eq('track_id', id).order('created_at', {ascending: true}).then(function(res) {
+    if (!res.error && res.data) {
+      commentsData[id] = res.data.map(function(c) {
+        return { user: c.user_name, text: c.body, time: new Date(c.created_at).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit'}), user_id: c.user_id, db_id: c.id };
+      });
+    }
+    renderComments();
+  });
+  document.getElementById('comments-panel').classList.add('open');
 }
 function toggleComments() { document.getElementById('comments-panel').classList.toggle('open'); }
 function renderComments() {
@@ -1505,11 +1514,24 @@ function renderComments() {
   for (var i = 0; i < cs.length; i++) html += '<div class="comment"><div class="comment-user">' + cs[i].user + '</div><div class="comment-text">' + cs[i].text + '</div><div class="comment-time">' + cs[i].time + '</div></div>';
   body.innerHTML = html; body.scrollTop = body.scrollHeight;
 }
-function addComment() {
+async function addComment() {
   var inp = document.getElementById('comment-input'); var text = inp.value.trim();
   if (!text || !openCommentTrackId) return;
-  commentsData[openCommentTrackId].push({user:user?user.name:'ゲスト', text:text, time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})});
-  inp.value = ''; renderComments(); renderTracks();
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  var res = await sb.from('comments').insert({
+    track_id: openCommentTrackId,
+    user_id: currentAuthUser.id,
+    user_name: user ? user.name : 'ゲスト',
+    body: text
+  }).select().single();
+  if (!res.error && res.data) {
+    var c = res.data;
+    if (!commentsData[openCommentTrackId]) commentsData[openCommentTrackId] = [];
+    commentsData[openCommentTrackId].push({ user: c.user_name, text: c.body, time: new Date(c.created_at).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit'}), user_id: c.user_id, db_id: c.id });
+    inp.value = ''; renderComments(); renderTracks();
+  } else {
+    showToast('コメントの送信に失敗しました');
+  }
 }
 function addToPlaylist(id) {
   var t = null; for (var i = 0; i < tracks.length; i++) if (tracks[i].id === id) { t = tracks[i]; break; }

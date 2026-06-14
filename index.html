@@ -1530,7 +1530,7 @@ async function addComment() {
     commentsData[openCommentTrackId].push({ user: c.user_name, text: c.body, time: new Date(c.created_at).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit'}), user_id: c.user_id, db_id: c.id });
     inp.value = ''; renderComments(); renderTracks();
   } else {
-    showToast('コメントの送信に失敗しました');
+    showToast('エラー: ' + (res.error ? res.error.message : '不明'));
   }
 }
 function addToPlaylist(id) {

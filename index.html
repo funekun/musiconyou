@@ -531,6 +531,15 @@ async function loadUserProfile(authUser) {
     user = {id: authUser.id, name: '', bio: '', avatarUrl: null};
     openRegModal(false);
   }
+  // フォロー情報をDBから読み込む
+  var fRes = await sb.from('follows').select('following_id, profiles!follows_following_id_fkey(name)').eq('follower_id', authUser.id);
+  if (!fRes.error && fRes.data) {
+    following = {};
+    for (var i = 0; i < fRes.data.length; i++) {
+      var fname = fRes.data[i].profiles && fRes.data[i].profiles.name;
+      if (fname) following[fname] = true;
+    }
+  }
   updateNavUser();
   renderUploadArea();
   renderUserPage();
@@ -700,14 +709,21 @@ function nowTime() {
 
 /* ---- follow ---- */
 function isFollowing(name) { return !!following[name]; }
-function toggleFollow(name) {
+async function toggleFollow(name) {
   if (!user) { showToast('フォローにはユーザー登録が必要です'); return; }
   if (name === user.name) { showToast('自分はフォローできません'); return; }
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  // フォロー対象のuser_idをprofilesから取得
+  var profRes = await sb.from('profiles').select('id').eq('name', name).single();
+  if (profRes.error || !profRes.data) { showToast('ユーザーが見つかりません'); return; }
+  var targetId = profRes.data.id;
   if (following[name]) {
+    await sb.from('follows').delete().eq('follower_id', currentAuthUser.id).eq('following_id', targetId);
     following[name] = false;
     followerCounts[name] = Math.max(0, (followerCounts[name] || 1) - 1);
     showToast(name + ' のフォローを解除しました');
   } else {
+    await sb.from('follows').insert({ follower_id: currentAuthUser.id, following_id: targetId });
     following[name] = true;
     followerCounts[name] = (followerCounts[name] || 0) + 1;
     showToast(name + ' をフォローしました！');

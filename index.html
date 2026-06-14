@@ -180,7 +180,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;height:56px;position:st
 .icon-btn{background:none;border:none;cursor:pointer;color:#bbb;padding:3px;border-radius:5px;display:flex;align-items:center;font-size:15px}
 .icon-btn:hover{color:#555;background:#f0f0ec}
 .icon-btn.liked{color:#e24b4a}
-.like-count,.comment-count{font-size:10px;color:#bbb;min-width:12px}
+.like-count,.comment-count{font-size:10px;color:#555;min-width:12px;font-weight:500}
 .supa-icon-btn{background:none;border:none;cursor:pointer;padding:3px 5px;border-radius:5px;font-size:12px;color:#c4980a}
 .supa-icon-btn:hover{background:#fff8e1}
 .rank-controls{display:flex;gap:6px;margin-bottom:1.2rem;flex-wrap:wrap}
@@ -1195,7 +1195,7 @@ function trackRowHtml(t, idx, opts) {
       '<div class="track-meta">' +
         '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' +
         (t.uploader ? '<span style="font-size:10px;color:#bbb"><i class="ti ti-user" style="font-size:9px"></i> ' + t.uploader + '</span>' : '') +
-        '<span style="font-size:10px;color:#bbb"><i class="ti ti-player-play" style="font-size:9px"></i> ' + ((plays[t.id]||{}).alltime||0) + '</span>' +
+        '<span style="font-size:10px;color:#1a1a1a;font-weight:500"><i class="ti ti-player-play" style="font-size:9px"></i> ' + ((plays[t.id]||{}).alltime||0) + '</span>' +
         (spPts > 0 ? '<span style="color:#c4980a;font-size:10px">🪙' + spPts + 'pt</span>' : '') +
       '</div>' +
     '</div>' +
@@ -1348,9 +1348,9 @@ function renderUserPage() {
       '<div class="grid-ov"><i class="ti ti-' + (playing && !audio.paused ? 'player-pause' : 'player-play') + '"></i></div></div>' +
       '<div class="grid-info"><div class="grid-title">' + t.name + '</div>' +
       '<div class="grid-meta"><span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' + (t.duration ? fmtTime(t.duration) : '') + '</div>' +
-      '<div class="grid-meta" style="margin-top:2px">' +
+      '<div class="grid-meta" style="margin-top:3px;color:#1a1a1a;font-weight:500">' +
         '<span><i class="ti ti-player-play" style="font-size:9px"></i> ' + ((plays[t.id]||{}).alltime||0) + '</span>' +
-        '<span><i class="ti ti-heart" style="font-size:9px"></i> ' + ((window._likeCounts && window._likeCounts[t.id])||0) + '</span>' +
+        '<span style="color:#e24b4a"><i class="ti ti-heart" style="font-size:9px"></i> ' + ((window._likeCounts && window._likeCounts[t.id])||0) + '</span>' +
       '</div>' +
       (spPts > 0 ? '<div style="font-size:10px;color:#c4980a;margin-top:3px">🪙' + spPts + 'pt</div>' : '') +
       '</div></div>';

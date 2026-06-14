@@ -479,7 +479,9 @@ async function loadTracks() {
       uploader: d.uploader_name,
       uploader_id: d.uploader_id,
       duration: d.duration || 0,
-      createdAt: d.created_at || null
+      createdAt: d.created_at || null,
+      description: d.description || '',
+      tags: d.tags || ''
     };
     tracks.push(t);
     commentsData[t.id] = commentsData[t.id] || [];
@@ -974,6 +976,14 @@ function renderUploadArea() {
           '<div class="upload-section-title">タイトル（任意）</div>' +
           '<input type="text" id="track-title-input" placeholder="タイトルを入力（空欄はファイル名）" style="width:100%;padding:8px 12px;border:1px solid #e0e0d8;border-radius:8px;font-size:13px;box-sizing:border-box;outline:none">' +
         '</div>' +
+        '<div class="upload-section">' +
+          '<div class="upload-section-title">紹介文（任意）</div>' +
+          '<textarea id="track-desc-input" placeholder="曲の紹介文を書いてください..." rows="3" style="width:100%;padding:8px 12px;border:1px solid #e0e0d8;border-radius:8px;font-size:13px;box-sizing:border-box;outline:none;resize:vertical;font-family:inherit"></textarea>' +
+        '</div>' +
+        '<div class="upload-section">' +
+          '<div class="upload-section-title">タグ（任意）</div>' +
+          '<input type="text" id="track-tags-input" placeholder="#歌ってみた #アニメ #ボカロ （スペース区切り）" style="width:100%;padding:8px 12px;border:1px solid #e0e0d8;border-radius:8px;font-size:13px;box-sizing:border-box;outline:none">' +
+        '</div>' +
         '<div class="upload-confirm"><button onclick="confirmUpload()"><i class="ti ti-upload"></i> アップロード</button></div>' +
       '</div>' +
     '</div>';
@@ -1059,9 +1069,13 @@ async function confirmUpload() {
   var thumbFile = document.getElementById('thumb-input') && document.getElementById('thumb-input').files[0] || null;
   var cat = pendingCat;
   var filesToUpload = pendingFiles.slice();
-  // タイトルをここで取得（ループ前に）
+  // タイトル・紹介文・タグをここで取得（ループ前に）
   var titleInput = document.getElementById('track-title-input');
   var customTitle = titleInput ? titleInput.value.trim() : '';
+  var descInput = document.getElementById('track-desc-input');
+  var customDesc = descInput ? descInput.value.trim() : '';
+  var tagsInput = document.getElementById('track-tags-input');
+  var customTags = tagsInput ? tagsInput.value.trim() : '';
 
   // サムネイルを先にアップロード（全曲共通）
   var finalThumbUrl = null;
@@ -1106,7 +1120,9 @@ async function confirmUpload() {
         is_video: f.type.indexOf('video/') === 0,
         uploader_name: user.name,
         uploader_id: currentAuthUser.id,
-        duration: Math.round(duration)
+        duration: Math.round(duration),
+        description: customDesc || null,
+        tags: customTags || null
       });
 
       if (insertRes.error) { failCount++; continue; }
@@ -1126,6 +1142,10 @@ async function confirmUpload() {
   if (fi) fi.value = '';
   var ti = document.getElementById('track-title-input');
   if (ti) ti.value = '';
+  var di = document.getElementById('track-desc-input');
+  if (di) di.value = '';
+  var tgi = document.getElementById('track-tags-input');
+  if (tgi) tgi.value = '';
   clearThumb();
 
   // 結果を表示してDBから再読み込み
@@ -1211,7 +1231,8 @@ function trackRowHtml(t, idx, opts) {
         (t.uploader ? '<span style="font-size:10px;color:#bbb"><i class="ti ti-user" style="font-size:9px"></i> ' + t.uploader + '</span>' : '') +
         '<span style="font-size:10px;color:#1a1a1a;font-weight:500"><i class="ti ti-player-play" style="font-size:9px"></i> ' + ((plays[t.id]||{}).alltime||0) + '</span>' +
         (spPts > 0 ? '<span style="color:#c4980a;font-size:10px">🪙' + spPts + 'pt</span>' : '') +
-        (t.createdAt ? '<span style="font-size:9px;color:#ccc">' + fmtDate(t.createdAt) + '</span>' : '') +
+        (t.tags ? t.tags.split(' ').filter(function(tg){return tg.startsWith('#')}).map(function(tg){return '<span onclick="event.stopPropagation();searchByTag(\'' + tg + '\')" style="font-size:10px;color:#4455cc;cursor:pointer">' + tg + '</span>'}).join('') : '') +
+        (t.createdAt ? '<span style="font-size:9px;color:#aaa">' + fmtDate(t.createdAt) + '</span>' : '') +
       '</div>' +
     '</div>' +
     '<div class="track-actions">' +
@@ -1367,7 +1388,8 @@ function renderUserPage() {
         '<span><i class="ti ti-player-play" style="font-size:9px"></i> ' + ((plays[t.id]||{}).alltime||0) + '</span>' +
         '<span style="color:#e24b4a"><i class="ti ti-heart" style="font-size:9px"></i> ' + ((window._likeCounts && window._likeCounts[t.id])||0) + '</span>' +
       '</div>' +
-      (t.createdAt ? '<div style="font-size:9px;color:#ccc;padding:0 9px 7px;line-height:1.5">' + fmtDate(t.createdAt) + '</div>' : '') +
+      (t.tags ? '<div style="padding:0 9px 4px;display:flex;flex-wrap:wrap;gap:3px">' + t.tags.split(' ').filter(function(tg){return tg.startsWith('#')}).map(function(tg){return '<span style="font-size:9px;color:#4455cc">' + tg + '</span>'}).join('') + '</div>' : '') +
+      (t.createdAt ? '<div style="font-size:9px;color:#aaa;padding:0 9px 7px;line-height:1.5">' + fmtDate(t.createdAt) + '</div>' : '') +
       (spPts > 0 ? '<div style="font-size:10px;color:#c4980a;margin-top:3px">🪙' + spPts + 'pt</div>' : '') +
       '</div></div>';
   }
@@ -1446,6 +1468,11 @@ function renderSearchPage() {
   runSearch();
 }
 function onSearchInput(v) { searchQuery = v; runSearch(); }
+function searchByTag(tag) {
+  switchTab('search');
+  searchQuery = tag;
+  setTimeout(function() { renderSearchPage(); }, 50);
+}
 function setSearchFilter(f) { searchFilter = f; renderSearchPage(); }
 function setSearchCat(v) { searchCat = v; runSearch(); }
 function setSearchGenre(v) { searchGenre = v; runSearch(); }
@@ -1459,7 +1486,7 @@ function runSearch() {
     for (var i = 0; i < tracks.length; i++) {
       var t = tracks[i];
       var inCat = !searchCat || t.cat === searchCat;
-      var inQ = !q || t.name.toLowerCase().indexOf(q) >= 0 || (t.uploader && t.uploader.toLowerCase().indexOf(q) >= 0);
+      var inQ = !q || t.name.toLowerCase().indexOf(q) >= 0 || (t.uploader && t.uploader.toLowerCase().indexOf(q) >= 0) || (t.tags && t.tags.toLowerCase().indexOf(q) >= 0) || (t.description && t.description.toLowerCase().indexOf(q) >= 0);
       if (inCat && inQ) matchedTracks.push(t);
     }
   }

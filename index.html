@@ -1195,6 +1195,7 @@ function trackRowHtml(t, idx, opts) {
       '<div class="track-meta">' +
         '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' +
         (t.uploader ? '<span style="font-size:10px;color:#bbb"><i class="ti ti-user" style="font-size:9px"></i> ' + t.uploader + '</span>' : '') +
+        '<span style="font-size:10px;color:#bbb"><i class="ti ti-player-play" style="font-size:9px"></i> ' + ((plays[t.id]||{}).alltime||0) + '</span>' +
         (spPts > 0 ? '<span style="color:#c4980a;font-size:10px">🪙' + spPts + 'pt</span>' : '') +
       '</div>' +
     '</div>' +
@@ -1204,6 +1205,7 @@ function trackRowHtml(t, idx, opts) {
       '<span class="like-count">' + ((window._likeCounts && window._likeCounts[t.id]) || 0) + '</span>' +
       (opts.noComment ? '' : '<button class="icon-btn" onclick="openComments(\'' + t.id + '\')"><i class="ti ti-message"></i></button><span class="comment-count">' + (lc || '') + '</span>') +
       '<button class="icon-btn' + (inPl ? ' in-playlist' : '') + '" onclick="addToPlaylist(\'' + t.id + '\')"><i class="ti ti-playlist-add"></i></button>' +
+      '<span style="font-size:10px;color:' + (inPl ? '#1a1a1a' : '#bbb') + '">' + (inPl ? '✓' : '') + '</span>' +
       (opts.noTrash ? '' : '<button class="icon-btn" onclick="removeTrack(\'' + t.id + '\')"><i class="ti ti-trash"></i></button>') +
     '</div></div>' +
     ((supaTrack[t.id] || []).length ? '<div style="padding:0 12px 8px;margin-top:-4px">' + renderSupaList(supaTrack[t.id], 'このトラックへの投げ銭') + '</div>' : '');
@@ -1251,7 +1253,7 @@ function renderRankBlock(src, label, color) {
       '<div class="rank-thumb">' + thumbHtml(t, 36) + '</div>' +
       '<div class="rank-info"><div class="rank-title">' + t.name + '</div>' +
       '<div class="rank-plays">' + (color !== '#888' ? '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' : '') +
-      '<i class="ti ti-player-play" style="font-size:9px"></i><span>' + (plays[t.id]||{})[currentPeriod]||0 + '再生</span>' +
+      '<i class="ti ti-player-play" style="font-size:9px"></i><span>' + ((plays[t.id]||{}).alltime||0) + '再生</span>' +
       '<span style="color:#e24b4a;font-size:10px">♥' + ((window._likeCounts && window._likeCounts[t.id])||0) + '</span>' +
       '<span style="font-size:10px;color:#555;font-weight:500">合計 ' + cnt + 'pt</span>' +
       (spPts > 0 ? '<span style="color:#c4980a;font-size:10px">🪙' + spPts + 'pt</span>' : '') + '</div></div>' +
@@ -1346,6 +1348,10 @@ function renderUserPage() {
       '<div class="grid-ov"><i class="ti ti-' + (playing && !audio.paused ? 'player-pause' : 'player-play') + '"></i></div></div>' +
       '<div class="grid-info"><div class="grid-title">' + t.name + '</div>' +
       '<div class="grid-meta"><span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' + (t.duration ? fmtTime(t.duration) : '') + '</div>' +
+      '<div class="grid-meta" style="margin-top:2px">' +
+        '<span><i class="ti ti-player-play" style="font-size:9px"></i> ' + ((plays[t.id]||{}).alltime||0) + '</span>' +
+        '<span><i class="ti ti-heart" style="font-size:9px"></i> ' + ((window._likeCounts && window._likeCounts[t.id])||0) + '</span>' +
+      '</div>' +
       (spPts > 0 ? '<div style="font-size:10px;color:#c4980a;margin-top:3px">🪙' + spPts + 'pt</div>' : '') +
       '</div></div>';
   }

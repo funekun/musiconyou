@@ -1045,6 +1045,9 @@ async function confirmUpload() {
   var thumbFile = document.getElementById('thumb-input') && document.getElementById('thumb-input').files[0] || null;
   var cat = pendingCat;
   var filesToUpload = pendingFiles.slice();
+  // タイトルをここで取得（ループ前に）
+  var titleInput = document.getElementById('track-title-input');
+  var customTitle = titleInput ? titleInput.value.trim() : '';
 
   // サムネイルを先にアップロード（全曲共通）
   var finalThumbUrl = null;
@@ -1080,8 +1083,7 @@ async function confirmUpload() {
       });
 
       // 3. tracksテーブルにinsert
-      var titleInput = document.getElementById('track-title-input');
-      var trackName = (titleInput && titleInput.value.trim()) ? titleInput.value.trim() : f.name.replace(/\.[^.]+$/, '');
+      var trackName = customTitle ? customTitle : f.name.replace(/\.[^.]+$/, '');
       var insertRes = await sb.from('tracks').insert({
         name: trackName,
         file_url: fileUrl,

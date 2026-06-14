@@ -956,6 +956,10 @@ function renderUploadArea() {
             '</div>' +
           '</div>' +
         '</div>' +
+        '<div class="upload-section">' +
+          '<div class="upload-section-title">タイトル（任意）</div>' +
+          '<input type="text" id="track-title-input" placeholder="タイトルを入力（空欄はファイル名）" style="width:100%;padding:8px 12px;border:1px solid #e0e0d8;border-radius:8px;font-size:13px;box-sizing:border-box;outline:none">' +
+        '</div>' +
         '<div class="upload-confirm"><button onclick="confirmUpload()"><i class="ti ti-upload"></i> アップロード</button></div>' +
       '</div>' +
     '</div>';
@@ -1076,7 +1080,8 @@ async function confirmUpload() {
       });
 
       // 3. tracksテーブルにinsert
-      var trackName = f.name.replace(/\.[^.]+$/, '');
+      var titleInput = document.getElementById('track-title-input');
+      var trackName = (titleInput && titleInput.value.trim()) ? titleInput.value.trim() : f.name.replace(/\.[^.]+$/, '');
       var insertRes = await sb.from('tracks').insert({
         name: trackName,
         file_url: fileUrl,
@@ -1103,6 +1108,8 @@ async function confirmUpload() {
   if (pf) pf.innerHTML = '';
   var fi = document.getElementById('file-input');
   if (fi) fi.value = '';
+  var ti = document.getElementById('track-title-input');
+  if (ti) ti.value = '';
   clearThumb();
 
   // 結果を表示してDBから再読み込み

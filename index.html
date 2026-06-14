@@ -493,6 +493,27 @@ async function loadTracks() {
     }
   }
 
+  // likesをDBから取得
+  var likesRes = await sb.from('likes').select('track_id, user_id');
+  if (!likesRes.error && likesRes.data) {
+    // いいね数をカウント
+    for (var k = 0; k < likesRes.data.length; k++) {
+      var lk = likesRes.data[k];
+      likes[lk.track_id] = (likes[lk.track_id] || 0) + 1;
+    }
+    // 自分がいいねしたかどうかをboolに上書き（表示用）
+    if (currentAuthUser) {
+      var myLikes = {};
+      for (var k = 0; k < likesRes.data.length; k++) {
+        if (likesRes.data[k].user_id === currentAuthUser.id) myLikes[likesRes.data[k].track_id] = 1;
+      }
+      // likes[id]を「自分がいいねしたか」で上書き（カウントは別途renderで使う）
+      window._likeCounts = likes;
+      window._myLikes = myLikes;
+      likes = myLikes;
+    }
+  }
+
   renderTracks(); renderRanking(); renderFilterBar(); renderUserPage();
 }
 
@@ -1138,7 +1159,7 @@ function trackRowHtml(t, idx, opts) {
     '<div class="track-actions">' +
       '<button class="supa-icon-btn" onclick="openSupaModal(\'track\',\'' + t.id + '\')">🪙</button>' +
       '<button class="icon-btn' + (liked ? ' liked' : '') + '" onclick="toggleLike(\'' + t.id + '\')"><i class="ti ti-heart' + (liked ? '-filled' : '') + '"></i></button>' +
-      '<span class="like-count">' + (likes[t.id] || 0) + '</span>' +
+      '<span class="like-count">' + ((window._likeCounts && window._likeCounts[t.id]) || 0) + '</span>' +
       (opts.noComment ? '' : '<button class="icon-btn" onclick="openComments(\'' + t.id + '\')"><i class="ti ti-message"></i></button><span class="comment-count">' + (lc || '') + '</span>') +
       '<button class="icon-btn' + (inPl ? ' in-playlist' : '') + '" onclick="addToPlaylist(\'' + t.id + '\')"><i class="ti ti-playlist-add"></i></button>' +
       (opts.noTrash ? '' : '<button class="icon-btn" onclick="removeTrack(\'' + t.id + '\')"><i class="ti ti-trash"></i></button>') +
@@ -1170,7 +1191,7 @@ function renderTracks() {
 /* ---- ranking ---- */
 function calcScore(t) {
   var playPts  = (plays[t.id]||{})[currentPeriod] || 0;
-  var likePts  = (likes[t.id] || 0) * 5;
+  var likePts  = ((window._likeCounts && window._likeCounts[t.id]) || 0) * 5;
   var supaPts  = totalPts(supaTrack[t.id] || []) * 50;
   return playPts + likePts + supaPts;
 }
@@ -1189,7 +1210,7 @@ function renderRankBlock(src, label, color) {
       '<div class="rank-info"><div class="rank-title">' + t.name + '</div>' +
       '<div class="rank-plays">' + (color !== '#888' ? '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' : '') +
       '<i class="ti ti-player-play" style="font-size:9px"></i><span>' + (plays[t.id]||{})[currentPeriod]||0 + '再生</span>' +
-      '<span style="color:#e24b4a;font-size:10px">♥' + (likes[t.id]||0) + '</span>' +
+      '<span style="color:#e24b4a;font-size:10px">♥' + ((window._likeCounts && window._likeCounts[t.id])||0) + '</span>' +
       '<span style="font-size:10px;color:#555;font-weight:500">合計 ' + cnt + 'pt</span>' +
       (spPts > 0 ? '<span style="color:#c4980a;font-size:10px">🪙' + spPts + 'pt</span>' : '') + '</div></div>' +
       '<div class="rank-bar-wrap"><div class="rank-bar" style="width:' + Math.round(cnt/max*100) + '%;background:' + color + '"></div></div>' +
@@ -1268,7 +1289,7 @@ function renderUserPage() {
   var myTracks = [];
   for (var i = 0; i < tracks.length; i++) if (tracks[i].uploader === user.name) myTracks.push(tracks[i]);
   var totalPl = 0; for (var i = 0; i < myTracks.length; i++) { var p = plays[myTracks[i].id]; if (p) totalPl += p.daily; }
-  var totalLk = 0; for (var i = 0; i < myTracks.length; i++) totalLk += (likes[myTracks[i].id] || 0);
+  var totalLk = 0; for (var i = 0; i < myTracks.length; i++) totalLk += ((window._likeCounts && window._likeCounts[myTracks[i].id]) || 0);
   var uSupa = supaUser[user.name] || [];   var uPts = totalPts(uSupa);
   var uAmt = 0; for (var i = 0; i < uSupa.length; i++) uAmt += uSupa[i].amt;
   var flCount = followingList().length;
@@ -1446,7 +1467,21 @@ function seek(e) { if (!audio.duration) return; var r = document.getElementById(
 function setVolume(v) { audio.volume = v / 100; }
 audio.volume = 0.8;
 
-function toggleLike(id) { likes[id] = (likes[id]||0) === 0 ? 1 : 0; renderTracks(); showToast(likes[id] ? 'いいね！' : 'いいねを取り消しました'); }
+async function toggleLike(id) {
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (likes[id]) {
+    // いいね取り消し
+    await sb.from('likes').delete().eq('track_id', id).eq('user_id', currentAuthUser.id);
+    likes[id] = 0;
+    showToast('いいねを取り消しました');
+  } else {
+    // いいね追加
+    await sb.from('likes').insert({ track_id: id, user_id: currentAuthUser.id });
+    likes[id] = 1;
+    showToast('いいね！❤️');
+  }
+  renderTracks(); renderRanking(); renderUserPage();
+}
 function removeTrack(id) {
   var i = -1; for (var j = 0; j < tracks.length; j++) if (tracks[j].id === id) { i = j; break; }
   if (i < 0) return;

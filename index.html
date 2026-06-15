@@ -996,7 +996,7 @@ function updateHeaderUser() {
         '<div style="font-size:10px;color:#aaa">' + (user.bio ? user.bio.slice(0,12) + (user.bio.length>12?'…':'') : 'プロフィール') + '</div>' +
       '</div>';
   } else {
-    el.innerHTML = '<button onclick="document.getElementById('auth-overlay').style.display='flex';document.getElementById('auth-overlay').classList.add('open')" style="background:#1a1a1a;color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer">ログイン</button>';
+    el.innerHTML = '<button onclick="showLoginScreen()" style="background:#1a1a1a;color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer">ログイン</button>';
   }
 }
 function showLoginScreen() {

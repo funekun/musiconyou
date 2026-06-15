@@ -503,7 +503,8 @@ async function loadTracks() {
       duration: d.duration || 0,
       createdAt: d.created_at || null,
       description: d.description || '',
-      tags: d.tags || ''
+      tags: d.tags || '',
+      youtubeUrl: d.youtube_url || ''
     };
     tracks.push(t);
     commentsData[t.id] = commentsData[t.id] || [];
@@ -728,6 +729,28 @@ function tierFor(pts) {
   return t;
 }
 function uid() { return Math.random().toString(36).slice(2); }
+function extractYoutubeId(url) {
+  if (!url) return '';
+  var m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : '';
+}
+function onYoutubeInput(val) {
+  var id = extractYoutubeId(val);
+  var preview = document.getElementById('youtube-preview');
+  var iframe = document.getElementById('youtube-iframe');
+  if (id) {
+    iframe.src = 'https://www.youtube.com/embed/' + id;
+    preview.style.display = 'block';
+    // アップロードボタンを「YouTube投稿」に変更
+    var uploadBtn = document.querySelector('.upload-confirm button');
+    if (uploadBtn) uploadBtn.innerHTML = '<i class="ti ti-brand-youtube"></i> YouTube動画を投稿';
+  } else {
+    preview.style.display = 'none';
+    iframe.src = '';
+    var uploadBtn = document.querySelector('.upload-confirm button');
+    if (uploadBtn) uploadBtn.innerHTML = '<i class="ti ti-upload"></i> アップロード';
+  }
+}
 function fmtDate(dateStr) {
   if (!dateStr) return '';
   var d = new Date(dateStr);
@@ -968,13 +991,41 @@ function renderUploadArea() {
       '<button class="btn-primary" style="width:auto;padding:7px 20px;margin:0 auto" onclick="openRegModal(false)">登録する</button></div>';
     return;
   }
+  var uploadMode = window._uploadMode || null;
+  if (!uploadMode) {
+    area.innerHTML =
+      '<div style="background:#fff;border:1.5px dashed #d0d0c8;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;text-align:center">' +
+        '<i class="ti ti-music" style="font-size:28px;color:#ccc;margin-bottom:8px;display:block"></i>' +
+        '<p style="font-size:14px;font-weight:500;margin-bottom:6px;color:#333">どの種類の曲を投稿しますか？</p>' +
+        '<p style="font-size:11px;color:#aaa;margin-bottom:16px">著作権のある曲はYouTubeリンクのみ投稿できます</p>' +
+        '<div style="display:flex;gap:10px;justify-content:center">' +
+          '<button onclick="window._uploadMode=\'original\';renderUploadArea()" style="flex:1;max-width:160px;padding:12px 8px;border:1.5px solid #1a1a1a;border-radius:10px;background:#1a1a1a;color:#fff;font-size:13px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">' +
+            '<i class="ti ti-star" style="font-size:20px"></i>' +
+            '<span style="font-weight:500">オリジナル曲</span>' +
+            '<span style="font-size:10px;opacity:.7">自由にアップロード</span>' +
+          '</button>' +
+          '<button onclick="window._uploadMode=\'copyright\';renderUploadArea()" style="flex:1;max-width:160px;padding:12px 8px;border:1.5px solid #e0e0d8;border-radius:10px;background:#fff;color:#333;font-size:13px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">' +
+            '<i class="ti ti-brand-youtube" style="font-size:20px;color:#e24b4a"></i>' +
+            '<span style="font-weight:500">著作権のある曲</span>' +
+            '<span style="font-size:10px;color:#aaa">YouTubeリンクのみ</span>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    return;
+  }
+  var isOriginal = uploadMode === 'original';
   area.innerHTML =
-    '<div class="upload-zone" id="upload-zone" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragleave="onDragLeave()">' +
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">' +
+      '<button onclick="window._uploadMode=null;pendingFiles=[];pendingCat=null;renderUploadArea()" style="background:none;border:none;cursor:pointer;color:#888;font-size:13px;display:flex;align-items:center;gap:4px"><i class="ti ti-arrow-left"></i>戻る</button>' +
+      '<span style="font-size:13px;font-weight:500;color:#333">' + (isOriginal ? '⭐ オリジナル曲の投稿' : '🎬 著作権のある曲の投稿') + '</span>' +
+    '</div>' +
+    '<div class="upload-zone" id="upload-zone"' + (isOriginal ? ' ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragleave="onDragLeave()"' : '') + '>' +
+    (isOriginal ?
       '<div class="upload-drop" onclick="document.getElementById(\'file-input\').click()">' +
         '<i class="ti ti-cloud-upload"></i>' +
         '<p>クリックまたはドラッグ＆ドロップ</p>' +
         '<small>音楽（MP3・WAV・M4A）・動画（MP4・MOV）対応</small>' +
-      '</div>' +
+      '</div>' : '') +
       '<input type="file" id="file-input" accept="audio/*,video/*" multiple style="display:none">' +
       '<div id="pending-files" class="pending-files"></div>' +
       '<div id="upload-options" style="display:none">' +
@@ -995,6 +1046,12 @@ function renderUploadArea() {
           '</div>' +
         '</div>' +
         '<div class="upload-section">' +
+          '<div class="upload-section-title">🎬 YouTubeURL' + (isOriginal ? '（任意）' : '（必須）') + '</div>' +
+          (isOriginal ? '' : '<p style="font-size:11px;color:#e24b4a;margin-bottom:6px">⚠️ 著作権のある曲はYouTubeリンクのみ投稿できます</p>') +
+          '<input type="text" id="track-youtube-input" placeholder="https://www.youtube.com/watch?v=..." oninput="onYoutubeInput(this.value)" style="width:100%;padding:8px 12px;border:1px solid ' + (isOriginal ? '#e0e0d8' : '#e24b4a') + ';border-radius:8px;font-size:13px;box-sizing:border-box;outline:none">' +
+          '<div id="youtube-preview" style="margin-top:8px;display:none"><iframe id="youtube-iframe" width="100%" height="180" frameborder="0" allowfullscreen style="border-radius:8px"></iframe></div>' +
+        '</div>' +
+        '<div class="upload-section">' +
           '<div class="upload-section-title">タイトル（任意）</div>' +
           '<input type="text" id="track-title-input" placeholder="タイトルを入力（空欄はファイル名）" style="width:100%;padding:8px 12px;border:1px solid #e0e0d8;border-radius:8px;font-size:13px;box-sizing:border-box;outline:none">' +
         '</div>' +
@@ -1006,6 +1063,7 @@ function renderUploadArea() {
           '<div class="upload-section-title">タグ（任意）</div>' +
           '<input type="text" id="track-tags-input" placeholder="#歌ってみた #アニメ #ボカロ （スペース区切り）" style="width:100%;padding:8px 12px;border:1px solid #e0e0d8;border-radius:8px;font-size:13px;box-sizing:border-box;outline:none">' +
         '</div>' +
+        '<div style="text-align:center;font-size:10px;color:#bbb;margin-bottom:6px">著作権に抵触する楽曲は削除します</div>' +
         '<div class="upload-confirm"><button onclick="confirmUpload()"><i class="ti ti-upload"></i> アップロード</button></div>' +
       '</div>' +
     '</div>';
@@ -1079,9 +1137,15 @@ function clearThumb() {
   document.getElementById('thumb-input').value = '';
 }
 async function confirmUpload() {
-  if (!pendingFiles.length) return;
+  if (!pendingFiles.length && !document.getElementById('track-youtube-input')?.value.trim()) return;
   if (!pendingCat) { showToast('カテゴリーを選択してください'); return; }
   if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  // 著作権モードの場合はYouTubeURLが必須
+  if (window._uploadMode === 'copyright') {
+    var ytCheck = document.getElementById('track-youtube-input')?.value.trim();
+    if (!ytCheck || !extractYoutubeId(ytCheck)) { showToast('著作権のある曲はYouTubeURLを入力してください'); return; }
+    if (pendingFiles.length) { showToast('著作権のある曲はファイルアップロードできません'); return; }
+  }
 
   // ボタンを無効化してアップロード中を表示
   var uploadBtn = document.querySelector('.upload-confirm button');
@@ -1091,13 +1155,60 @@ async function confirmUpload() {
   var thumbFile = document.getElementById('thumb-input') && document.getElementById('thumb-input').files[0] || null;
   var cat = pendingCat;
   var filesToUpload = pendingFiles.slice();
-  // タイトル・紹介文・タグをここで取得（ループ前に）
+  // タイトル・紹介文・タグ・YouTubeURLをここで取得（ループ前に）
   var titleInput = document.getElementById('track-title-input');
   var customTitle = titleInput ? titleInput.value.trim() : '';
   var descInput = document.getElementById('track-desc-input');
   var customDesc = descInput ? descInput.value.trim() : '';
   var tagsInput = document.getElementById('track-tags-input');
   var customTags = tagsInput ? tagsInput.value.trim() : '';
+  var youtubeInput = document.getElementById('track-youtube-input');
+  var youtubeUrl = youtubeInput ? youtubeInput.value.trim() : '';
+  var youtubeId = youtubeUrl ? extractYoutubeId(youtubeUrl) : '';
+
+  // YouTubeURLだけの投稿（ファイルなし）
+  if (youtubeId && !pendingFiles.length) {
+    if (!pendingCat) { showToast('カテゴリーを選択してください'); return; }
+    var ytTitle = customTitle || 'YouTube動画';
+    var insertRes = await sb.from('tracks').insert({
+      name: ytTitle,
+      file_url: null,
+      thumb_url: 'https://img.youtube.com/vi/' + youtubeId + '/mqdefault.jpg',
+      cat: cat,
+      is_video: true,
+      uploader_name: user.name,
+      uploader_id: currentAuthUser.id,
+      duration: 0,
+      description: customDesc || null,
+      tags: customTags || null,
+      youtube_url: youtubeUrl
+    });
+    if (!insertRes.error) {
+      showToast('🎬 YouTube動画を投稿しました！');
+      pendingFiles = []; pendingCat = null; pendingThumbUrl = null;
+      var opts = document.getElementById('upload-options');
+      if (opts) opts.style.display = 'none';
+      var pf = document.getElementById('pending-files');
+      if (pf) pf.innerHTML = '';
+      var fi = document.getElementById('file-input');
+      if (fi) fi.value = '';
+      var yi = document.getElementById('track-youtube-input');
+      if (yi) yi.value = '';
+      document.getElementById('youtube-preview').style.display = 'none';
+      var ti = document.getElementById('track-title-input');
+      if (ti) ti.value = '';
+      var di = document.getElementById('track-desc-input');
+      if (di) di.value = '';
+      var tgi = document.getElementById('track-tags-input');
+      if (tgi) tgi.value = '';
+      clearThumb();
+      await loadTracks();
+    } else {
+      showToast('投稿に失敗しました');
+    }
+    if (uploadBtn) { uploadBtn.disabled = false; uploadBtn.innerHTML = '<i class="ti ti-upload"></i> アップロード'; }
+    return;
+  }
 
   // サムネイルを先にアップロード（全曲共通）
   var finalThumbUrl = null;
@@ -1144,7 +1255,8 @@ async function confirmUpload() {
         uploader_id: currentAuthUser.id,
         duration: Math.round(duration),
         description: customDesc || null,
-        tags: customTags || null
+        tags: customTags || null,
+        youtube_url: youtubeId ? youtubeUrl : null
       });
 
       if (insertRes.error) { failCount++; continue; }
@@ -1168,6 +1280,10 @@ async function confirmUpload() {
   if (di) di.value = '';
   var tgi = document.getElementById('track-tags-input');
   if (tgi) tgi.value = '';
+  var yi = document.getElementById('track-youtube-input');
+  if (yi) yi.value = '';
+  var yp = document.getElementById('youtube-preview');
+  if (yp) yp.style.display = 'none';
   clearThumb();
 
   // 結果を表示してDBから再読み込み
@@ -1244,7 +1360,7 @@ function trackRowHtml(t, idx, opts) {
   var inPl = false; for (var pi = 0; pi < playlist.length; pi++) if (playlist[pi].id === t.id) { inPl = true; break; }
   var spPts = totalPts(supaTrack[t.id]);
   return '<div class="track' + (playing ? ' playing' : '') + '" id="track-' + t.id + '">' +
-    '<div class="track-thumb">' + thumbHtml(t, 40) + '</div>' +
+    '<div class="track-thumb" style="position:relative">' + thumbHtml(t, 40) + (t.youtubeUrl ? '<span style="position:absolute;bottom:1px;right:1px;background:#e24b4a;color:#fff;font-size:7px;padding:1px 3px;border-radius:3px;font-weight:bold">YT</span>' : '') + '</div>' +
     '<button class="play-btn" onclick="playTrack(' + idx + ')"><i class="ti ti-player-' + (playing && !audio.paused ? 'pause' : 'play') + '"></i></button>' +
     '<div class="track-info" onclick="playTrack(' + idx + ')">' +
       '<div class="track-title">' + t.name + '</div>' +
@@ -1560,12 +1676,36 @@ function playTrack(i) {
   if (currentAuthUser) { sb.from('play_counts').insert({ track_id: t.id }); }
   var videoWrap = document.getElementById('video-player-wrap');
   var videoEl = document.getElementById('video-player');
-  if (t.isVideo) {
+  var ytId = t.youtubeUrl ? extractYoutubeId(t.youtubeUrl) : '';
+  if (ytId) {
+    // YouTube再生
     audio.pause(); audio.src = '';
+    videoEl.pause(); videoEl.src = '';
+    videoEl.style.display = 'none';
+    var ytFrame = document.getElementById('yt-embed-frame');
+    if (!ytFrame) {
+      ytFrame = document.createElement('iframe');
+      ytFrame.id = 'yt-embed-frame';
+      ytFrame.width = '100%'; ytFrame.height = '240';
+      ytFrame.frameBorder = '0'; ytFrame.allowFullscreen = true;
+      ytFrame.allow = 'autoplay; encrypted-media';
+      videoWrap.appendChild(ytFrame);
+    }
+    ytFrame.style.display = 'block';
+    ytFrame.src = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1';
+    videoWrap.classList.add('show');
+    document.querySelector('.main').style.paddingTop = '256px';
+  } else if (t.isVideo) {
+    audio.pause(); audio.src = '';
+    var ytFrame2 = document.getElementById('yt-embed-frame');
+    if (ytFrame2) { ytFrame2.src = ''; ytFrame2.style.display = 'none'; }
+    videoEl.style.display = 'block';
     videoEl.src = t.url; videoEl.play();
     videoWrap.classList.add('show');
     document.querySelector('.main').style.paddingTop = '256px';
   } else {
+    var ytFrame3 = document.getElementById('yt-embed-frame');
+    if (ytFrame3) { ytFrame3.src = ''; ytFrame3.style.display = 'none'; }
     videoEl.pause(); videoEl.src = '';
     videoWrap.classList.remove('show');
     document.querySelector('.main').style.paddingTop = '';

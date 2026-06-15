@@ -10,7 +10,13 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f8f6;color:#1a1a1a;min-height:100vh}
-header{background:#fff;border-bottom:0.5px solid #e0e0d8;height:56px;position:sticky;top:0;z-index:100}
+header{background:#fff;border-bottom:0.5px solid #e0e0d8;position:sticky;top:0;z-index:100}
+.header-logo{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;gap:10px}
+.header-logo-title{font-size:16px;font-weight:500;letter-spacing:2px;color:#1a1a1a}
+.header-logo-sub{font-size:9px;color:#bbb;letter-spacing:2px}
+.header-user-info{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.header-avatar{width:30px;height:30px;border-radius:50%;background:#f0f0ec;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+.header-avatar img{width:100%;height:100%;object-fit:cover}
 .main{max-width:860px;margin:0 auto;padding:2rem 1.5rem 10rem}
 .tab-content{display:none}.tab-content.active{display:block}
 .site-hero{text-align:center;padding:2rem 0 1.5rem;border-bottom:0.5px solid #e8e8e0;margin-bottom:2rem}
@@ -271,23 +277,18 @@ audio{display:none}
   </div>
 </div>
 
-<header></header>
+<header>
+  <div class="header-logo">
+    <div>
+      <div class="header-logo-title">みゅーじっく音友</div>
+      <div class="header-logo-sub">Music On You</div>
+    </div>
+    <div class="header-user-info" id="header-user-info"></div>
+  </div>
+</header>
 <div class="main">
   <div id="tab-feed" class="tab-content active">
-    <div class="site-hero">
-      <svg viewBox="0 0 520 130" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:480px;height:120px">
-        <defs><filter id="ink" x="-8%" y="-8%" width="116%" height="116%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="5" seed="7" result="noise"/>
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.2" xChannelSelector="R" yChannelSelector="G" result="dist"/>
-          <feComponentTransfer in="dist"><feFuncA type="gamma" amplitude="1" exponent="0.7" offset="0"/></feComponentTransfer>
-        </filter></defs>
-        <rect x="10" y="6" width="500" height="118" rx="4" fill="#ffffff" stroke="#2a1a0a" stroke-width="1.2" opacity="1"/>
-        <rect x="16" y="12" width="488" height="106" rx="2" fill="none" stroke="#2a1a0a" stroke-width="0.5" opacity="0.1"/>
-        <text x="50%" y="54" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="40" font-weight="400" letter-spacing="10" fill="#1a1a1a">みゅーじっく</text>
-        <text x="50%" y="106" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="52" font-weight="400" letter-spacing="18" fill="#1a1a1a">音　友</text>
-      </svg>
-      <div style="font-size:12px;color:#aaa;margin-top:4px;letter-spacing:3px;font-family:'Shippori Mincho',serif">Music On You</div>
-    </div>
+
     <div id="upload-area"></div>
     <div class="feed-tabs">
       <button class="feed-tab active" id="ftab-all" onclick="switchFeedTab('all')">みんなの音楽</button>
@@ -479,7 +480,7 @@ sb.auth.onAuthStateChange(function(event, session) {
     overlay.style.display = 'flex';
     overlay.classList.add('open');
     user = null;
-    updateNavUser();
+    updateNavUser(); updateHeaderUser();
     renderUploadArea();
     renderUserPage();
   }
@@ -977,6 +978,23 @@ function saveUser() {
   closeModal('reg-modal');
   updateNavUser(); renderUploadArea(); renderUserPage(); renderTracks();
   showToast(!oldName ? '登録が完了しました！' : 'プロフィールを更新しました');
+}
+function updateHeaderUser() {
+  var el = document.getElementById('header-user-info');
+  if (!el) return;
+  if (user) {
+    var avHtml = user.avatarUrl
+      ? '<img src="' + user.avatarUrl + '">'
+      : '<i class="ti ti-user" style="font-size:14px;color:#aaa"></i>';
+    el.innerHTML =
+      '<div class="header-avatar" onclick="switchTab('user')" style="cursor:pointer">' + avHtml + '</div>' +
+      '<div style="cursor:pointer" onclick="switchTab('user')">' +
+        '<div style="font-size:12px;font-weight:500;color:#1a1a1a">' + user.name + '</div>' +
+        '<div style="font-size:10px;color:#aaa">' + (user.bio ? user.bio.slice(0,12) + (user.bio.length>12?'…':'') : 'プロフィール') + '</div>' +
+      '</div>';
+  } else {
+    el.innerHTML = '<button onclick="document.getElementById('auth-overlay').style.display='flex';document.getElementById('auth-overlay').classList.add('open')" style="background:#1a1a1a;color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer">ログイン</button>';
+  }
 }
 function updateNavUser() {
   var btn = document.getElementById('bnav-user');

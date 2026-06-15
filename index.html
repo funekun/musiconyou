@@ -690,7 +690,8 @@ saveUser = async function() {
 // 初期化時に認証チェック
 sb.auth.getSession().then(function(res) {
   if (!res.data.session) {
-    document.getElementById('auth-overlay').classList.add('open');
+    // 未ログインでも曲は表示する
+    loadTracks();
   }
 });
 var tracks = [], currentIdx = -1, playlist = [];
@@ -1007,10 +1008,10 @@ function updateNavUser() {
   var btn = document.getElementById('bnav-user');
   if (!user) {
     btn.innerHTML = '<i class="ti ti-login"></i>ログイン';
-    btn.onclick = function() { showLoginScreen(); };
+    btn.setAttribute('onclick', 'showLoginScreen()');
   } else {
     btn.innerHTML = (user.avatarUrl ? '<img src="' + user.avatarUrl + '" style="width:22px;height:22px;border-radius:50%;object-fit:cover">' : '<i class="ti ti-user-circle"></i>') + 'ユーザー';
-    btn.onclick = function() { switchTab('user'); };
+    btn.setAttribute('onclick', "switchTab('user')");
   }
 }
 

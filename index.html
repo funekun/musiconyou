@@ -241,7 +241,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;height:56px;position:st
 .toast{position:fixed;bottom:155px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:12px;padding:7px 16px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:400;white-space:nowrap}
 .toast.show{opacity:1}
 audio{display:none}
-.auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding-top:60px}
+.auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center}
 .auth-overlay.open{display:flex}
 .video-player-wrap{display:none;position:fixed;top:56px;left:0;right:0;background:#000;z-index:98;max-height:240px;justify-content:center}
 .video-player-wrap.show{display:flex}
@@ -250,7 +250,7 @@ audio{display:none}
 </head>
 <body>
 <!-- 認証オーバーレイ -->
-<div class="auth-overlay open" id="auth-overlay" style="display:flex">
+<div class="auth-overlay" id="auth-overlay">
   <div class="auth-box">
     <h2 id="auth-title">ログイン</h2>
     <p id="auth-sub">みゅーじっく音友へようこそ</p>
@@ -478,11 +478,10 @@ sb.auth.onAuthStateChange(function(event, session) {
     loadUserProfile(session.user);
   } else {
     currentAuthUser = null;
-    overlay.style.display = 'flex';
-    overlay.classList.add('open');
+    overlay.style.display = 'none';
+    overlay.classList.remove('open');
     user = null;
     updateNavUser();
-    setTimeout(function() { updateHeaderUser(); }, 100);
     renderUploadArea();
     renderUserPage();
     loadTracks();
@@ -999,9 +998,20 @@ function updateHeaderUser() {
     el.innerHTML = '<button onclick="document.getElementById('auth-overlay').style.display='flex';document.getElementById('auth-overlay').classList.add('open')" style="background:#1a1a1a;color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer">ログイン</button>';
   }
 }
+function showLoginScreen() {
+  var overlay = document.getElementById('auth-overlay');
+  overlay.style.display = 'flex';
+  overlay.classList.add('open');
+}
 function updateNavUser() {
   var btn = document.getElementById('bnav-user');
-  btn.innerHTML = (user && user.avatarUrl ? '<img src="' + user.avatarUrl + '" style="width:22px;height:22px;border-radius:50%;object-fit:cover">' : '<i class="ti ti-user-circle"></i>') + 'ユーザー';
+  if (!user) {
+    btn.innerHTML = '<i class="ti ti-login"></i>ログイン';
+    btn.onclick = function() { showLoginScreen(); };
+  } else {
+    btn.innerHTML = (user.avatarUrl ? '<img src="' + user.avatarUrl + '" style="width:22px;height:22px;border-radius:50%;object-fit:cover">' : '<i class="ti ti-user-circle"></i>') + 'ユーザー';
+    btn.onclick = function() { switchTab('user'); };
+  }
 }
 
 /* ---- upload ---- */
@@ -1009,7 +1019,7 @@ function renderUploadArea() {
   var area = document.getElementById('upload-area');
   if (!user) {
     area.innerHTML = '<div class="locked-upload"><i class="ti ti-lock"></i><p>投稿するにはユーザー登録が必要です</p>' +
-      '<button class="btn-primary" style="width:auto;padding:7px 20px;margin:0 auto" onclick="openRegModal(false)">登録する</button></div>';
+      '<button class="btn-primary" style="width:auto;padding:7px 20px;margin:0 auto" onclick="showLoginScreen()">ログイン / 登録</button></div>';
     return;
   }
   var uploadMode = window._uploadMode || null;

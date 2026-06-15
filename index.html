@@ -1075,6 +1075,8 @@ function renderUploadArea() {
   document.getElementById('thumb-input').addEventListener('change', function() {
     onThumbSelect(this);
   });
+  // 著作権モードはカテゴリーを即描画
+  if (!isOriginal) { setTimeout(function(){ renderCatBtns(); }, 0); }
 }
 function onFileSelect(files) {
   pendingFiles = [];

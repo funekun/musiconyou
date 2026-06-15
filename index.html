@@ -1176,7 +1176,7 @@ async function confirmUpload() {
       name: ytTitle,
       file_url: null,
       thumb_url: 'https://img.youtube.com/vi/' + youtubeId + '/mqdefault.jpg',
-      cat: cat,
+      cat: pendingCat,
       is_video: true,
       uploader_name: user.name,
       uploader_id: currentAuthUser.id,
@@ -1206,7 +1206,7 @@ async function confirmUpload() {
       clearThumb();
       await loadTracks();
     } else {
-      showToast('投稿に失敗しました');
+      showToast('投稿に失敗: ' + (insertRes.error ? insertRes.error.message : '不明'));
     }
     if (uploadBtn) { uploadBtn.disabled = false; uploadBtn.innerHTML = '<i class="ti ti-upload"></i> アップロード'; }
     return;

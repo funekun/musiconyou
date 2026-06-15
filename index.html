@@ -433,6 +433,28 @@ audio{display:none}
   </div>
 </div>
 
+<div class="modal-overlay" id="track-edit-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('track-edit-modal')"><i class="ti ti-x"></i></button>
+    <h2><i class="ti ti-edit" style="margin-right:6px"></i>曲を編集</h2>
+    <input type="hidden" id="edit-track-id">
+    <div class="form-row">
+      <label>タイトル</label>
+      <input type="text" id="edit-track-title" placeholder="タイトル">
+    </div>
+    <div class="form-row">
+      <label>紹介文</label>
+      <textarea id="edit-track-desc" rows="3" placeholder="曲の紹介文..."></textarea>
+    </div>
+    <div class="form-row">
+      <label>タグ（スペース区切り）</label>
+      <input type="text" id="edit-track-tags" placeholder="#歌ってみた #アニメ">
+    </div>
+    <button class="btn-primary" onclick="saveTrackEdit()" style="margin-bottom:10px">保存する</button>
+    <button onclick="deleteTrack()" style="width:100%;padding:9px;border:1px solid #e24b4a;border-radius:8px;background:#fff;color:#e24b4a;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><i class="ti ti-trash"></i>この曲を削除する</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <audio id="audio"></audio>
 
@@ -1382,14 +1404,19 @@ function renderUserPage() {
     gridHtml += '<div class="grid-card' + (playing ? ' playing' : '') + '" onclick="playTrack(' + tIdx + ')">' +
       '<div class="grid-thumb">' + (t.thumbUrl ? '<img src="' + t.thumbUrl + '">' : '<i class="ti ti-' + (t.isVideo ? 'video' : 'music') + '"></i>') +
       '<div class="grid-ov"><i class="ti ti-' + (playing && !audio.paused ? 'player-pause' : 'player-play') + '"></i></div></div>' +
-      '<div class="grid-info"><div class="grid-title">' + t.name + '</div>' +
+      '<div class="grid-info">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:4px">' +
+        '<div class="grid-title" style="flex:1">' + t.name + '</div>' +
+        '<button onclick="event.stopPropagation();openTrackEdit(\'' + t.id + '\')" style="background:none;border:none;cursor:pointer;color:#bbb;padding:2px 4px;border-radius:5px;font-size:13px;flex-shrink:0"><i class="ti ti-edit"></i></button>' +
+      '</div>' +
       '<div class="grid-meta"><span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' + (t.duration ? fmtTime(t.duration) : '') + '</div>' +
       '<div class="grid-meta" style="margin-top:3px;color:#1a1a1a;font-weight:500">' +
         '<span><i class="ti ti-player-play" style="font-size:9px"></i> ' + ((plays[t.id]||{}).alltime||0) + '</span>' +
         '<span style="color:#e24b4a"><i class="ti ti-heart" style="font-size:9px"></i> ' + ((window._likeCounts && window._likeCounts[t.id])||0) + '</span>' +
       '</div>' +
-      (t.tags ? '<div style="padding:0 9px 4px;display:flex;flex-wrap:wrap;gap:3px">' + t.tags.split(' ').filter(function(tg){return tg.startsWith('#')}).map(function(tg){return '<span style="font-size:9px;color:#4455cc">' + tg + '</span>'}).join('') + '</div>' : '') +
-      (t.createdAt ? '<div style="font-size:9px;color:#aaa;padding:0 9px 7px;line-height:1.5">' + fmtDate(t.createdAt) + '</div>' : '') +
+      (t.description ? '<div style="font-size:10px;color:#888;margin-top:3px;line-height:1.4;word-break:break-word">' + t.description + '</div>' : '') +
+      (t.tags ? '<div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:3px">' + t.tags.split(' ').filter(function(tg){return tg.startsWith('#')}).map(function(tg){return '<span style="font-size:9px;color:#4455cc">' + tg + '</span>'}).join('') + '</div>' : '') +
+      (t.createdAt ? '<div style="font-size:9px;color:#aaa;margin-top:3px;line-height:1.5">' + fmtDate(t.createdAt) + '</div>' : '') +
       (spPts > 0 ? '<div style="font-size:10px;color:#c4980a;margin-top:3px">🪙' + spPts + 'pt</div>' : '') +
       '</div></div>';
   }
@@ -1607,11 +1634,42 @@ async function toggleLike(id) {
 function removeTrack(id) {
   var i = -1; for (var j = 0; j < tracks.length; j++) if (tracks[j].id === id) { i = j; break; }
   if (i < 0) return;
-  URL.revokeObjectURL(tracks[i].url);
-  if (tracks[i].thumbUrl) URL.revokeObjectURL(tracks[i].thumbUrl);
   tracks.splice(i, 1); playlist = playlist.filter(function(p){ return p.id !== id; });
   if (currentIdx === i) { audio.pause(); currentIdx = -1; } else if (currentIdx > i) currentIdx--;
   renderTracks(); renderRanking(); renderPlaylist(); renderFilterBar(); renderUserPage();
+}
+function openTrackEdit(id) {
+  var t = null; for (var i = 0; i < tracks.length; i++) if (tracks[i].id === id) { t = tracks[i]; break; }
+  if (!t) return;
+  document.getElementById('edit-track-id').value = id;
+  document.getElementById('edit-track-title').value = t.name;
+  document.getElementById('edit-track-desc').value = t.description || '';
+  document.getElementById('edit-track-tags').value = t.tags || '';
+  document.getElementById('track-edit-modal').classList.add('open');
+}
+async function saveTrackEdit() {
+  var id = document.getElementById('edit-track-id').value;
+  var name = document.getElementById('edit-track-title').value.trim();
+  var desc = document.getElementById('edit-track-desc').value.trim();
+  var tags = document.getElementById('edit-track-tags').value.trim();
+  if (!name) { showToast('タイトルを入力してください'); return; }
+  var res = await sb.from('tracks').update({ name: name, description: desc || null, tags: tags || null }).eq('id', id);
+  if (res.error) { showToast('保存に失敗しました'); return; }
+  for (var i = 0; i < tracks.length; i++) {
+    if (tracks[i].id === id) { tracks[i].name = name; tracks[i].description = desc; tracks[i].tags = tags; break; }
+  }
+  closeModal('track-edit-modal');
+  showToast('保存しました！');
+  renderTracks(); renderRanking(); renderUserPage();
+}
+async function deleteTrack() {
+  var id = document.getElementById('edit-track-id').value;
+  if (!confirm('この曲を削除しますか？')) return;
+  var res = await sb.from('tracks').delete().eq('id', id);
+  if (res.error) { showToast('削除に失敗しました'); return; }
+  closeModal('track-edit-modal');
+  showToast('削除しました');
+  removeTrack(id);
 }
 function openComments(id) {
   openCommentTrackId = id;

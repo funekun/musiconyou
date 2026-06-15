@@ -482,9 +482,11 @@ sb.auth.onAuthStateChange(function(event, session) {
     overlay.style.display = 'flex';
     overlay.classList.add('open');
     user = null;
-    updateNavUser(); updateHeaderUser();
+    updateNavUser();
+    setTimeout(function() { updateHeaderUser(); }, 100);
     renderUploadArea();
     renderUserPage();
+    loadTracks();
   }
 });
 

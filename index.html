@@ -1028,7 +1028,7 @@ function renderUploadArea() {
       '</div>' : '') +
       '<input type="file" id="file-input" accept="audio/*,video/*" multiple style="display:none">' +
       '<div id="pending-files" class="pending-files"></div>' +
-      '<div id="upload-options" style="display:none">' +
+      '<div id="upload-options" style="display:' + (isOriginal ? 'none' : 'block') + '">' +
         '<div class="upload-section">' +
           '<div class="upload-section-title">カテゴリーを選択</div>' +
           '<div class="cat-btns" id="cat-btns"></div>' +
@@ -1063,7 +1063,7 @@ function renderUploadArea() {
           '<div class="upload-section-title">タグ（任意）</div>' +
           '<input type="text" id="track-tags-input" placeholder="#歌ってみた #アニメ #ボカロ （スペース区切り）" style="width:100%;padding:8px 12px;border:1px solid #e0e0d8;border-radius:8px;font-size:13px;box-sizing:border-box;outline:none">' +
         '</div>' +
-        '<div style="text-align:center;font-size:10px;color:#bbb;margin-bottom:6px">著作権に抵触する楽曲は削除します</div>' +
+        '<div style="text-align:center;font-size:11px;color:#e8928a;margin-bottom:6px">⚠️ 著作権に抵触する楽曲は削除します</div>' +
         '<div class="upload-confirm"><button onclick="confirmUpload()"><i class="ti ti-upload"></i> アップロード</button></div>' +
       '</div>' +
     '</div>';

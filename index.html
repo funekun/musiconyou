@@ -392,8 +392,35 @@ audio{display:none}
 .video-player-wrap{display:none;position:fixed;top:56px;left:0;right:0;background:#000;z-index:98;max-height:240px;justify-content:center}
 .video-player-wrap.show{display:flex}
 .video-player-wrap video{max-width:100%;max-height:240px;object-fit:contain}
-/* 通知 */
-.notif-panel{display:none;position:fixed;right:0;top:56px;bottom:144px;width:300px;background:#fff;border-left:0.5px solid #e0e0d8;flex-direction:column;z-index:50;box-shadow:-4px 0 16px rgba(0,0,0,.06)}
+.video-close-btn{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;z-index:99;backdrop-filter:blur(4px)}
+/* 再生中コメントエリア */
+.np-comments{display:none;position:fixed;left:0;right:0;bottom:144px;background:#fff;border-top:0.5px solid #e0e0d8;z-index:96;flex-direction:column;max-height:220px}
+.np-comments.show{display:flex}
+.np-comments-header{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:0.5px solid #f0f0ec;flex-shrink:0}
+.np-comments-label{font-size:11px;font-weight:500;color:#888;display:flex;align-items:center;gap:5px}
+.np-comments-toggle{background:none;border:none;cursor:pointer;color:#bbb;font-size:13px;padding:2px 6px;border-radius:6px}
+.np-comments-toggle:hover{background:#f4f4f0;color:#555}
+.np-comments-body{flex:1;overflow-y:auto;padding:4px 0}
+.np-comments-body::-webkit-scrollbar{width:3px}
+.np-comments-body::-webkit-scrollbar-thumb{background:#e8e8e0;border-radius:2px}
+.np-cmt{display:flex;gap:7px;align-items:flex-start;padding:7px 12px;border-bottom:0.5px solid #f8f8f6}
+.np-cmt:last-child{border:none}
+.np-cmt-av{width:22px;height:22px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#f0f0ec;display:flex;align-items:center;justify-content:center}
+.np-cmt-av img{width:100%;height:100%;object-fit:cover}
+.np-cmt-av i{font-size:10px;color:#ccc}
+.np-cmt-main{flex:1;min-width:0}
+.np-cmt-top{display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.np-cmt-name{font-size:11px;font-weight:600;color:#1a1a1a}
+.np-cmt-time{font-size:9px;color:#bbb}
+.np-cmt-text{font-size:12px;color:#333;line-height:1.5;word-break:break-word}
+.np-cmt-reply{font-size:10px;color:#4455cc;margin-top:2px}
+.np-cmt-input-row{display:flex;gap:7px;align-items:center;padding:7px 10px;border-top:0.5px solid #f0f0ec;flex-shrink:0;background:#fafaf8}
+.np-cmt-input-av{width:22px;height:22px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#f0f0ec;display:flex;align-items:center;justify-content:center}
+.np-cmt-input-av img{width:100%;height:100%;object-fit:cover}
+.np-cmt-input-av i{font-size:10px;color:#ccc}
+.np-cmt-input{flex:1;border:0.5px solid #e0e0d8;border-radius:16px;padding:6px 11px;font-size:12px;outline:none;background:#fff;font-family:inherit}
+.np-cmt-input:focus{border-color:#888}
+.np-cmt-send{background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:12px}display:none;position:fixed;right:0;top:56px;bottom:144px;width:300px;background:#fff;border-left:0.5px solid #e0e0d8;flex-direction:column;z-index:50;box-shadow:-4px 0 16px rgba(0,0,0,.06)}
 .notif-panel.open{display:flex}
 .notif-header{padding:14px 16px;border-bottom:0.5px solid #e0e0d8;display:flex;align-items:center;justify-content:space-between}
 .notif-header-left{display:flex;align-items:center;gap:8px}
@@ -503,6 +530,23 @@ audio{display:none}
   <div id="tab-user" class="tab-content"><div id="user-page-content"></div></div>
 </div>
 
+<!-- 再生中コメントエリア -->
+<div class="np-comments" id="np-comments">
+  <div class="np-comments-header">
+    <span class="np-comments-label"><i class="ti ti-message" style="font-size:12px"></i><span id="np-comments-track-name">コメント</span></span>
+    <div style="display:flex;align-items:center;gap:4px">
+      <span id="np-comments-count" style="font-size:10px;color:#bbb"></span>
+      <button class="np-comments-toggle" onclick="closeNpComments()" title="閉じる"><i class="ti ti-chevron-down"></i></button>
+    </div>
+  </div>
+  <div class="np-comments-body" id="np-comments-body"></div>
+  <div class="np-cmt-input-row">
+    <div class="np-cmt-input-av" id="np-cmt-input-av"><i class="ti ti-user"></i></div>
+    <input class="np-cmt-input" id="np-cmt-input" placeholder="コメントを追加..." onkeydown="if(event.key==='Enter')addNpComment()">
+    <button class="np-cmt-send" onclick="addNpComment()"><i class="ti ti-send"></i></button>
+  </div>
+</div>
+
 <div class="bottom-nav">
   <button class="active" id="bnav-feed" onclick="switchTab('feed')"><i class="ti ti-music"></i>すべて</button>
   <button id="bnav-ranking" onclick="switchTab('ranking')"><i class="ti ti-trophy"></i>ランキング</button>
@@ -511,7 +555,7 @@ audio{display:none}
   <button id="bnav-user" onclick="switchTab('user')"><i class="ti ti-user-circle"></i>ユーザー</button>
   <button id="bnav-notif" style="display:none" onclick="toggleNotifPanel()"><span class="bnav-notif-wrap"><i class="ti ti-bell"></i><span id="notif-badge" class="notif-badge" style="display:none">0</span></span>通知</button>
   <button id="bnav-comments" onclick="toggleCommentFeed()"><i class="ti ti-message"></i>コメント</button>
-</div><div class="video-player-wrap" id="video-player-wrap"><video id="video-player" controls style="max-width:100%;max-height:240px"></video></div><div class="player">
+</div><div class="video-player-wrap" id="video-player-wrap" style="position:fixed"><button class="video-close-btn" onclick="closeVideoPlayer()" title="閉じる"><i class="ti ti-x"></i></button><video id="video-player" controls style="max-width:100%;max-height:240px"></video></div><div class="player">
   <div class="player-thumb" id="p-thumb"><i class="ti ti-music"></i></div>
   <div class="player-info">
     <div class="player-title" id="p-title">曲を選んでください</div>
@@ -2227,6 +2271,109 @@ function playTrack(i) {
   pThumb.innerHTML = t.thumbUrl ? '<img src="' + t.thumbUrl + '" style="width:40px;height:40px;object-fit:cover">' : '<i class="ti ti-' + (t.isVideo ? 'video' : 'music') + '"></i>';
   document.getElementById('main-play-btn').innerHTML = '<i class="ti ti-player-pause"></i>';
   renderTracks(); renderRanking(); renderPlaylist(); renderUserPage();
+  // 再生中コメントエリアを更新
+  openNpComments(t.id);
+}
+function closeVideoPlayer() {
+  var videoWrap = document.getElementById('video-player-wrap');
+  var videoEl = document.getElementById('video-player');
+  var ytFrame = document.getElementById('yt-embed-frame');
+  if (ytFrame) { ytFrame.src = ''; ytFrame.style.display = 'none'; }
+  videoEl.pause(); videoEl.src = '';
+  videoWrap.classList.remove('show');
+  document.querySelector('.main').style.paddingTop = '';
+}
+
+/* ---- 再生中コメントエリア ---- */
+var npCommentsOpen = false;
+
+function openNpComments(trackId) {
+  var t = null; for (var i = 0; i < tracks.length; i++) if (tracks[i].id === trackId) { t = tracks[i]; break; }
+  var panel = document.getElementById('np-comments');
+  var nameEl = document.getElementById('np-comments-track-name');
+  if (nameEl) nameEl.textContent = t ? t.name : 'コメント';
+  var avEl = document.getElementById('np-cmt-input-av');
+  if (avEl) avEl.innerHTML = (user && user.avatarUrl) ? '<img src="' + user.avatarUrl + '">' : '<i class="ti ti-user"></i>';
+  panel.classList.add('show');
+  npCommentsOpen = true;
+  shiftPlayerUp(true);
+  loadNpComments(trackId);
+}
+
+function closeNpComments() {
+  document.getElementById('np-comments').classList.remove('show');
+  npCommentsOpen = false;
+  shiftPlayerUp(false);
+}
+
+function shiftPlayerUp(on) {
+  var npH = on ? '220px' : '0px';
+  // コメントパネルのbottomをプレイヤー+ナビ+コメントエリア分に
+  var np = document.getElementById('np-comments');
+  if (np) { np.style.bottom = on ? '144px' : '144px'; }
+  // notif/feed panels も追従
+  var nPanel = document.getElementById('notif-panel');
+  var fPanel = document.getElementById('cmt-feed-panel');
+  var cpPanel = document.getElementById('comments-panel');
+  var shift = on ? (144 + 220) + 'px' : '144px';
+  if (nPanel) nPanel.style.bottom = shift;
+  if (fPanel) fPanel.style.bottom = shift;
+  if (cpPanel) cpPanel.style.bottom = shift;
+}
+
+async function loadNpComments(trackId) {
+  var body = document.getElementById('np-comments-body');
+  body.innerHTML = '<div style="text-align:center;padding:1rem;color:#bbb;font-size:11px">読み込み中...</div>';
+  var res = await sb.from('comments').select('*').eq('track_id', trackId).order('created_at', {ascending: false}).limit(50);
+  var countEl = document.getElementById('np-comments-count');
+  if (res.error || !res.data || !res.data.length) {
+    body.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#ccc;font-size:11px"><i class="ti ti-message-off" style="display:block;font-size:22px;margin-bottom:6px"></i>まだコメントがありません</div>';
+    if (countEl) countEl.textContent = '';
+    return;
+  }
+  var cmts = res.data;
+  if (countEl) countEl.textContent = cmts.length + '件';
+  var html = '';
+  for (var i = 0; i < cmts.length; i++) {
+    var c = cmts[i];
+    var av = c.avatar_url ? '<img src="' + c.avatar_url + '">' : '<i class="ti ti-user"></i>';
+    var timeStr = c.created_at ? fmtCommentTime(c.created_at) : '';
+    var isReply = !!c.parent_id;
+    html += '<div class="np-cmt">' +
+      '<div class="np-cmt-av">' + av + '</div>' +
+      '<div class="np-cmt-main">' +
+        '<div class="np-cmt-top"><span class="np-cmt-name">' + esc(c.user_name || 'ゲスト') + '</span><span class="np-cmt-time">' + timeStr + '</span></div>' +
+        (isReply ? '<div class="np-cmt-reply">↩ 返信</div>' : '') +
+        '<div class="np-cmt-text">' + esc(c.body) + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+  body.innerHTML = html;
+}
+
+async function addNpComment() {
+  var inp = document.getElementById('np-cmt-input');
+  var text = inp ? inp.value.trim() : '';
+  if (!text || currentIdx < 0) return;
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  var t = tracks[currentIdx];
+  var avatarUrl = (user && user.avatarUrl) ? user.avatarUrl : null;
+  var res = await sb.from('comments').insert({
+    track_id: t.id, parent_id: null,
+    user_id: currentAuthUser.id,
+    user_name: user ? user.name : 'ゲスト',
+    avatar_url: avatarUrl, body: text
+  }).select().single();
+  if (!res.error) {
+    inp.value = '';
+    showToast('コメントしました！💬');
+    loadNpComments(t.id);
+    // 通知
+    if (t.uploader_id) {
+      var preview = text.length > 20 ? text.slice(0,20) + '…' : text;
+      await sendNotification(t.uploader_id, 'comment', (user ? user.name : 'ゲスト') + ' さんが「' + t.name + '」にコメントしました：「' + preview + '」💬', t.id, t.thumbUrl || null);
+    }
+  }
 }
 function togglePlay() {
   if (!tracks.length) return;

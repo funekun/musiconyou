@@ -184,8 +184,10 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;height:56px;position:st
 .supa-icon-btn{background:none;border:none;cursor:pointer;padding:3px 5px;border-radius:5px;font-size:12px;color:#c4980a}
 .supa-icon-btn:hover{background:#fff8e1}
 .rank-controls{display:flex;gap:6px;margin-bottom:1.2rem;flex-wrap:wrap}
-.period-btn{background:#fff;border:0.5px solid #e0e0d8;border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;color:#888}
-.period-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.period-btns{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.period-btns::-webkit-scrollbar{display:none}
+.period-btn{background:#fff;border:0.5px solid #e0e0d8;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;color:#888;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.period-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;font-weight:500}
 .rank-list{display:flex;flex-direction:column;gap:7px}
 .rank-item{background:#fff;border:0.5px solid #e8e8e0;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer}
 .rank-item:hover{border-color:#ccc}
@@ -406,13 +408,15 @@ audio{display:none}
     <div class="track-list" id="track-list"></div>
   </div>
   <div id="tab-ranking" class="tab-content">
-    <div class="rank-controls" style="flex-wrap:wrap;gap:6px;margin-bottom:.8rem">
-      <button class="period-btn active" onclick="switchPeriod('daily',this)">今日</button>
-      <button class="period-btn" onclick="switchPeriod('weekly',this)">今週</button>
-      <button class="period-btn" onclick="switchPeriod('monthly',this)">今月</button>
-      <button class="period-btn" onclick="switchPeriod('yearly',this)">今年</button>
-      <button class="period-btn" onclick="switchPeriod('alltime',this)">今まで</button>
+    <div class="rank-controls" style="flex-wrap:wrap;gap:6px;margin-bottom:.6rem">
+      <div class="period-btns">
+        <button class="period-btn active" onclick="switchPeriod('daily',this)">📅 今日</button>
+        <button class="period-btn" onclick="switchPeriod('weekly',this)">📆 今週</button>
+        <button class="period-btn" onclick="switchPeriod('monthly',this)">🗓️ 今月</button>
+        <button class="period-btn" onclick="switchPeriod('alltime',this)">🏆 全期間</button>
+      </div>
     </div>
+    <div id="rank-period-label" style="font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:.8rem;letter-spacing:-.2px">📅 今日のランキング</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.8rem">
       <select id="rank-cat-select" onchange="setRankCat(this.value)" style="border:0.5px solid #e0e0d8;border-radius:8px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">
         <option value="">カテゴリーを絞る</option>
@@ -1653,44 +1657,73 @@ function renderTracks() {
 }
 
 /* ---- ranking ---- */
+var PERIOD_LABELS = { daily: '今日', weekly: '今週', monthly: '今月', alltime: '全期間' };
+var PERIOD_KEY    = { daily: 'daily', weekly: 'weekly', monthly: 'monthly', alltime: 'alltime' };
+
 function calcScore(t) {
-  var playPts  = (plays[t.id]||{})[currentPeriod] || 0;
-  var likePts  = ((window._likeCounts && window._likeCounts[t.id]) || 0) * 5;
-  var supaPts  = totalPts(supaTrack[t.id] || []) * 50;
+  var key = PERIOD_KEY[currentPeriod] || 'alltime';
+  var playPts = (plays[t.id]||{})[key] || 0;
+  var likePts = ((window._likeCounts && window._likeCounts[t.id]) || 0) * 5;
+  var supaPts = totalPts(supaTrack[t.id] || []) * 50;
   return playPts + likePts + supaPts;
+}
+function calcPlayForPeriod(t) {
+  var key = PERIOD_KEY[currentPeriod] || 'alltime';
+  return (plays[t.id]||{})[key] || 0;
 }
 function renderRankBlock(src, label, color) {
   if (!src.length) return '';
   var sorted = [];
-  for (var i = 0; i < src.length; i++) sorted.push({t:src[i], count:calcScore(src[i])});
-  sorted.sort(function(a,b){ return b.count - a.count; });
-  var max = sorted[0].count || 1; var medals = ['🥇','🥈','🥉']; var rows = '';
+  for (var i = 0; i < src.length; i++) sorted.push({t:src[i], score:calcScore(src[i]), play:calcPlayForPeriod(src[i])});
+  sorted.sort(function(a,b){ return b.score - a.score; });
+  var max = sorted[0].score || 1;
+  var medals = ['🥇','🥈','🥉'];
+  var rows = '';
   for (var i = 0; i < sorted.length; i++) {
-    var t = sorted[i].t; var cnt = sorted[i].count; var ci = catInfo(t.cat);
+    var t = sorted[i].t; var cnt = sorted[i].score; var pPlay = sorted[i].play;
+    var ci = catInfo(t.cat);
     var tIdx = tracks.indexOf(t); var spPts = totalPts(supaTrack[t.id]);
-    rows += '<div class="rank-item ' + (i < 3 ? 'rank-' + (i+1) : 'rank-other') + '" onclick="playTrack(' + tIdx + ')">' +
-      '<div class="rank-badge">' + (i < 3 ? medals[i] : i+1) + '</div>' +
+    var lk = (window._likeCounts && window._likeCounts[t.id]) || 0;
+    // トップ3は目立つ背景
+    var rowStyle = '';
+    if (i === 0) rowStyle = 'background:linear-gradient(90deg,#fffbea 0%,#fff 100%);border-left:3px solid #f5c400';
+    else if (i === 1) rowStyle = 'background:linear-gradient(90deg,#f6f6f6 0%,#fff 100%);border-left:3px solid #aaa';
+    else if (i === 2) rowStyle = 'background:linear-gradient(90deg,#fff5f0 0%,#fff 100%);border-left:3px solid #cd7f32';
+    rows += '<div class="rank-item ' + (i < 3 ? 'rank-' + (i+1) : 'rank-other') + '" style="' + rowStyle + '" onclick="playTrack(' + tIdx + ')">' +
+      '<div class="rank-badge">' + (i < 3 ? medals[i] : '<span style="font-size:11px;font-weight:600;color:#bbb">' + (i+1) + '</span>') + '</div>' +
       '<div class="rank-thumb">' + thumbHtml(t, 36) + '</div>' +
-      '<div class="rank-info"><div class="rank-title">' + t.name + '</div>' +
-      '<div class="rank-plays">' + (color !== '#888' ? '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' : '') +
-      '<i class="ti ti-player-play" style="font-size:9px"></i><span>' + ((plays[t.id]||{}).alltime||0) + '再生</span>' +
-      '<span style="color:#e24b4a;font-size:10px">♥' + ((window._likeCounts && window._likeCounts[t.id])||0) + '</span>' +
-      '<span style="font-size:10px;color:#555;font-weight:500">合計 ' + cnt + 'pt</span>' +
-      (spPts > 0 ? '<span style="color:#c4980a;font-size:10px">🪙' + spPts + 'pt</span>' : '') + '</div></div>' +
+      '<div class="rank-info">' +
+        '<div class="rank-title">' + esc(t.name) + '</div>' +
+        '<div class="rank-plays">' +
+          (color !== '#888' ? '' : '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>') +
+          '<span><i class="ti ti-player-play" style="font-size:9px"></i> ' + pPlay + '再生</span>' +
+          '<span style="color:#e24b4a">♥' + lk + '</span>' +
+          '<span style="color:#888;font-weight:500">' + cnt + 'pt</span>' +
+          (spPts > 0 ? '<span style="color:#c4980a">🪙' + spPts + '</span>' : '') +
+        '</div>' +
+      '</div>' +
       '<div class="rank-bar-wrap"><div class="rank-bar" style="width:' + Math.round(cnt/max*100) + '%;background:' + color + '"></div></div>' +
-      '<button class="rank-play-btn" onclick="event.stopPropagation();playTrack(' + tIdx + ')"><i class="ti ti-player-play"></i></button></div>';
+      '<button class="rank-play-btn" onclick="event.stopPropagation();playTrack(' + tIdx + ')"><i class="ti ti-player-play"></i></button>' +
+    '</div>';
   }
   return '<div style="margin-bottom:1.5rem">' +
     '<div style="display:flex;align-items:center;gap:6px;margin-bottom:.6rem">' +
-    (color !== '#888' ? '<span style="width:9px;height:9px;border-radius:50%;background:' + color + ';display:inline-block"></span>' : '<i class="ti ti-list-numbers" style="font-size:13px;color:#888"></i>') +
+    (color !== '#888'
+      ? '<span style="width:9px;height:9px;border-radius:50%;background:' + color + ';display:inline-block"></span>'
+      : '<i class="ti ti-list-numbers" style="font-size:13px;color:#888"></i>') +
     '<span style="font-size:12px;font-weight:500;color:' + color + '">' + label + '</span>' +
-    '<span style="font-size:10px;color:#bbb">' + src.length + '曲</span></div>' +
+    '<span style="font-size:10px;color:#bbb">' + src.length + '曲</span>' +
+    '</div>' +
     '<div class="rank-list">' + rows + '</div></div>';
 }
 function setRankCat(v) { rankCat = v; renderRanking(); }
 function setRankGenre(v) { rankGenre = v; renderRanking(); }
 
 function renderRanking() {
+  // 期間ラベルを更新
+  var periodLabel = document.getElementById('rank-period-label');
+  if (periodLabel) periodLabel.textContent = '📅 ' + (PERIOD_LABELS[currentPeriod] || '') + 'のランキング';
+
   // セレクトの選択肢を更新
   var catSel = document.getElementById('rank-cat-select');
   var genSel = document.getElementById('rank-genre-select');
@@ -1708,30 +1741,26 @@ function renderRanking() {
   var sections = document.getElementById('rank-sections');
   if (!tracks.length) { sections.innerHTML = '<div class="empty-rank"><i class="ti ti-trophy"></i><p>曲をアップロードするとランキングが表示されます</p></div>'; return; }
 
-  // カテゴリー or ジャンルで絞り込み中なら総合のみ
   if (rankCat || rankGenre) {
     var filtered = tracks.filter(function(t) {
-      var inCat = !rankCat || t.cat === rankCat;
-      var inGen = !rankGenre || (t.genre && t.genre === rankGenre);
-      return inCat && inGen;
+      return (!rankCat || t.cat === rankCat) && (!rankGenre || t.genre === rankGenre);
     });
-    var label = '';
-    if (rankCat) { var ci = catInfo(rankCat); label = ci.label + 'ランキング'; }
-    if (rankGenre) label += (label ? ' / ' : '') + rankGenre + 'ランキング';
+    var lbl = '';
+    if (rankCat) { var ci = catInfo(rankCat); lbl = ci.label + 'ランキング'; }
+    if (rankGenre) lbl += (lbl ? ' / ' : '') + rankGenre + 'ランキング';
     sections.innerHTML = filtered.length
-      ? renderRankBlock(filtered, label, rankCat ? catInfo(rankCat).color : '#3a8fb5')
+      ? renderRankBlock(filtered, lbl, rankCat ? catInfo(rankCat).color : '#3a8fb5')
       : '<div class="empty-rank"><i class="ti ti-trophy"></i><p>この条件の曲がありません</p></div>';
     return;
   }
 
-  // 絞り込みなし → 総合 + カテゴリー別
   var used = {};
   for (var i = 0; i < tracks.length; i++) used[tracks[i].cat] = true;
   var html = renderRankBlock(tracks, '総合ランキング', '#888');
   for (var i = 0; i < CATS.length; i++) {
     var c = CATS[i]; if (!used[c.id]) continue;
-    var src = tracks.filter(function(cid){ return function(t){ return t.cat === cid; }; }(c.id));
-    html += renderRankBlock(src, c.label + ' ランキング', c.color);
+    var src2 = tracks.filter(function(cid){ return function(t){ return t.cat === cid; }; }(c.id));
+    html += renderRankBlock(src2, c.label + ' ランキング', c.color);
   }
   sections.innerHTML = html;
 }
@@ -1739,7 +1768,8 @@ function switchPeriod(p, btn) {
   currentPeriod = p;
   var btns = document.querySelectorAll('.period-btn');
   for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
-  btn.classList.add('active'); renderRanking();
+  btn.classList.add('active');
+  renderRanking();
 }
 
 /* ---- user page ---- */

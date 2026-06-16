@@ -253,7 +253,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;height:56px;position:st
 .toast.show{opacity:1}
 audio{display:none}
 .auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center}
-.auth-overlay.open{display:flex}
+.auth-overlay.open{display:flex !important}
 .video-player-wrap{display:none;position:fixed;top:56px;left:0;right:0;background:#000;z-index:98;max-height:240px;justify-content:center}
 .video-player-wrap.show{display:flex}
 .video-player-wrap video{max-width:100%;max-height:240px;object-fit:contain}
@@ -489,12 +489,12 @@ sb.auth.onAuthStateChange(function(event, session) {
     loadUserProfile(session.user);
   } else {
     currentAuthUser = null;
-    overlay.style.display = 'flex';
     overlay.classList.add('open');
     user = null;
     updateNavUser();
     renderUploadArea();
     renderUserPage();
+    loadTracks();
   }
 });
 

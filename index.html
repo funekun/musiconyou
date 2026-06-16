@@ -2664,6 +2664,9 @@ function deleteMyList(id) {
   showToast('リストを削除しました');
 }
 function removeFromMyList(listId, trackId) {
+  var trackName = '';
+  for (var i = 0; i < tracks.length; i++) if (tracks[i].id === trackId) { trackName = tracks[i].name; break; }
+  if (!confirm('「' + trackName + '」をリストから削除しますか？')) return;
   for (var i = 0; i < MY_LISTS.length; i++) {
     if (MY_LISTS[i].id === listId) {
       MY_LISTS[i].trackIds = MY_LISTS[i].trackIds.filter(function(tid){ return tid !== trackId; });

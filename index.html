@@ -771,8 +771,9 @@ sb.auth.onAuthStateChange(function(event, session) {
 });
 
 async function loadTracks() {
+  try {
   var res = await sb.from('tracks').select('*').order('created_at', {ascending: false});
-  if (res.error || !res.data) return;
+  if (res.error || !res.data) { renderTracks(); return; }
   tracks = [];
   for (var i = 0; i < res.data.length; i++) {
     var d = res.data[i];
@@ -838,6 +839,7 @@ async function loadTracks() {
   }
 
   renderTracks(); renderRanking(); renderFilterBar(); renderUserPage();
+  } catch(e) { console.error('loadTracks error:', e); renderTracks(); }
 }
 
 async function loadUserProfile(authUser) {
@@ -2969,14 +2971,19 @@ function initDragSort(listId) {
 
     // タッチ対応
     (function(row) {
-      var startY, clone, startTop, listTop;
+      var startY;
       row.addEventListener('touchstart', function(e) {
-        var handle = e.target.closest('.drag-handle');
-        if (!handle) return;
+        var target = e.target;
+        var isHandle = false;
+        while (target && target !== row) {
+          if (target.classList && target.classList.contains('drag-handle')) { isHandle = true; break; }
+          target = target.parentNode;
+        }
+        if (!isHandle) return;
         e.preventDefault();
         dragEl = row;
+        window._mlDragging = true;
         startY = e.touches[0].clientY;
-        startTop = row.getBoundingClientRect().top;
         row.classList.add('dragging');
       }, {passive: false});
       row.addEventListener('touchmove', function(e) {
@@ -2999,6 +3006,7 @@ function initDragSort(listId) {
         if (!dragEl || dragEl !== row) return;
         row.classList.remove('dragging');
         dragEl = null;
+        window._mlDragging = false;
         saveDragOrder(listId);
       });
     })(row);
@@ -3263,6 +3271,7 @@ function switchTab(tab) {
 
   document.addEventListener('touchend', function(e) {
     if (!isMobile()) return;
+    if (window._mlDragging) return; // ドラッグ中はスワイプ無効
     var dx = e.changedTouches[0].clientX - touchStartX;
     var dy = e.changedTouches[0].clientY - touchStartY;
     var dt = Date.now() - touchStartTime;

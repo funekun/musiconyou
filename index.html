@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>みゅーじっく音友</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500&display=swap" rel="stylesheet">
@@ -420,7 +420,8 @@ audio{display:none}
 .np-cmt-input-av i{font-size:10px;color:#ccc}
 .np-cmt-input{flex:1;border:0.5px solid #e0e0d8;border-radius:16px;padding:6px 11px;font-size:12px;outline:none;background:#fff;font-family:inherit}
 .np-cmt-input:focus{border-color:#888}
-.np-cmt-send{background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:12px}display:none;position:fixed;right:0;top:56px;bottom:144px;width:300px;background:#fff;border-left:0.5px solid #e0e0d8;flex-direction:column;z-index:50;box-shadow:-4px 0 16px rgba(0,0,0,.06)}
+.np-cmt-send{background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:12px}
+.notif-panel{display:none;position:fixed;right:0;top:56px;bottom:144px;width:300px;background:#fff;border-left:0.5px solid #e0e0d8;flex-direction:column;z-index:50;box-shadow:-4px 0 16px rgba(0,0,0,.06)}
 .notif-panel.open{display:flex}
 .notif-header{padding:14px 16px;border-bottom:0.5px solid #e0e0d8;display:flex;align-items:center;justify-content:space-between}
 .notif-header-left{display:flex;align-items:center;gap:8px}
@@ -2308,18 +2309,9 @@ function closeNpComments() {
 }
 
 function shiftPlayerUp(on) {
-  var npH = on ? '220px' : '0px';
-  // コメントパネルのbottomをプレイヤー+ナビ+コメントエリア分に
+  // np-commentsのbottomは常に144px固定（プレイヤー+ナビの高さ）
   var np = document.getElementById('np-comments');
-  if (np) { np.style.bottom = on ? '144px' : '144px'; }
-  // notif/feed panels も追従
-  var nPanel = document.getElementById('notif-panel');
-  var fPanel = document.getElementById('cmt-feed-panel');
-  var cpPanel = document.getElementById('comments-panel');
-  var shift = on ? (144 + 220) + 'px' : '144px';
-  if (nPanel) nPanel.style.bottom = shift;
-  if (fPanel) fPanel.style.bottom = shift;
-  if (cpPanel) cpPanel.style.bottom = shift;
+  if (np) np.style.bottom = '144px';
 }
 
 async function loadNpComments(trackId) {

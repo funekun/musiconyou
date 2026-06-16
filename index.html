@@ -285,6 +285,50 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;height:56px;position:st
 .cp-input input:focus{border-color:#888}
 .cp-input button{background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:13px}
 .toast{position:fixed;bottom:155px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:12px;padding:7px 16px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:400;white-space:nowrap}
+/* ---- マイリスト ---- */
+.mylist-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.mylist-title{font-size:14px;font-weight:600;color:#1a1a1a}
+.mylist-new-btn{background:#1a1a1a;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.mylist-grid{display:flex;flex-direction:column;gap:8px}
+.mylist-card{background:#fff;border:0.5px solid #e8e8e0;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .12s}
+.mylist-card:hover{background:#fafaf8}
+.mylist-card-icon{width:40px;height:40px;border-radius:10px;background:#f4f4f0;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.mylist-card-info{flex:1;min-width:0}
+.mylist-card-name{font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mylist-card-count{font-size:11px;color:#aaa}
+.mylist-card-actions{display:flex;gap:4px;flex-shrink:0}
+.mylist-card-btn{background:none;border:none;cursor:pointer;color:#ccc;padding:4px;border-radius:6px;font-size:15px;transition:all .12s}
+.mylist-card-btn:hover{color:#555;background:#f4f4f0}
+.mylist-detail-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.mylist-back-btn{background:none;border:none;cursor:pointer;color:#555;font-size:18px;padding:4px;border-radius:8px}
+.mylist-detail-icon{font-size:22px}
+.mylist-detail-name{font-size:15px;font-weight:600;color:#1a1a1a;flex:1}
+.mylist-detail-count{font-size:11px;color:#aaa;margin-top:1px}
+.list-select-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:flex-end;justify-content:center}
+.list-select-modal.open{display:flex}
+.list-select-sheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 16px 32px;max-height:70vh;display:flex;flex-direction:column}
+.list-select-title{font-size:13px;font-weight:500;margin-bottom:14px;color:#1a1a1a}
+.list-select-body{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:6px}
+.list-select-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background .12s;border:0.5px solid #f0f0ec}
+.list-select-item:hover{background:#fafaf8}
+.list-select-item-icon{font-size:18px;width:32px;text-align:center}
+.list-select-item-name{font-size:13px;color:#1a1a1a;flex:1}
+.list-select-item-count{font-size:11px;color:#bbb}
+.list-select-item.already{opacity:.5;pointer-events:none}
+.list-select-new{margin-top:8px;background:none;border:0.5px dashed #ccc;border-radius:10px;padding:10px 12px;font-size:12px;color:#888;cursor:pointer;width:100%;text-align:left;display:flex;align-items:center;gap:8px;transition:all .12s}
+.list-select-new:hover{background:#f4f4f0;color:#555}
+.list-edit-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:501;align-items:center;justify-content:center}
+.list-edit-modal.open{display:flex}
+.list-edit-sheet{background:#fff;border-radius:16px;width:calc(100% - 48px);max-width:360px;padding:20px 18px}
+.list-edit-title{font-size:14px;font-weight:600;margin-bottom:14px}
+.list-edit-icons{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.list-edit-icon-btn{width:36px;height:36px;border-radius:8px;border:1.5px solid #e8e8e0;background:#f8f8f6;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.list-edit-icon-btn.selected{border-color:#1a1a1a;background:#f0f0ec}
+.list-edit-input{width:100%;border:0.5px solid #e0e0d8;border-radius:10px;padding:9px 12px;font-size:13px;outline:none;font-family:inherit;box-sizing:border-box;margin-bottom:14px}
+.list-edit-input:focus{border-color:#1a1a1a}
+.list-edit-btns{display:flex;gap:8px}
+.list-edit-cancel{flex:1;background:#f4f4f0;border:none;border-radius:10px;padding:9px;font-size:13px;cursor:pointer;color:#555}
+.list-edit-save{flex:1;background:#1a1a1a;color:#fff;border:none;border-radius:10px;padding:9px;font-size:13px;cursor:pointer;font-weight:500}
 /* 統計タブ */
 .user-subtabs{display:flex;border-bottom:0.5px solid #e8e8e0;margin-bottom:1.2rem}
 .user-subtab{background:none;border:none;cursor:pointer;font-size:12px;color:#aaa;padding:8px 14px;border-bottom:2px solid transparent;transition:all .15s;margin-bottom:-1px;display:flex;align-items:center;gap:4px}
@@ -429,18 +473,7 @@ audio{display:none}
   </div>
   <div id="tab-search" class="tab-content"><div id="search-page"></div></div>
   <div id="tab-playlist-inline" class="tab-content">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
-      <div class="section-title" style="margin:0">プレイリスト (<span id="pl-count">0</span>曲)</div>
-    </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.8rem">
-      <select id="pl-cat-select" onchange="setPlCat(this.value)" style="border:0.5px solid #e0e0d8;border-radius:8px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">
-        <option value="">カテゴリーで絞る</option>
-      </select>
-      <select id="pl-genre-select" onchange="setPlGenre(this.value)" style="border:0.5px solid #e0e0d8;border-radius:8px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">
-        <option value="">ジャンルで絞る</option>
-      </select>
-    </div>
-    <div id="pl-sections"></div>
+    <div id="mylist-view"></div>
   </div>
   <div id="tab-user" class="tab-content"><div id="user-page-content"></div></div>
 </div>
@@ -571,6 +604,26 @@ audio{display:none}
   </div>
 </div>
 
+<!-- リスト選択モーダル -->
+<div class="list-select-modal" id="list-select-modal" onclick="if(event.target===this)closeListSelect()">
+  <div class="list-select-sheet">
+    <div class="list-select-title" id="list-select-title">リストに追加</div>
+    <div class="list-select-body" id="list-select-body"></div>
+    <button class="list-select-new" onclick="closeListSelect();openListEdit(null)"><i class="ti ti-plus" style="font-size:13px"></i>新しいリストを作成</button>
+  </div>
+</div>
+<!-- リスト作成/編集モーダル -->
+<div class="list-edit-modal" id="list-edit-modal" onclick="if(event.target===this)closeListEdit()">
+  <div class="list-edit-sheet">
+    <div class="list-edit-title" id="list-edit-modal-title">新しいリストを作成</div>
+    <div class="list-edit-icons" id="list-edit-icons"></div>
+    <input class="list-edit-input" id="list-edit-name" placeholder="リスト名（例：お気に入り、ロック）" maxlength="30">
+    <div class="list-edit-btns">
+      <button class="list-edit-cancel" onclick="closeListEdit()">キャンセル</button>
+      <button class="list-edit-save" onclick="saveList()">保存</button>
+    </div>
+  </div>
+</div>
 <!-- 通知パネル -->
 <div class="notif-panel" id="notif-panel">
   <div class="notif-header">
@@ -2451,86 +2504,230 @@ async function addComment() {
     showToast('エラー: ' + (res.error ? res.error.message : '不明'));
   }
 }
-function addToPlaylist(id) {
-  var t = null; for (var i = 0; i < tracks.length; i++) if (tracks[i].id === id) { t = tracks[i]; break; }
-  if (!t) return;
-  var idx = -1; for (var i = 0; i < playlist.length; i++) if (playlist[i].id === id) { idx = i; break; }
-  if (idx >= 0) { playlist.splice(idx, 1); showToast('プレイリストから削除しました'); }
-  else { playlist.push(t); showToast('プレイリストに追加しました'); }
-  renderTracks(); renderPlaylist();
+/* ---- マイリスト ---- */
+var MY_LISTS = [];           // [{id, name, icon, trackIds:[]}]
+var myListView = 'list';     // 'list' | detail listId
+var listSelectTrackId = null;
+var listEditId = null;       // null=新規, id=編集
+var LIST_ICONS = ['🎵','❤️','🔥','⭐️','🎸','🎹','🎺','🎻','🎤','🥁','🎧','🌙','🌟','🎶','🎼','🏆','🎯','💎','🌈','🍀'];
+
+function saveMyLists() {
+  try { localStorage.setItem('myLists_v2', JSON.stringify(MY_LISTS)); } catch(e){}
 }
-var plCat = '', plGenre = '';
-function setPlCat(v) { plCat = v; renderPlaylist(); }
-function setPlGenre(v) { plGenre = v; renderPlaylist(); }
-
-function renderPlaylist() {
-  document.getElementById('pl-count').textContent = playlist.length;
-
-  // セレクト更新
-  var catSel = document.getElementById('pl-cat-select');
-  var genSel = document.getElementById('pl-genre-select');
-  if (catSel) {
-    var ch = '<option value="">カテゴリーで絞る</option>';
-    for (var i = 0; i < CATS.length; i++) ch += '<option value="' + CATS[i].id + '">' + CATS[i].label + '</option>';
-    catSel.innerHTML = ch; catSel.value = plCat;
-  }
-  if (genSel) {
-    var gh = '<option value="">ジャンルで絞る</option>';
-    for (var i = 0; i < GENRES.length; i++) gh += '<option value="' + GENRES[i] + '">' + GENRES[i] + '</option>';
-    genSel.innerHTML = gh; genSel.value = plGenre;
-  }
-
-  var sections = document.getElementById('pl-sections');
-  if (!playlist.length) {
-    sections.innerHTML = '<div class="empty"><i class="ti ti-playlist"></i><p>プレイリストはまだ空です</p></div>';
-    return;
-  }
-
-  // 絞り込みフィルター適用
-  var filtered = playlist.filter(function(t) {
-    var inCat = !plCat || t.cat === plCat;
-    var inGen = !plGenre || (t.genre && t.genre === plGenre);
-    return inCat && inGen;
-  });
-
-  if (plCat || plGenre) {
-    // 絞り込み中は1セクションのみ
-    if (!filtered.length) {
-      sections.innerHTML = '<div class="empty"><i class="ti ti-playlist"></i><p>この条件の曲がありません</p></div>';
-      return;
+function loadMyLists() {
+  try {
+    var s = localStorage.getItem('myLists_v2');
+    if (s) MY_LISTS = JSON.parse(s);
+    // 旧プレイリスト移行
+    if (!MY_LISTS.length) {
+      var old = localStorage.getItem('playlist');
+      if (old) {
+        var ids = JSON.parse(old);
+        if (ids && ids.length) MY_LISTS = [{id:'default', name:'マイリスト', icon:'🎵', trackIds: ids.map(function(t){ return t.id || t; })}];
+      }
     }
-    sections.innerHTML = renderPlBlock(filtered, null);
+  } catch(e) { MY_LISTS = []; }
+}
+
+function renderMyList() {
+  var view = document.getElementById('mylist-view');
+  if (!view) return;
+  if (myListView === 'list') {
+    renderMyListTop(view);
+  } else {
+    renderMyListDetail(view, myListView);
+  }
+}
+
+function renderMyListTop(view) {
+  var html = '<div class="mylist-header"><span class="mylist-title">マイリスト</span>' +
+    '<button class="mylist-new-btn" onclick="openListEdit(null)"><i class="ti ti-plus" style="font-size:13px"></i>新規作成</button></div>';
+  if (!MY_LISTS.length) {
+    html += '<div class="empty"><i class="ti ti-playlist"></i><p>リストがありません<br><span style="font-size:11px;color:#bbb">「新規作成」でリストを作ろう！</span></p></div>';
+  } else {
+    html += '<div class="mylist-grid">';
+    for (var i = 0; i < MY_LISTS.length; i++) {
+      var ml = MY_LISTS[i];
+      var cnt = ml.trackIds ? ml.trackIds.length : 0;
+      html += '<div class="mylist-card" onclick="openMyListDetail(\'' + ml.id + '\')">' +
+        '<div class="mylist-card-icon">' + (ml.icon || '🎵') + '</div>' +
+        '<div class="mylist-card-info">' +
+          '<div class="mylist-card-name">' + esc(ml.name) + '</div>' +
+          '<div class="mylist-card-count">' + cnt + '曲</div>' +
+        '</div>' +
+        '<div class="mylist-card-actions">' +
+          '<button class="mylist-card-btn" title="編集" onclick="event.stopPropagation();openListEdit(\'' + ml.id + '\')"><i class="ti ti-edit"></i></button>' +
+          '<button class="mylist-card-btn" title="削除" onclick="event.stopPropagation();deleteMyList(\'' + ml.id + '\')"><i class="ti ti-trash" style="color:#e24b4a"></i></button>' +
+        '</div>' +
+      '</div>';
+    }
+    html += '</div>';
+  }
+  view.innerHTML = html;
+}
+
+function renderMyListDetail(view, listId) {
+  var ml = null;
+  for (var i = 0; i < MY_LISTS.length; i++) if (MY_LISTS[i].id === listId) { ml = MY_LISTS[i]; break; }
+  if (!ml) { myListView = 'list'; renderMyList(); return; }
+
+  var listTracks = [];
+  for (var i = 0; i < (ml.trackIds||[]).length; i++) {
+    for (var j = 0; j < tracks.length; j++) {
+      if (tracks[j].id === ml.trackIds[i]) { listTracks.push(tracks[j]); break; }
+    }
+  }
+
+  var html = '<div class="mylist-detail-header">' +
+    '<button class="mylist-back-btn" onclick="myListView=\'list\';renderMyList()"><i class="ti ti-arrow-left"></i></button>' +
+    '<span class="mylist-detail-icon">' + (ml.icon||'🎵') + '</span>' +
+    '<div><div class="mylist-detail-name">' + esc(ml.name) + '</div><div class="mylist-detail-count">' + listTracks.length + '曲</div></div>' +
+    '<button class="mylist-card-btn" onclick="openListEdit(\'' + ml.id + '\')" style="font-size:16px;color:#888"><i class="ti ti-edit"></i></button>' +
+  '</div>';
+
+  if (!listTracks.length) {
+    html += '<div class="empty"><i class="ti ti-music-off"></i><p>このリストはまだ空です<br><span style="font-size:11px;color:#bbb">曲の「+」ボタンからリストに追加できます</span></p></div>';
+  } else {
+    html += '<div class="track-list">';
+    for (var i = 0; i < listTracks.length; i++) {
+      var t = listTracks[i];
+      var tIdx = tracks.indexOf(t);
+      var ci = catInfo(t.cat);
+      var playing = currentIdx === tIdx;
+      html += '<div class="track-row' + (playing ? ' playing' : '') + '" id="track-ml-' + t.id + '" onclick="playTrack(' + tIdx + ')">' +
+        '<div class="track-thumb">' + thumbHtml(t, 44) + (playing ? '<div class="thumb-play-ov"><i class="ti ti-player-' + (!audio.paused ? 'pause' : 'play') + '"></i></div>' : '') + '</div>' +
+        '<div class="track-info">' +
+          '<div class="track-name">' + esc(t.name) + '</div>' +
+          '<div class="track-meta"><span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' + (t.duration ? fmtTime(t.duration) : '') + '</div>' +
+        '</div>' +
+        '<button class="icon-btn" style="color:#e24b4a" title="リストから削除" onclick="event.stopPropagation();removeFromMyList(\'' + ml.id + '\',\'' + t.id + '\')"><i class="ti ti-x"></i></button>' +
+        '<button class="icon-btn" onclick="event.stopPropagation();playTrack(' + tIdx + ')"><i class="ti ti-player-play"></i></button>' +
+      '</div>';
+    }
+    html += '</div>';
+  }
+  view.innerHTML = html;
+}
+
+function openMyListDetail(id) { myListView = id; renderMyList(); }
+
+function openListEdit(id) {
+  listEditId = id;
+  var ml = null;
+  if (id) for (var i = 0; i < MY_LISTS.length; i++) if (MY_LISTS[i].id === id) { ml = MY_LISTS[i]; break; }
+  var modal = document.getElementById('list-edit-modal');
+  document.getElementById('list-edit-modal-title').textContent = id ? 'リストを編集' : '新しいリストを作成';
+  document.getElementById('list-edit-name').value = ml ? ml.name : '';
+  // アイコン選択UI
+  var iconsHtml = '';
+  var selectedIcon = ml ? ml.icon : LIST_ICONS[0];
+  for (var i = 0; i < LIST_ICONS.length; i++) {
+    iconsHtml += '<button class="list-edit-icon-btn' + (LIST_ICONS[i] === selectedIcon ? ' selected' : '') + '" onclick="selectListIcon(this,\'' + LIST_ICONS[i] + '\')">' + LIST_ICONS[i] + '</button>';
+  }
+  document.getElementById('list-edit-icons').innerHTML = iconsHtml;
+  modal.classList.add('open');
+  setTimeout(function(){ document.getElementById('list-edit-name').focus(); }, 100);
+}
+function closeListEdit() { document.getElementById('list-edit-modal').classList.remove('open'); }
+function selectListIcon(btn, icon) {
+  var btns = document.querySelectorAll('.list-edit-icon-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('selected');
+  btn.classList.add('selected');
+}
+function getSelectedIcon() {
+  var btn = document.querySelector('.list-edit-icon-btn.selected');
+  return btn ? btn.textContent : LIST_ICONS[0];
+}
+function saveList() {
+  var name = document.getElementById('list-edit-name').value.trim();
+  if (!name) { document.getElementById('list-edit-name').focus(); showToast('リスト名を入力してください'); return; }
+  var icon = getSelectedIcon();
+  if (listEditId) {
+    for (var i = 0; i < MY_LISTS.length; i++) {
+      if (MY_LISTS[i].id === listEditId) { MY_LISTS[i].name = name; MY_LISTS[i].icon = icon; break; }
+    }
+    showToast('リストを更新しました');
+  } else {
+    MY_LISTS.push({ id: 'ml_' + Date.now(), name: name, icon: icon, trackIds: [] });
+    showToast('リストを作成しました！');
+  }
+  saveMyLists();
+  closeListEdit();
+  renderMyList();
+}
+function deleteMyList(id) {
+  if (!confirm('このリストを削除しますか？')) return;
+  MY_LISTS = MY_LISTS.filter(function(ml){ return ml.id !== id; });
+  saveMyLists();
+  if (myListView === id) myListView = 'list';
+  renderMyList();
+  showToast('リストを削除しました');
+}
+function removeFromMyList(listId, trackId) {
+  for (var i = 0; i < MY_LISTS.length; i++) {
+    if (MY_LISTS[i].id === listId) {
+      MY_LISTS[i].trackIds = MY_LISTS[i].trackIds.filter(function(tid){ return tid !== trackId; });
+      break;
+    }
+  }
+  saveMyLists();
+  renderMyList();
+  showToast('リストから削除しました');
+}
+
+/* リスト選択モーダル（曲の＋ボタンから） */
+function openListSelect(trackId) {
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  listSelectTrackId = trackId;
+  var t = null; for (var i = 0; i < tracks.length; i++) if (tracks[i].id === trackId) { t = tracks[i]; break; }
+  document.getElementById('list-select-title').textContent = (t ? '「' + t.name + '」を追加' : 'リストに追加');
+  renderListSelectBody(trackId);
+  document.getElementById('list-select-modal').classList.add('open');
+}
+function closeListSelect() { document.getElementById('list-select-modal').classList.remove('open'); listSelectTrackId = null; }
+function renderListSelectBody(trackId) {
+  var body = document.getElementById('list-select-body');
+  if (!MY_LISTS.length) {
+    body.innerHTML = '<div style="text-align:center;padding:1rem;color:#bbb;font-size:12px">リストがありません</div>';
     return;
   }
-
-  // 絞り込みなし → 総合 + カテゴリー別
-  var used = {};
-  for (var i = 0; i < playlist.length; i++) used[playlist[i].cat] = true;
-  var html = renderPlBlock(playlist, '総合');
-  for (var i = 0; i < CATS.length; i++) {
-    var c = CATS[i]; if (!used[c.id]) continue;
-    var src = playlist.filter(function(cid){ return function(t){ return t.cat === cid; }; }(c.id));
-    html += renderPlBlock(src, c.label, c.color);
+  var html = '';
+  for (var i = 0; i < MY_LISTS.length; i++) {
+    var ml = MY_LISTS[i];
+    var already = ml.trackIds && ml.trackIds.indexOf(trackId) >= 0;
+    html += '<div class="list-select-item' + (already ? ' already' : '') + '" onclick="addToMyList(\'' + ml.id + '\')">' +
+      '<span class="list-select-item-icon">' + (ml.icon||'🎵') + '</span>' +
+      '<span class="list-select-item-name">' + esc(ml.name) + '</span>' +
+      '<span class="list-select-item-count">' + (already ? '追加済み' : (ml.trackIds||[]).length + '曲') + '</span>' +
+    '</div>';
   }
-  sections.innerHTML = html;
+  body.innerHTML = html;
+}
+function addToMyList(listId) {
+  if (!listSelectTrackId) return;
+  for (var i = 0; i < MY_LISTS.length; i++) {
+    if (MY_LISTS[i].id === listId) {
+      if (!MY_LISTS[i].trackIds) MY_LISTS[i].trackIds = [];
+      if (MY_LISTS[i].trackIds.indexOf(listSelectTrackId) < 0) {
+        MY_LISTS[i].trackIds.push(listSelectTrackId);
+        saveMyLists();
+        showToast('「' + MY_LISTS[i].name + '」に追加しました！');
+        closeListSelect();
+        if (myListView === listId) renderMyList();
+      } else {
+        showToast('すでにこのリストに追加済みです');
+      }
+      break;
+    }
+  }
 }
 
-function renderPlBlock(src, label, color) {
-  if (!src.length) return '';
-  var rows = '';
-  for (var i = 0; i < src.length; i++) {
-    rows += trackRowHtml(src[i], tracks.indexOf(src[i]), {noTrash:true});
-  }
-  var header = '';
-  if (label) {
-    header = '<div style="display:flex;align-items:center;gap:6px;margin-bottom:.5rem">' +
-      (color ? '<span style="width:9px;height:9px;border-radius:50%;background:' + color + ';display:inline-block;flex-shrink:0"></span>' : '<i class="ti ti-list-numbers" style="font-size:13px;color:#888"></i>') +
-      '<span style="font-size:12px;font-weight:500;color:' + (color||'#888') + '">' + label + '</span>' +
-      '<span style="font-size:10px;color:#bbb">' + src.length + '曲</span>' +
-      '</div>';
-  }
-  return '<div style="margin-bottom:1.4rem">' + header + '<div class="track-list">' + rows + '</div></div>';
-}
+function renderPlaylist() { renderMyList(); } // 後方互換
+function addToPlaylist(id) { openListSelect(id); } // ＋ボタン → リスト選択へ
+
+var plCat = '', plGenre = '';
+function setPlCat(v) { plCat = v; }
+function setPlGenre(v) { plGenre = v; }
 function switchTab(tab) {
   var tabIds = {feed:'tab-feed',ranking:'tab-ranking',playlist:'tab-playlist-inline',user:'tab-user',search:'tab-search'};
   var allTabs = document.querySelectorAll('.tab-content');
@@ -2544,7 +2741,7 @@ function switchTab(tab) {
   document.getElementById('notif-panel').classList.remove('open');
   notifOpen = false;
   if (tab === 'ranking') renderRanking();
-  if (tab === 'playlist') renderPlaylist();
+  if (tab === 'playlist') renderMyList();
   if (tab === 'user') renderUserPage();
   if (tab === 'search') renderSearchPage();
 }
@@ -2562,6 +2759,7 @@ for (var i = 0; i < mos.length; i++) {
 }
 
 renderUploadArea(); renderTracks(); renderRanking(); renderFilterBar(); renderUserPage();
+loadMyLists(); renderMyList();
 </script>
 </body>
 </html>

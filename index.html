@@ -333,7 +333,11 @@ header{background:#fff;border-bottom:0.5px solid #d0eaf5;height:56px;position:st
 .mylist-card-actions{display:flex;gap:4px;flex-shrink:0}
 .mylist-card-btn{background:none;border:none;cursor:pointer;color:#ccc;padding:4px;border-radius:6px;font-size:15px;transition:all .12s}
 .mylist-card-btn:hover{color:#555;background:#f0f8fd}
-.mylist-detail-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.mylist-sort-bar{display:flex;gap:5px;margin-bottom:10px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.mylist-sort-bar::-webkit-scrollbar{display:none}
+.mylist-sort-btn{background:#fff;border:0.5px solid #d0eaf5;border-radius:16px;padding:5px 12px;font-size:11px;cursor:pointer;color:#888;white-space:nowrap;transition:all .15s;flex-shrink:0;display:flex;align-items:center;gap:3px}
+.mylist-sort-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.mylist-sort-btn i{font-size:12px}
 .mylist-back-btn{background:none;border:none;cursor:pointer;color:#555;font-size:18px;padding:4px;border-radius:8px}
 .mylist-detail-icon{font-size:22px}
 .mylist-detail-name{font-size:15px;font-weight:600;color:#1a1a1a;flex:1}
@@ -2824,6 +2828,13 @@ function renderMyListTop(view) {
   view.innerHTML = html;
 }
 
+var myListSortKey = 'added'; // 'added' | 'newest' | 'plays' | 'likes' | 'pts'
+
+function setMyListSort(key) {
+  myListSortKey = key;
+  renderMyList();
+}
+
 function renderMyListDetail(view, listId) {
   var ml = null;
   for (var i = 0; i < MY_LISTS.length; i++) if (MY_LISTS[i].id === listId) { ml = MY_LISTS[i]; break; }
@@ -2832,9 +2843,27 @@ function renderMyListDetail(view, listId) {
   var listTracks = [];
   for (var i = 0; i < (ml.trackIds||[]).length; i++) {
     for (var j = 0; j < tracks.length; j++) {
-      if (tracks[j].id === ml.trackIds[i]) { listTracks.push(tracks[j]); break; }
+      if (tracks[j].id === ml.trackIds[i]) { listTracks.push({track: tracks[j], addedIdx: i}); break; }
     }
   }
+
+  // 並び替え
+  var sorts = {
+    added:  function(a,b){ return a.addedIdx - b.addedIdx; },
+    newest: function(a,b){ return new Date(b.track.createdAt||0) - new Date(a.track.createdAt||0); },
+    plays:  function(a,b){ return ((plays[b.track.id]||{}).alltime||0) - ((plays[a.track.id]||{}).alltime||0); },
+    likes:  function(a,b){ return ((window._likeCounts&&window._likeCounts[b.track.id])||0) - ((window._likeCounts&&window._likeCounts[a.track.id])||0); },
+    pts:    function(a,b){ return totalPts(supaTrack[b.track.id]||[]) - totalPts(supaTrack[a.track.id]||[]); }
+  };
+  listTracks.sort(sorts[myListSortKey] || sorts.added);
+
+  var sortDefs = [
+    {key:'added',  icon:'ti-clock',        label:'追加順'},
+    {key:'newest', icon:'ti-calendar',     label:'新着順'},
+    {key:'plays',  icon:'ti-player-play',  label:'再生数'},
+    {key:'likes',  icon:'ti-heart',        label:'いいね'},
+    {key:'pts',    icon:'ti-coin',         label:'投げ銭'}
+  ];
 
   var html = '<div class="mylist-detail-header">' +
     '<button class="mylist-back-btn" onclick="myListView=\'list\';renderMyList()"><i class="ti ti-arrow-left"></i></button>' +
@@ -2843,20 +2872,37 @@ function renderMyListDetail(view, listId) {
     '<button class="mylist-card-btn" onclick="openListEdit(\'' + ml.id + '\')" style="font-size:16px;color:#888"><i class="ti ti-edit"></i></button>' +
   '</div>';
 
+  // 並び替えバー
+  html += '<div class="mylist-sort-bar">';
+  for (var i = 0; i < sortDefs.length; i++) {
+    var s = sortDefs[i];
+    html += '<button class="mylist-sort-btn' + (myListSortKey === s.key ? ' active' : '') + '" onclick="setMyListSort(\'' + s.key + '\')">' +
+      '<i class="ti ' + s.icon + '"></i>' + s.label + '</button>';
+  }
+  html += '</div>';
+
   if (!listTracks.length) {
     html += '<div class="empty"><i class="ti ti-music-off"></i><p>このリストはまだ空です<br><span style="font-size:11px;color:#bbb">曲の「+」ボタンからリストに追加できます</span></p></div>';
   } else {
     html += '<div class="track-list">';
     for (var i = 0; i < listTracks.length; i++) {
-      var t = listTracks[i];
+      var t = listTracks[i].track;
       var tIdx = tracks.indexOf(t);
       var ci = catInfo(t.cat);
       var playing = currentIdx === tIdx;
+      var pl = (plays[t.id]||{}).alltime||0;
+      var lk = (window._likeCounts&&window._likeCounts[t.id])||0;
+      var sp = totalPts(supaTrack[t.id]||[]);
       html += '<div class="track-row' + (playing ? ' playing' : '') + '" id="track-ml-' + t.id + '" onclick="playTrack(' + tIdx + ')">' +
         '<div class="track-thumb">' + thumbHtml(t, 44) + (playing ? '<div class="thumb-play-ov"><i class="ti ti-player-' + (!audio.paused ? 'pause' : 'play') + '"></i></div>' : '') + '</div>' +
         '<div class="track-info">' +
           '<div class="track-name">' + esc(t.name) + '</div>' +
           '<div class="track-meta"><span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' + (t.duration ? fmtTime(t.duration) : '') + '</div>' +
+          '<div style="display:flex;gap:8px;margin-top:3px">' +
+            '<span style="font-size:10px;color:#888"><i class="ti ti-player-play" style="font-size:9px"></i> ' + pl + '</span>' +
+            '<span style="font-size:10px;color:#e24b4a"><i class="ti ti-heart" style="font-size:9px"></i> ' + lk + '</span>' +
+            (sp > 0 ? '<span style="font-size:10px;color:#c4980a">🪙' + sp + '</span>' : '') +
+          '</div>' +
         '</div>' +
         '<button class="icon-btn" style="color:#e24b4a" title="リストから削除" onclick="event.stopPropagation();removeFromMyList(\'' + ml.id + '\',\'' + t.id + '\')"><i class="ti ti-x"></i></button>' +
         '<button class="icon-btn" onclick="event.stopPropagation();playTrack(' + tIdx + ')"><i class="ti ti-player-play"></i></button>' +

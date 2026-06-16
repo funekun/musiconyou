@@ -224,20 +224,64 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;height:56px;position:st
 .not-registered{text-align:center;padding:3rem 1rem}
 .not-registered i{font-size:44px;color:#ddd;margin-bottom:14px;display:block}
 .not-registered p{font-size:14px;color:#888;margin-bottom:18px}
-.comments-panel{display:none;position:fixed;right:0;top:56px;bottom:144px;width:290px;background:#fff;border-left:0.5px solid #e0e0d8;flex-direction:column;z-index:50}
+.comments-panel{display:none;position:fixed;right:0;top:56px;bottom:144px;width:320px;background:#fff;border-left:0.5px solid #e0e0d8;flex-direction:column;z-index:50;box-shadow:-4px 0 16px rgba(0,0,0,.05)}
 .comments-panel.open{display:flex}
-.cp-header{padding:14px;border-bottom:0.5px solid #e0e0d8;display:flex;align-items:center;justify-content:space-between}
-.cp-title{font-size:13px;font-weight:500}
-.cp-body{flex:1;overflow-y:auto;padding:10px}
-.comment{padding:7px 0;border-bottom:0.5px solid #f0f0ec}
-.comment:last-child{border:none}
-.comment-user{font-size:11px;font-weight:500;margin-bottom:2px}
-.comment-text{font-size:12px;color:#555;line-height:1.5}
-.comment-time{font-size:10px;color:#bbb;margin-top:2px}
-.cp-input{padding:10px;border-top:0.5px solid #e0e0d8;display:flex;gap:7px}
-.cp-input input{flex:1;border:0.5px solid #e0e0d8;border-radius:6px;padding:6px 9px;font-size:12px;outline:none;background:#f9f9f7;font-family:inherit}
+.cp-header{padding:12px 14px;border-bottom:0.5px solid #e0e0d8;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.cp-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.cp-body{flex:1;overflow-y:auto;padding:8px 0}
+.cp-body::-webkit-scrollbar{width:3px}
+.cp-body::-webkit-scrollbar-thumb{background:#e0e0d8;border-radius:2px}
+/* コメントアイテム */
+.cmt{padding:10px 12px;display:flex;gap:8px;border-bottom:0.5px solid #f4f4f0}
+.cmt:last-child{border:none}
+.cmt-av{width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#f0f0ec;display:flex;align-items:center;justify-content:center}
+.cmt-av img{width:100%;height:100%;object-fit:cover}
+.cmt-av i{font-size:13px;color:#ccc}
+.cmt-main{flex:1;min-width:0}
+.cmt-top{display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap}
+.cmt-name{font-size:11px;font-weight:600;color:#1a1a1a}
+.cmt-time{font-size:10px;color:#bbb}
+.cmt-text{font-size:12px;color:#333;line-height:1.6;word-break:break-word}
+.cmt-actions{display:flex;align-items:center;gap:8px;margin-top:5px}
+.cmt-like-btn{background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:3px;font-size:11px;color:#bbb;padding:2px 4px;border-radius:5px;transition:all .12s}
+.cmt-like-btn:hover{color:#e24b4a;background:#fce8e8}
+.cmt-like-btn.liked{color:#e24b4a}
+.cmt-like-btn i{font-size:13px}
+.cmt-reply-btn{background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:2px 6px;border-radius:5px;transition:all .12s}
+.cmt-reply-btn:hover{color:#555;background:#f4f4f0}
+/* 返信スレッド */
+.cmt-replies{margin-top:6px;padding-left:0;display:flex;flex-direction:column;gap:0}
+.reply{padding:7px 10px;display:flex;gap:7px;background:#fafaf8;border-radius:8px;margin-top:4px}
+.reply-av{width:22px;height:22px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#f0f0ec;display:flex;align-items:center;justify-content:center}
+.reply-av img{width:100%;height:100%;object-fit:cover}
+.reply-av i{font-size:10px;color:#ccc}
+.reply-main{flex:1;min-width:0}
+.reply-top{display:flex;align-items:center;gap:5px;margin-bottom:2px;flex-wrap:wrap}
+.reply-name{font-size:10px;font-weight:600;color:#1a1a1a}
+.reply-time{font-size:9px;color:#bbb}
+.reply-text{font-size:11px;color:#444;line-height:1.5;word-break:break-word}
+.reply-actions{display:flex;align-items:center;gap:6px;margin-top:3px}
+.reply-like-btn{background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:2px;font-size:10px;color:#bbb;padding:1px 3px;border-radius:4px;transition:all .12s}
+.reply-like-btn:hover{color:#e24b4a;background:#fce8e8}
+.reply-like-btn.liked{color:#e24b4a}
+/* 返信入力エリア */
+.reply-input-area{background:#f4f4f0;border-radius:8px;padding:7px 9px;margin-top:5px;display:none}
+.reply-input-area.open{display:block}
+.reply-input-row{display:flex;gap:6px;align-items:center}
+.reply-input-row input{flex:1;border:0.5px solid #e0e0d8;border-radius:16px;padding:5px 10px;font-size:11px;outline:none;background:#fff;font-family:inherit}
+.reply-input-row input:focus{border-color:#888}
+.reply-to-label{font-size:10px;color:#aaa;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
+.reply-cancel{font-size:10px;color:#aaa;cursor:pointer;background:none;border:none;padding:0}
+.reply-cancel:hover{color:#555}
+/* 入力エリア */
+.cp-input-wrap{border-top:0.5px solid #e0e0d8;flex-shrink:0}
+.cp-input{padding:8px 10px;display:flex;gap:7px;align-items:center}
+.cp-input-av{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#f0f0ec;display:flex;align-items:center;justify-content:center}
+.cp-input-av img{width:100%;height:100%;object-fit:cover}
+.cp-input-av i{font-size:11px;color:#ccc}
+.cp-input input{flex:1;border:0.5px solid #e0e0d8;border-radius:16px;padding:7px 12px;font-size:12px;outline:none;background:#f9f9f7;font-family:inherit}
 .cp-input input:focus{border-color:#888}
-.cp-input button{background:#1a1a1a;color:#fff;border:none;border-radius:6px;padding:0 10px;cursor:pointer;font-size:13px}
+.cp-input button{background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:13px}
 .toast{position:fixed;bottom:155px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:12px;padding:7px 16px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:400;white-space:nowrap}
 .toast.show{opacity:1}
 audio{display:none}
@@ -402,9 +446,12 @@ audio{display:none}
     <button class="icon-btn" onclick="toggleComments()"><i class="ti ti-x"></i></button>
   </div>
   <div class="cp-body" id="cp-body"></div>
-  <div class="cp-input">
-    <input type="text" id="comment-input" placeholder="コメントを追加..." onkeydown="if(event.key==='Enter')addComment()">
-    <button onclick="addComment()"><i class="ti ti-send"></i></button>
+  <div class="cp-input-wrap">
+    <div class="cp-input">
+      <div class="cp-input-av" id="cp-input-av"><i class="ti ti-user"></i></div>
+      <input type="text" id="comment-input" placeholder="コメントを追加..." onkeydown="if(event.key==='Enter')addComment()">
+      <button onclick="addComment()"><i class="ti ti-send"></i></button>
+    </div>
   </div>
 </div>
 
@@ -1995,40 +2042,199 @@ async function deleteTrack() {
 function openComments(id) {
   openCommentTrackId = id;
   var t = null; for (var i = 0; i < tracks.length; i++) if (tracks[i].id === id) { t = tracks[i]; break; }
-  document.getElementById('cp-title').textContent = (t ? t.name : '') + 'のコメント';
-  // DBからコメント読み込み
-  sb.from('comments').select('*').eq('track_id', id).order('created_at', {ascending: true}).then(function(res) {
+  document.getElementById('cp-title').textContent = (t ? '💬 ' + t.name : 'コメント');
+  // 入力欄アバター更新
+  var cpAv = document.getElementById('cp-input-av');
+  if (cpAv) cpAv.innerHTML = (user && user.avatarUrl) ? '<img src="' + user.avatarUrl + '">' : '<i class="ti ti-user"></i>';
+  // DBからコメント＋返信を読み込み
+  sb.from('comments').select('*').eq('track_id', id).is('parent_id', null).order('created_at', {ascending: true}).then(async function(res) {
     if (!res.error && res.data) {
+      // 返信も一括取得
+      var repRes = await sb.from('comments').select('*').eq('track_id', id).not('parent_id', 'is', null).order('created_at', {ascending: true});
+      var replies = (!repRes.error && repRes.data) ? repRes.data : [];
+      // comment_likesを取得
+      var clRes = await sb.from('comment_likes').select('comment_id, user_id');
+      var clData = (!clRes.error && clRes.data) ? clRes.data : [];
       commentsData[id] = res.data.map(function(c) {
-        return { user: c.user_name, text: c.body, time: new Date(c.created_at).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit'}), user_id: c.user_id, db_id: c.id };
+        var reps = replies.filter(function(r){ return r.parent_id === c.id; }).map(function(r){
+          return { id: r.id, user: r.user_name, avatar: r.avatar_url || null, text: r.body, createdAt: r.created_at, likes: clData.filter(function(cl){ return cl.comment_id === r.id; }).length, liked: currentAuthUser ? clData.some(function(cl){ return cl.comment_id === r.id && cl.user_id === currentAuthUser.id; }) : false };
+        });
+        return { id: c.id, user: c.user_name, avatar: c.avatar_url || null, text: c.body, createdAt: c.created_at, likes: clData.filter(function(cl){ return cl.comment_id === c.id; }).length, liked: currentAuthUser ? clData.some(function(cl){ return cl.comment_id === c.id && cl.user_id === currentAuthUser.id; }) : false, replies: reps, showReplyInput: false };
       });
     }
     renderComments();
   });
   document.getElementById('comments-panel').classList.add('open');
+  document.getElementById('notif-panel').classList.remove('open');
+  notifOpen = false;
 }
-function toggleComments() { document.getElementById('comments-panel').classList.toggle('open'); }
+function toggleComments() {
+  document.getElementById('comments-panel').classList.toggle('open');
+  document.getElementById('notif-panel').classList.remove('open');
+  notifOpen = false;
+}
+function fmtCommentTime(dateStr) {
+  if (!dateStr) return '';
+  var d = new Date(dateStr);
+  var M = d.getMonth() + 1, D = d.getDate();
+  var h = ('0' + d.getHours()).slice(-2), m = ('0' + d.getMinutes()).slice(-2);
+  var Y = d.getFullYear();
+  return M + '/' + D + ' ' + h + ':' + m + '/' + Y;
+}
+function avHtmlSmall(avatar, sz) {
+  sz = sz || 28;
+  if (avatar) return '<img src="' + avatar + '">';
+  return '<i class="ti ti-user" style="font-size:' + Math.round(sz*0.46) + 'px;color:#ccc"></i>';
+}
 function renderComments() {
-  var body = document.getElementById('cp-body'); var cs = commentsData[openCommentTrackId] || [];
-  if (!cs.length) { body.innerHTML = '<p style="font-size:12px;color:#bbb;padding:8px">まだコメントがありません</p>'; return; }
+  var body = document.getElementById('cp-body');
+  var cs = commentsData[openCommentTrackId] || [];
+  if (!cs.length) {
+    body.innerHTML = '<div style="text-align:center;padding:2rem;color:#bbb;font-size:12px"><i class="ti ti-message-off" style="font-size:28px;display:block;margin-bottom:8px"></i>まだコメントがありません<br>最初のコメントを書いてみよう！</div>';
+    return;
+  }
   var html = '';
-  for (var i = 0; i < cs.length; i++) html += '<div class="comment"><div class="comment-user">' + cs[i].user + '</div><div class="comment-text">' + cs[i].text + '</div><div class="comment-time">' + cs[i].time + '</div></div>';
-  body.innerHTML = html; body.scrollTop = body.scrollHeight;
+  for (var i = 0; i < cs.length; i++) {
+    var c = cs[i];
+    // 返信HTML
+    var repHtml = '';
+    if (c.replies && c.replies.length) {
+      repHtml = '<div class="cmt-replies">';
+      for (var j = 0; j < c.replies.length; j++) {
+        var r = c.replies[j];
+        repHtml += '<div class="reply" id="reply-' + r.id + '">' +
+          '<div class="reply-av">' + avHtmlSmall(r.avatar, 22) + '</div>' +
+          '<div class="reply-main">' +
+            '<div class="reply-top"><span class="reply-name">' + esc(r.user) + '</span><span class="reply-time">' + fmtCommentTime(r.createdAt) + '</span></div>' +
+            '<div class="reply-text">' + esc(r.text) + '</div>' +
+            '<div class="reply-actions">' +
+              '<button class="reply-like-btn' + (r.liked ? ' liked' : '') + '" onclick="toggleCommentLike(\'' + r.id + '\',true,\'' + c.id + '\',' + j + ')">' +
+                '<i class="ti ti-heart' + (r.liked ? '-filled' : '') + '"></i><span>' + (r.likes || '') + '</span>' +
+              '</button>' +
+            '</div>' +
+          '</div></div>';
+      }
+      repHtml += '</div>';
+    }
+    // 返信入力エリア
+    var replyInputHtml = '<div class="reply-input-area" id="reply-input-' + c.id + '">' +
+      '<div class="reply-to-label"><span>↩ ' + esc(c.user) + ' に返信</span><button class="reply-cancel" onclick="closeReplyInput(\'' + c.id + '\')">キャンセル</button></div>' +
+      '<div class="reply-input-row">' +
+        '<input type="text" id="reply-text-' + c.id + '" placeholder="返信を入力..." onkeydown="if(event.key===\'Enter\')submitReply(\'' + c.id + '\')">' +
+        '<button onclick="submitReply(\'' + c.id + '\')" style="background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:12px"><i class="ti ti-send"></i></button>' +
+      '</div></div>';
+    html += '<div class="cmt" id="cmt-' + c.id + '">' +
+      '<div class="cmt-av">' + avHtmlSmall(c.avatar, 28) + '</div>' +
+      '<div class="cmt-main">' +
+        '<div class="cmt-top"><span class="cmt-name">' + esc(c.user) + '</span><span class="cmt-time">' + fmtCommentTime(c.createdAt) + '</span></div>' +
+        '<div class="cmt-text">' + esc(c.text) + '</div>' +
+        '<div class="cmt-actions">' +
+          '<button class="cmt-like-btn' + (c.liked ? ' liked' : '') + '" onclick="toggleCommentLike(\'' + c.id + '\',false,null,' + i + ')">' +
+            '<i class="ti ti-heart' + (c.liked ? '-filled' : '') + '"></i><span>' + (c.likes || '') + '</span>' +
+          '</button>' +
+          '<button class="cmt-reply-btn" onclick="openReplyInput(\'' + c.id + '\')">↩ 返信</button>' +
+        '</div>' +
+        repHtml +
+        replyInputHtml +
+      '</div></div>';
+  }
+  body.innerHTML = html;
+  body.scrollTop = body.scrollHeight;
+}
+function esc(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function openReplyInput(commentId) {
+  // 他の返信入力を閉じる
+  var all = document.querySelectorAll('.reply-input-area');
+  for (var i = 0; i < all.length; i++) all[i].classList.remove('open');
+  var area = document.getElementById('reply-input-' + commentId);
+  if (area) { area.classList.add('open'); var inp = document.getElementById('reply-text-' + commentId); if (inp) inp.focus(); }
+}
+function closeReplyInput(commentId) {
+  var area = document.getElementById('reply-input-' + commentId);
+  if (area) area.classList.remove('open');
+}
+async function toggleCommentLike(commentId, isReply, parentId, idx) {
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  var cs = commentsData[openCommentTrackId] || [];
+  var target = null;
+  if (isReply) {
+    for (var i = 0; i < cs.length; i++) {
+      if (cs[i].id === parentId) { target = cs[i].replies[idx]; break; }
+    }
+  } else {
+    target = cs[idx];
+  }
+  if (!target) return;
+  if (target.liked) {
+    await sb.from('comment_likes').delete().eq('comment_id', commentId).eq('user_id', currentAuthUser.id);
+    target.liked = false;
+    target.likes = Math.max(0, (target.likes || 1) - 1);
+  } else {
+    await sb.from('comment_likes').insert({ comment_id: commentId, user_id: currentAuthUser.id });
+    target.liked = true;
+    target.likes = (target.likes || 0) + 1;
+  }
+  renderComments();
+}
+async function submitReply(parentId) {
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  var inp = document.getElementById('reply-text-' + parentId);
+  if (!inp) return;
+  var text = inp.value.trim();
+  if (!text) return;
+  var avatarUrl = (user && user.avatarUrl) ? user.avatarUrl : null;
+  var res = await sb.from('comments').insert({
+    track_id: openCommentTrackId,
+    parent_id: parentId,
+    user_id: currentAuthUser.id,
+    user_name: user ? user.name : 'ゲスト',
+    avatar_url: avatarUrl,
+    body: text
+  }).select().single();
+  if (!res.error && res.data) {
+    var c = res.data;
+    var cs = commentsData[openCommentTrackId] || [];
+    for (var i = 0; i < cs.length; i++) {
+      if (cs[i].id === parentId) {
+        if (!cs[i].replies) cs[i].replies = [];
+        cs[i].replies.push({ id: c.id, user: c.user_name, avatar: c.avatar_url || null, text: c.body, createdAt: c.created_at, likes: 0, liked: false });
+        break;
+      }
+    }
+    inp.value = '';
+    closeReplyInput(parentId);
+    renderComments();
+    renderTracks();
+    // 通知（曲投稿者 and 元コメント投稿者へ）
+    var t = null; for (var j = 0; j < tracks.length; j++) if (tracks[j].id === openCommentTrackId) { t = tracks[j]; break; }
+    if (t && t.uploader_id) {
+      var fromName = user ? user.name : 'ゲスト';
+      await sendNotification(t.uploader_id, 'comment', fromName + ' さんが「' + t.name + '」に返信しました：「' + (text.length > 20 ? text.slice(0,20)+'…' : text) + '」💬', openCommentTrackId, t.thumbUrl || null);
+    }
+    showToast('返信しました！');
+  } else {
+    showToast('エラー: ' + (res.error ? res.error.message : '不明'));
+  }
 }
 async function addComment() {
   var inp = document.getElementById('comment-input'); var text = inp.value.trim();
   if (!text || !openCommentTrackId) return;
   if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  var avatarUrl = (user && user.avatarUrl) ? user.avatarUrl : null;
   var res = await sb.from('comments').insert({
     track_id: openCommentTrackId,
+    parent_id: null,
     user_id: currentAuthUser.id,
     user_name: user ? user.name : 'ゲスト',
+    avatar_url: avatarUrl,
     body: text
   }).select().single();
   if (!res.error && res.data) {
     var c = res.data;
     if (!commentsData[openCommentTrackId]) commentsData[openCommentTrackId] = [];
-    commentsData[openCommentTrackId].push({ user: c.user_name, text: c.body, time: new Date(c.created_at).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit'}), user_id: c.user_id, db_id: c.id });
+    commentsData[openCommentTrackId].push({ id: c.id, user: c.user_name, avatar: c.avatar_url || null, text: c.body, createdAt: c.created_at, likes: 0, liked: false, replies: [], showReplyInput: false });
     inp.value = ''; renderComments(); renderTracks();
     // 通知を送る（曲の投稿者へ）
     var t = null; for (var i = 0; i < tracks.length; i++) if (tracks[i].id === openCommentTrackId) { t = tracks[i]; break; }

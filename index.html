@@ -410,13 +410,13 @@ audio{display:none}
   <div id="tab-ranking" class="tab-content">
     <div class="rank-controls" style="flex-wrap:wrap;gap:6px;margin-bottom:.6rem">
       <div class="period-btns">
-        <button class="period-btn active" onclick="switchPeriod('daily',this)">📅 今日</button>
-        <button class="period-btn" onclick="switchPeriod('weekly',this)">📆 今週</button>
-        <button class="period-btn" onclick="switchPeriod('monthly',this)">🗓️ 今月</button>
-        <button class="period-btn" onclick="switchPeriod('alltime',this)">🏆 全期間</button>
+        <button class="period-btn active" onclick="switchPeriod('daily',this)">今日</button>
+        <button class="period-btn" onclick="switchPeriod('weekly',this)">今週</button>
+        <button class="period-btn" onclick="switchPeriod('monthly',this)">今月</button>
+        <button class="period-btn" onclick="switchPeriod('alltime',this)">全期間</button>
       </div>
     </div>
-    <div id="rank-period-label" style="font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:.8rem;letter-spacing:-.2px">📅 今日のランキング</div>
+    <div id="rank-period-label" style="font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:.8rem;letter-spacing:-.2px">今日のランキング</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.8rem">
       <select id="rank-cat-select" onchange="setRankCat(this.value)" style="border:0.5px solid #e0e0d8;border-radius:8px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">
         <option value="">カテゴリーを絞る</option>
@@ -1678,19 +1678,22 @@ function renderRankBlock(src, label, color) {
   sorted.sort(function(a,b){ return b.score - a.score; });
   var max = sorted[0].score || 1;
   var medals = ['🥇','🥈','🥉'];
+  var rankColors = ['#f5c400','#aaa','#cd7f32'];
   var rows = '';
   for (var i = 0; i < sorted.length; i++) {
     var t = sorted[i].t; var cnt = sorted[i].score; var pPlay = sorted[i].play;
     var ci = catInfo(t.cat);
     var tIdx = tracks.indexOf(t); var spPts = totalPts(supaTrack[t.id]);
     var lk = (window._likeCounts && window._likeCounts[t.id]) || 0;
-    // トップ3は目立つ背景
     var rowStyle = '';
     if (i === 0) rowStyle = 'background:linear-gradient(90deg,#fffbea 0%,#fff 100%);border-left:3px solid #f5c400';
     else if (i === 1) rowStyle = 'background:linear-gradient(90deg,#f6f6f6 0%,#fff 100%);border-left:3px solid #aaa';
     else if (i === 2) rowStyle = 'background:linear-gradient(90deg,#fff5f0 0%,#fff 100%);border-left:3px solid #cd7f32';
+    var badgeStyle = i < 3
+      ? 'font-size:15px;font-weight:700;color:' + rankColors[i] + ';min-width:22px;text-align:center'
+      : 'font-size:11px;font-weight:600;color:#bbb;min-width:22px;text-align:center';
     rows += '<div class="rank-item ' + (i < 3 ? 'rank-' + (i+1) : 'rank-other') + '" style="' + rowStyle + '" onclick="playTrack(' + tIdx + ')">' +
-      '<div class="rank-badge">' + (i < 3 ? medals[i] : '<span style="font-size:11px;font-weight:600;color:#bbb">' + (i+1) + '</span>') + '</div>' +
+      '<div class="rank-badge"><span style="' + badgeStyle + '">' + (i+1) + '</span></div>' +
       '<div class="rank-thumb">' + thumbHtml(t, 36) + '</div>' +
       '<div class="rank-info">' +
         '<div class="rank-title">' + esc(t.name) + '</div>' +
@@ -1722,7 +1725,7 @@ function setRankGenre(v) { rankGenre = v; renderRanking(); }
 function renderRanking() {
   // 期間ラベルを更新
   var periodLabel = document.getElementById('rank-period-label');
-  if (periodLabel) periodLabel.textContent = '📅 ' + (PERIOD_LABELS[currentPeriod] || '') + 'のランキング';
+  if (periodLabel) periodLabel.textContent = (PERIOD_LABELS[currentPeriod] || '') + 'のランキング';
 
   // セレクトの選択肢を更新
   var catSel = document.getElementById('rank-cat-select');
@@ -1756,13 +1759,8 @@ function renderRanking() {
 
   var used = {};
   for (var i = 0; i < tracks.length; i++) used[tracks[i].cat] = true;
-  var html = renderRankBlock(tracks, '総合ランキング', '#888');
-  for (var i = 0; i < CATS.length; i++) {
-    var c = CATS[i]; if (!used[c.id]) continue;
-    var src2 = tracks.filter(function(cid){ return function(t){ return t.cat === cid; }; }(c.id));
-    html += renderRankBlock(src2, c.label + ' ランキング', c.color);
-  }
-  sections.innerHTML = html;
+  // 総合ランキングのみ表示
+  sections.innerHTML = renderRankBlock(tracks, '総合ランキング', '#888');
 }
 function switchPeriod(p, btn) {
   currentPeriod = p;

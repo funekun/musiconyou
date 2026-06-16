@@ -27,7 +27,7 @@ header{background:#fff;border-bottom:0.5px solid #d0eaf5;height:56px;position:st
 .bottom-nav button{flex:1;background:none;border:none;cursor:pointer;color:#aaa;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;transition:color .15s}
 .bottom-nav button.active{color:#1a1a1a}
 .bottom-nav button i{font-size:20px}
-.player{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:0.5px solid #d0eaf5;padding:0 1.2rem;height:72px;display:flex;align-items:center;gap:10px}
+.player{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:0.5px solid #d0eaf5;padding:0 1.2rem;height:72px;display:flex;align-items:center;gap:10px;z-index:100}
 .player-thumb{width:40px;height:40px;border-radius:8px;background:#d0eaf5;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .player-thumb img{width:100%;height:100%;object-fit:cover}
 .player-thumb i{font-size:16px;color:#999}
@@ -2240,17 +2240,22 @@ function playTrack(i) {
   currentIdx = i; var t = tracks[i];
   if (!plays[t.id]) plays[t.id] = {daily:0, weekly:0, monthly:0, yearly:0, alltime:0};
   plays[t.id].daily++; plays[t.id].weekly++; plays[t.id].monthly++; plays[t.id].yearly++; plays[t.id].alltime++;
-  // Supabaseに再生履歴を保存
   if (currentAuthUser) { sb.from('play_counts').insert({ track_id: t.id }); }
+
   var videoWrap = document.getElementById('video-player-wrap');
   var videoEl = document.getElementById('video-player');
+  var ytFrame = document.getElementById('yt-embed-frame');
   var ytId = t.youtubeUrl ? extractYoutubeId(t.youtubeUrl) : '';
+
+  // まず全部リセット
+  audio.pause(); audio.src = '';
+  videoEl.pause(); videoEl.src = ''; videoEl.style.display = 'none';
+  if (ytFrame) { ytFrame.src = ''; ytFrame.style.display = 'none'; }
+  videoWrap.classList.remove('show');
+  document.querySelector('.main').style.paddingTop = '';
+
   if (ytId) {
-    // YouTube再生
-    audio.pause(); audio.src = '';
-    videoEl.pause(); videoEl.src = '';
-    videoEl.style.display = 'none';
-    var ytFrame = document.getElementById('yt-embed-frame');
+    // YouTube → iframeで映像あり再生
     if (!ytFrame) {
       ytFrame = document.createElement('iframe');
       ytFrame.id = 'yt-embed-frame';
@@ -2263,29 +2268,21 @@ function playTrack(i) {
     ytFrame.src = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1';
     videoWrap.classList.add('show');
     document.querySelector('.main').style.paddingTop = '256px';
-  } else if (t.isVideo) {
-    audio.pause(); audio.src = '';
-    var ytFrame2 = document.getElementById('yt-embed-frame');
-    if (ytFrame2) { ytFrame2.src = ''; ytFrame2.style.display = 'none'; }
-    videoEl.style.display = 'block';
-    videoEl.src = t.url; videoEl.play();
-    videoWrap.classList.add('show');
-    document.querySelector('.main').style.paddingTop = '256px';
+  } else if (t.isVideo && t.url) {
+    // 動画ファイル → 音声のみ（audioタグで再生）
+    audio.src = t.url;
+    audio.play();
   } else {
-    var ytFrame3 = document.getElementById('yt-embed-frame');
-    if (ytFrame3) { ytFrame3.src = ''; ytFrame3.style.display = 'none'; }
-    videoEl.pause(); videoEl.src = '';
-    videoWrap.classList.remove('show');
-    document.querySelector('.main').style.paddingTop = '';
+    // 通常音声ファイル
     audio.src = t.url; audio.play();
   }
+
   document.getElementById('p-title').textContent = t.name;
   document.getElementById('p-artist').textContent = catInfo(t.cat).label + (t.uploader ? ' · ' + t.uploader : '');
   var pThumb = document.getElementById('p-thumb');
   pThumb.innerHTML = t.thumbUrl ? '<img src="' + t.thumbUrl + '" style="width:40px;height:40px;object-fit:cover">' : '<i class="ti ti-' + (t.isVideo ? 'video' : 'music') + '"></i>';
   document.getElementById('main-play-btn').innerHTML = '<i class="ti ti-player-pause"></i>';
   renderTracks(); renderRanking(); renderPlaylist(); renderUserPage();
-  // 再生中コメントエリアを更新
   openNpComments(t.id);
 }
 function closeVideoPlayer() {

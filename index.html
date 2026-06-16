@@ -338,6 +338,12 @@ header{background:#fff;border-bottom:0.5px solid #d0eaf5;height:56px;position:st
 .mylist-sort-btn{background:#fff;border:0.5px solid #d0eaf5;border-radius:16px;padding:5px 12px;font-size:11px;cursor:pointer;color:#888;white-space:nowrap;transition:all .15s;flex-shrink:0;display:flex;align-items:center;gap:3px}
 .mylist-sort-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
 .mylist-sort-btn i{font-size:12px}
+/* ドラッグ並び替え */
+.track-row.dragging{opacity:.4;background:#e8f4fc}
+.track-row.drag-over{border-top:2px solid #1a7aaa}
+.drag-handle{cursor:grab;color:#ccc;padding:0 6px;font-size:18px;flex-shrink:0;touch-action:none}
+.drag-handle:hover{color:#888}
+.drag-handle:active{cursor:grabbing}
 .mylist-back-btn{background:none;border:none;cursor:pointer;color:#555;font-size:18px;padding:4px;border-radius:8px}
 .mylist-detail-icon{font-size:22px}
 .mylist-detail-name{font-size:15px;font-weight:600;color:#1a1a1a;flex:1}
@@ -651,7 +657,7 @@ audio{display:none}
   </div>
 </div>
 
-<!-- 投げ銭モーダル -->
+<!-- サポートモーダル -->
 <div class="modal-overlay" id="supa-modal">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('supa-modal')"><i class="ti ti-x"></i></button>
@@ -1241,7 +1247,7 @@ function openFollowModal() {
 
 /* ---- supachat ---- */
 function openSupaModal(type, id) {
-  if (!user) { showToast('投げ銭にはユーザー登録が必要です'); return; }
+  if (!user) { showToast('サポートにはユーザー登録が必要です'); return; }
   supaType = type; supaTarget = id; supaAmt = 0;
   var btns = document.querySelectorAll('.amount-btn');
   for (var i = 0; i < btns.length; i++) btns[i].classList.remove('selected');
@@ -1254,7 +1260,7 @@ function openSupaModal(type, id) {
     var t = null;
     for (var i = 0; i < tracks.length; i++) if (tracks[i].id === id) { t = tracks[i]; break; }
     info.innerHTML = '<div class="supa-target-thumb">' + (t && t.thumbUrl ? '<img src="' + t.thumbUrl + '">' : '<i class="ti ti-music" style="font-size:16px;color:#ccc"></i>') + '</div>' +
-      '<div><div class="supa-target-name">' + (t ? t.name : '—') + '</div><div class="supa-target-sub">' + (t && t.uploader ? t.uploader + ' への投げ銭' : '') + '</div></div>';
+      '<div><div class="supa-target-name">' + (t ? t.name : '—') + '</div><div class="supa-target-sub">' + (t && t.uploader ? t.uploader + ' へのサポート' : '') + '</div></div>';
   } else {
     info.innerHTML = '<div class="supa-target-avatar"><i class="ti ti-user" style="font-size:15px;color:#ccc"></i></div>' +
       '<div><div class="supa-target-name">' + id + '</div><div class="supa-target-sub">ユーザーへのサポート</div></div>';
@@ -1784,7 +1790,7 @@ function trackRowHtml(t, idx, opts) {
       '<span style="font-size:10px;color:' + (inPl ? '#1a1a1a' : '#bbb') + '">' + (inPl ? '✓' : '') + '</span>' +
       (opts.noTrash ? '' : '<button class="icon-btn" onclick="removeTrack(\'' + t.id + '\')"><i class="ti ti-trash"></i></button>') +
     '</div></div>' +
-    ((supaTrack[t.id] || []).length ? '<div style="padding:0 12px 8px;margin-top:-4px">' + renderSupaList(supaTrack[t.id], 'このトラックへの投げ銭') + '</div>' : '');
+    ((supaTrack[t.id] || []).length ? '<div style="padding:0 12px 8px;margin-top:-4px">' + renderSupaList(supaTrack[t.id], 'このトラックへのサポート') + '</div>' : '');
 }
 
 function renderTracks() {
@@ -1949,7 +1955,7 @@ function renderStatsTab(myTracks) {
       '<div class="stat-card"><div class="stat-card-label"><i class="ti ti-player-play" style="font-size:11px"></i>総再生数</div><div class="stat-card-val">' + totalPlay + '</div><div class="stat-card-sub">累計</div></div>' +
       '<div class="stat-card"><div class="stat-card-label"><i class="ti ti-heart" style="font-size:11px;color:#e24b4a"></i>総いいね</div><div class="stat-card-val" style="color:#e24b4a">' + totalLike + '</div><div class="stat-card-sub">累計</div></div>' +
       '<div class="stat-card"><div class="stat-card-label"><i class="ti ti-message" style="font-size:11px;color:#4455cc"></i>総コメント</div><div class="stat-card-val" style="color:#4455cc">' + totalCmt + '</div><div class="stat-card-sub">累計</div></div>' +
-      '<div class="stat-card"><div class="stat-card-label"><i class="ti ti-coin" style="font-size:11px;color:#c4980a"></i>投げ銭pt</div><div class="stat-card-val" style="color:#c4980a">' + totalSupa + '</div><div class="stat-card-sub">累計</div></div>' +
+      '<div class="stat-card"><div class="stat-card-label"><i class="ti ti-coin" style="font-size:11px;color:#c4980a"></i>サポートpt</div><div class="stat-card-val" style="color:#c4980a">' + totalSupa + '</div><div class="stat-card-sub">累計</div></div>' +
     '</div>';
 
   // 再生数ランキング（横棒グラフ）
@@ -2123,12 +2129,12 @@ function renderUserPage() {
             '<span id="notif-badge-user" style="display:none;position:absolute;top:-4px;right:-4px;background:#e24b4a;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;align-items:center;justify-content:center;padding:0 3px">0</span>' +
           '</button>' +
           '<button class="btn-ghost" onclick="openRegModal(true)"><i class="ti ti-edit" style="margin-right:3px"></i>編集</button>' +
-          '<button class="supa-btn" onclick="openSupaModal(\'user\',\'' + esc(user.name) + '\')"><i class="ti ti-coin"></i>投げ銭</button>' +
+          '<button class="supa-btn" onclick="openSupaModal(\'user\',\'' + esc(user.name) + '\')"><i class="ti ti-coin"></i>サポート</button>' +
           '<button onclick="logout()" style="background:#fff;color:#e24b4a;border:1px solid #e24b4a;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-logout"></i>ログアウト</button>' +
         '</div>' +
       '</div>' +
     '</div>' +
-    (uSupa.length ? renderSupaList(uSupa, '受け取った投げ銭ランキング') : '') +
+    (uSupa.length ? renderSupaList(uSupa, '受け取ったサポートランキング') : '') +
     '<div class="wall-box">' +
       '<div class="wall-title"><i class="ti ti-message-2" style="font-size:13px"></i>一言</div>' +
       '<div class="wall-comments" id="wall-comments-list">' + wallListHtml() + '</div>' +
@@ -2828,7 +2834,7 @@ function renderMyListTop(view) {
   view.innerHTML = html;
 }
 
-var myListSortKey = 'added'; // 'added' | 'newest' | 'plays' | 'likes' | 'pts'
+var myListSortKey = 'added'; // 'added' | 'newest' | 'plays' | 'likes' | 'pts' | 'manual'
 
 function setMyListSort(key) {
   myListSortKey = key;
@@ -2836,6 +2842,181 @@ function setMyListSort(key) {
 }
 
 function renderMyListDetail(view, listId) {
+  var ml = null;
+  for (var i = 0; i < MY_LISTS.length; i++) if (MY_LISTS[i].id === listId) { ml = MY_LISTS[i]; break; }
+  if (!ml) { myListView = 'list'; renderMyList(); return; }
+
+  var listTracks = [];
+  for (var i = 0; i < (ml.trackIds||[]).length; i++) {
+    for (var j = 0; j < tracks.length; j++) {
+      if (tracks[j].id === ml.trackIds[i]) { listTracks.push({track: tracks[j], addedIdx: i}); break; }
+    }
+  }
+
+  // 並び替え（manualの時は追加順そのまま）
+  var sorts = {
+    added:  function(a,b){ return a.addedIdx - b.addedIdx; },
+    newest: function(a,b){ return new Date(b.track.createdAt||0) - new Date(a.track.createdAt||0); },
+    plays:  function(a,b){ return ((plays[b.track.id]||{}).alltime||0) - ((plays[a.track.id]||{}).alltime||0); },
+    likes:  function(a,b){ return ((window._likeCounts&&window._likeCounts[b.track.id])||0) - ((window._likeCounts&&window._likeCounts[a.track.id])||0); },
+    pts:    function(a,b){ return totalPts(supaTrack[b.track.id]||[]) - totalPts(supaTrack[a.track.id]||[]); }
+  };
+  if (myListSortKey !== 'manual' && sorts[myListSortKey]) listTracks.sort(sorts[myListSortKey]);
+
+  var isManual = myListSortKey === 'manual';
+
+  var sortDefs = [
+    {key:'added',  icon:'ti-clock',       label:'追加順'},
+    {key:'newest', icon:'ti-calendar',    label:'新着順'},
+    {key:'plays',  icon:'ti-player-play', label:'再生数'},
+    {key:'likes',  icon:'ti-heart',       label:'いいね'},
+    {key:'pts',    icon:'ti-coin',        label:'サポート'},
+    {key:'manual', icon:'ti-grip-vertical',label:'手動'}
+  ];
+
+  var html = '<div class="mylist-detail-header">' +
+    '<button class="mylist-back-btn" onclick="myListView=\'list\';renderMyList()"><i class="ti ti-arrow-left"></i></button>' +
+    '<span class="mylist-detail-icon">' + (ml.icon||'🎵') + '</span>' +
+    '<div><div class="mylist-detail-name">' + esc(ml.name) + '</div><div class="mylist-detail-count">' + listTracks.length + '曲</div></div>' +
+    '<button class="mylist-card-btn" onclick="openListEdit(\'' + ml.id + '\')" style="font-size:16px;color:#888"><i class="ti ti-edit"></i></button>' +
+  '</div>';
+
+  // 並び替えバー
+  html += '<div class="mylist-sort-bar">';
+  for (var i = 0; i < sortDefs.length; i++) {
+    var s = sortDefs[i];
+    html += '<button class="mylist-sort-btn' + (myListSortKey === s.key ? ' active' : '') + '" onclick="setMyListSort(\'' + s.key + '\')">' +
+      '<i class="ti ' + s.icon + '"></i>' + s.label + '</button>';
+  }
+  html += '</div>';
+
+  if (isManual) {
+    html += '<div style="font-size:11px;color:#aaa;margin-bottom:8px;display:flex;align-items:center;gap:4px"><i class="ti ti-grip-vertical" style="font-size:13px"></i>ドラッグして並び替え — 自動保存されます</div>';
+  }
+
+  if (!listTracks.length) {
+    html += '<div class="empty"><i class="ti ti-music-off"></i><p>このリストはまだ空です<br><span style="font-size:11px;color:#bbb">曲の「+」ボタンからリストに追加できます</span></p></div>';
+  } else {
+    html += '<div class="track-list" id="ml-sortable-list">';
+    for (var i = 0; i < listTracks.length; i++) {
+      var t = listTracks[i].track;
+      var tIdx = tracks.indexOf(t);
+      var ci = catInfo(t.cat);
+      var playing = currentIdx === tIdx;
+      var pl = (plays[t.id]||{}).alltime||0;
+      var lk = (window._likeCounts&&window._likeCounts[t.id])||0;
+      var sp = totalPts(supaTrack[t.id]||[]);
+      html += '<div class="track-row' + (playing ? ' playing' : '') + '" data-track-id="' + t.id + '" id="track-ml-' + t.id + '">' +
+        (isManual ? '<div class="drag-handle" aria-label="並び替え"><i class="ti ti-grip-vertical"></i></div>' : '') +
+        '<div class="track-thumb" onclick="playTrack(' + tIdx + ')">' + thumbHtml(t, 44) + (playing ? '<div class="thumb-play-ov"><i class="ti ti-player-' + (!audio.paused ? 'pause' : 'play') + '"></i></div>' : '') + '</div>' +
+        '<div class="track-info" onclick="playTrack(' + tIdx + ')">' +
+          '<div class="track-name">' + esc(t.name) + '</div>' +
+          '<div class="track-meta"><span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' + (t.duration ? fmtTime(t.duration) : '') + '</div>' +
+          '<div style="display:flex;gap:8px;margin-top:3px">' +
+            '<span style="font-size:10px;color:#888"><i class="ti ti-player-play" style="font-size:9px"></i> ' + pl + '</span>' +
+            '<span style="font-size:10px;color:#e24b4a"><i class="ti ti-heart" style="font-size:9px"></i> ' + lk + '</span>' +
+            (sp > 0 ? '<span style="font-size:10px;color:#c4980a">🪙' + sp + '</span>' : '') +
+          '</div>' +
+        '</div>' +
+        '<button class="icon-btn" style="color:#e24b4a" title="リストから削除" onclick="event.stopPropagation();removeFromMyList(\'' + ml.id + '\',\'' + t.id + '\')"><i class="ti ti-x"></i></button>' +
+        '<button class="icon-btn" onclick="event.stopPropagation();playTrack(' + tIdx + ')"><i class="ti ti-player-play"></i></button>' +
+      '</div>';
+    }
+    html += '</div>';
+  }
+  view.innerHTML = html;
+
+  // ドラッグ＆ドロップ初期化（手動モードのみ）
+  if (isManual && listTracks.length) initDragSort(listId);
+}
+
+function initDragSort(listId) {
+  var list = document.getElementById('ml-sortable-list');
+  if (!list) return;
+  var dragEl = null, dragOver = null;
+
+  // タッチ対応ドラッグ
+  var rows = list.querySelectorAll('.track-row');
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    row.setAttribute('draggable', 'true');
+
+    row.addEventListener('dragstart', function(e) {
+      dragEl = this;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragend', function() {
+      this.classList.remove('dragging');
+      var overs = list.querySelectorAll('.drag-over');
+      for (var j = 0; j < overs.length; j++) overs[j].classList.remove('drag-over');
+      saveDragOrder(listId);
+    });
+    row.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      if (dragEl === this) return;
+      var overs = list.querySelectorAll('.drag-over');
+      for (var j = 0; j < overs.length; j++) overs[j].classList.remove('drag-over');
+      this.classList.add('drag-over');
+      dragOver = this;
+      var rect = this.getBoundingClientRect();
+      var mid = rect.top + rect.height / 2;
+      if (e.clientY < mid) list.insertBefore(dragEl, this);
+      else list.insertBefore(dragEl, this.nextSibling);
+    });
+    row.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
+    row.addEventListener('drop', function(e) { e.preventDefault(); this.classList.remove('drag-over'); });
+
+    // タッチ対応
+    (function(row) {
+      var startY, clone, startTop, listTop;
+      row.addEventListener('touchstart', function(e) {
+        var handle = e.target.closest('.drag-handle');
+        if (!handle) return;
+        e.preventDefault();
+        dragEl = row;
+        startY = e.touches[0].clientY;
+        startTop = row.getBoundingClientRect().top;
+        row.classList.add('dragging');
+      }, {passive: false});
+      row.addEventListener('touchmove', function(e) {
+        if (!dragEl || dragEl !== row) return;
+        e.preventDefault();
+        var y = e.touches[0].clientY;
+        var siblings = list.querySelectorAll('.track-row:not(.dragging)');
+        for (var k = 0; k < siblings.length; k++) {
+          var s = siblings[k];
+          var rect = s.getBoundingClientRect();
+          if (y > rect.top && y < rect.bottom) {
+            var mid = rect.top + rect.height / 2;
+            if (y < mid) list.insertBefore(dragEl, s);
+            else list.insertBefore(dragEl, s.nextSibling);
+            break;
+          }
+        }
+      }, {passive: false});
+      row.addEventListener('touchend', function() {
+        if (!dragEl || dragEl !== row) return;
+        row.classList.remove('dragging');
+        dragEl = null;
+        saveDragOrder(listId);
+      });
+    })(row);
+  }
+}
+
+function saveDragOrder(listId) {
+  var list = document.getElementById('ml-sortable-list');
+  if (!list) return;
+  var rows = list.querySelectorAll('.track-row[data-track-id]');
+  var newOrder = [];
+  for (var i = 0; i < rows.length; i++) newOrder.push(rows[i].getAttribute('data-track-id'));
+  for (var i = 0; i < MY_LISTS.length; i++) {
+    if (MY_LISTS[i].id === listId) { MY_LISTS[i].trackIds = newOrder; break; }
+  }
+  saveMyLists();
+  showToast('順番を保存しました✓');
+}
   var ml = null;
   for (var i = 0; i < MY_LISTS.length; i++) if (MY_LISTS[i].id === listId) { ml = MY_LISTS[i]; break; }
   if (!ml) { myListView = 'list'; renderMyList(); return; }
@@ -2862,7 +3043,7 @@ function renderMyListDetail(view, listId) {
     {key:'newest', icon:'ti-calendar',     label:'新着順'},
     {key:'plays',  icon:'ti-player-play',  label:'再生数'},
     {key:'likes',  icon:'ti-heart',        label:'いいね'},
-    {key:'pts',    icon:'ti-coin',         label:'投げ銭'}
+    {key:'pts',    icon:'ti-coin',         label:'サポート'}
   ];
 
   var html = '<div class="mylist-detail-header">' +

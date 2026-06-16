@@ -305,6 +305,18 @@ header{background:#fff;border-bottom:0.5px solid #d0eaf5;height:56px;position:st
 .cp-input input:focus{border-color:#888}
 .cp-input button{background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:13px}
 .toast{position:fixed;bottom:155px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:12px;padding:7px 16px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:400;white-space:nowrap}
+/* お知らせ */
+.news-card{background:#fff;border:0.5px solid #d0eaf5;border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.news-card-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.news-card-icon{width:32px;height:32px;border-radius:50%;background:#eef6fc;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
+.news-card-meta{flex:1}
+.news-card-author{font-size:11px;font-weight:600;color:#1a1a1a}
+.news-card-time{font-size:10px;color:#bbb}
+.news-card-title{font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:5px}
+.news-card-body{font-size:12px;color:#555;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.news-post-box{background:#fff;border:0.5px solid #d0eaf5;border-radius:12px;padding:14px 16px;margin-bottom:1rem}
+.news-post-box input,.news-post-box textarea{width:100%;border:0.5px solid #d0eaf5;border-radius:8px;padding:8px 11px;font-size:12px;outline:none;background:#f4f9fc;font-family:inherit;margin-bottom:8px}
+.news-post-box textarea{min-height:80px;resize:vertical}
 /* ---- マイリスト ---- */
 .mylist-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
 .mylist-title{font-size:14px;font-weight:600;color:#1a1a1a}
@@ -533,6 +545,9 @@ audio{display:none}
     <div id="user-header-fixed"></div>
     <div id="user-page-content"></div>
   </div>
+  <div id="tab-news" class="tab-content">
+    <div id="news-page"></div>
+  </div>
 </div>
 
 <!-- 再生中コメントエリア -->
@@ -559,7 +574,7 @@ audio{display:none}
   <button id="bnav-playlist" onclick="switchTab('playlist')"><i class="ti ti-playlist"></i>プレイリスト</button>
   <button id="bnav-user" onclick="switchTab('user')"><i class="ti ti-user-circle"></i>ユーザー</button>
   <button id="bnav-notif" style="display:none" onclick="toggleNotifPanel()"><span class="bnav-notif-wrap"><i class="ti ti-bell"></i><span id="notif-badge" class="notif-badge" style="display:none">0</span></span>通知</button>
-  <button id="bnav-comments" onclick="toggleCommentFeed()"><i class="ti ti-message"></i>コメント</button>
+  <button id="bnav-news" onclick="switchTab('news')"><i class="ti ti-speakerphone"></i>お知らせ</button>
 </div><div class="video-player-wrap" id="video-player-wrap" style="position:fixed"><button class="video-close-btn" onclick="closeVideoPlayer()" title="閉じる"><i class="ti ti-x"></i></button><video id="video-player" controls style="max-width:100%;max-height:240px"></video></div>
 
 <div class="comments-panel" id="comments-panel">
@@ -2141,6 +2156,7 @@ function renderUserPage() {
           '<i class="ti ti-bell" style="font-size:13px"></i>通知' +
           '<span id="notif-badge-user" style="display:none;position:absolute;top:-4px;right:-4px;background:#e24b4a;color:#fff;font-size:9px;font-weight:700;min-width:15px;height:15px;border-radius:8px;align-items:center;justify-content:center;padding:0 2px">0</span>' +
         '</button>' +
+        '<button onclick="toggleCommentFeed()" style="background:#fff;border:1px solid #d0eaf5;border-radius:16px;padding:5px 11px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-message" style="font-size:13px"></i>コメント</button>' +
         '<button onclick="openRegModal(true)" style="background:#fff;border:1px solid #d0eaf5;border-radius:16px;padding:5px 11px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-edit" style="font-size:13px"></i>編集</button>' +
         '<button class="supa-btn" onclick="openSupaModal(\'user\',\'' + esc(user.name) + '\')" style="padding:5px 11px;font-size:11px"><i class="ti ti-coin" style="font-size:13px"></i>サポート</button>' +
         '<button onclick="scrollToUpload()" style="background:#1a1a1a;color:#fff;border:none;border-radius:16px;padding:5px 11px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-upload" style="font-size:13px"></i>投稿</button>' +
@@ -2525,7 +2541,74 @@ function toggleComments() {
   notifOpen = false;
 }
 
-/* ---- コメントフィード（全曲・新着順） ---- */
+/* ---- お知らせ ---- */
+var ADMIN_USERNAME = 'fune3'; // 運営アカウントのusername
+
+async function renderNewsPage() {
+  var page = document.getElementById('news-page');
+  page.innerHTML = '<div style="text-align:center;padding:2rem;color:#bbb;font-size:12px">読み込み中...</div>';
+
+  var res = await sb.from('news').select('*').order('created_at', {ascending: false});
+  var items = (!res.error && res.data) ? res.data : [];
+
+  var isAdmin = user && user.username === ADMIN_USERNAME;
+
+  var html = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">' +
+    '<i class="ti ti-speakerphone" style="font-size:18px;color:#1a7aaa"></i>' +
+    '<span style="font-size:14px;font-weight:600">お知らせ</span>' +
+    '<span style="font-size:10px;color:#bbb;margin-left:4px">運営からのお知らせ</span>' +
+  '</div>';
+
+  // 運営のみ投稿フォーム表示
+  if (isAdmin) {
+    html += '<div class="news-post-box">' +
+      '<div style="font-size:11px;font-weight:500;color:#888;margin-bottom:8px">✏️ お知らせを投稿（運営のみ）</div>' +
+      '<input type="text" id="news-title-input" placeholder="タイトル" maxlength="60">' +
+      '<textarea id="news-body-input" placeholder="本文を入力..."></textarea>' +
+      '<button onclick="postNews()" style="background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:12px;cursor:pointer;font-weight:500"><i class="ti ti-send" style="margin-right:4px"></i>投稿する</button>' +
+    '</div>';
+  }
+
+  if (!items.length) {
+    html += '<div class="news-empty"><i class="ti ti-speakerphone"></i><p style="font-size:12px">まだお知らせはありません</p></div>';
+  } else {
+    for (var i = 0; i < items.length; i++) {
+      var n = items[i];
+      var timeStr = n.created_at ? new Date(n.created_at).toLocaleString('ja-JP',{year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+      html += '<div class="news-card">' +
+        '<div class="news-card-top">' +
+          '<div class="news-card-icon">📢</div>' +
+          '<div class="news-card-meta">' +
+            '<div class="news-card-author">みゅーじっく音友 運営</div>' +
+            '<div class="news-card-time">' + timeStr + '</div>' +
+          '</div>' +
+          (isAdmin ? '<button onclick="deleteNews(\'' + n.id + '\')" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:13px;padding:4px"><i class="ti ti-trash"></i></button>' : '') +
+        '</div>' +
+        '<div class="news-card-title">' + esc(n.title) + '</div>' +
+        '<div class="news-card-body">' + esc(n.body) + '</div>' +
+      '</div>';
+    }
+  }
+  page.innerHTML = html;
+}
+
+async function postNews() {
+  var title = document.getElementById('news-title-input').value.trim();
+  var body = document.getElementById('news-body-input').value.trim();
+  if (!title) { showToast('タイトルを入力してください'); return; }
+  if (!body) { showToast('本文を入力してください'); return; }
+  var res = await sb.from('news').insert({ title: title, body: body, author: user.name });
+  if (res.error) { showToast('投稿に失敗しました: ' + res.error.message); return; }
+  showToast('お知らせを投稿しました📢');
+  renderNewsPage();
+}
+
+async function deleteNews(id) {
+  if (!confirm('このお知らせを削除しますか？')) return;
+  await sb.from('news').delete().eq('id', id);
+  showToast('削除しました');
+  renderNewsPage();
+}
 function toggleCommentFeed() {
   var panel = document.getElementById('cmt-feed-panel');
   var isOpen = panel.classList.contains('open');
@@ -3037,7 +3120,7 @@ var plCat = '', plGenre = '';
 function setPlCat(v) { plCat = v; }
 function setPlGenre(v) { plGenre = v; }
 function switchTab(tab) {
-  var tabIds = {feed:'tab-feed',ranking:'tab-ranking',playlist:'tab-playlist-inline',user:'tab-user',search:'tab-search'};
+  var tabIds = {feed:'tab-feed',ranking:'tab-ranking',playlist:'tab-playlist-inline',user:'tab-user',search:'tab-search',news:'tab-news'};
   var allTabs = document.querySelectorAll('.tab-content');
   for (var i = 0; i < allTabs.length; i++) allTabs[i].classList.remove('active');
   var navBtns = document.querySelectorAll('.bottom-nav button');
@@ -3054,11 +3137,12 @@ function switchTab(tab) {
   if (tab === 'user') renderUserPage();
   else { var fh = document.getElementById('user-header-fixed'); if (fh) fh.innerHTML = ''; }
   if (tab === 'search') renderSearchPage();
+  if (tab === 'news') renderNewsPage();
 }
 
 /* ---- スワイプでタブ切り替え（スマホのみ） ---- */
 (function() {
-  var TAB_ORDER = ['feed', 'ranking', 'search', 'playlist', 'user'];
+  var TAB_ORDER = ['feed', 'ranking', 'search', 'playlist', 'user', 'news'];
   var touchStartX = 0, touchStartY = 0, touchStartTime = 0;
   var SWIPE_MIN_X = 60;   // 最低横移動px
   var SWIPE_MAX_Y = 80;   // 縦ブレ許容px

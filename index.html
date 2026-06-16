@@ -593,7 +593,15 @@ audio{display:none}
       </div>
     </div>
     <div class="form-row">
-      <label>ユーザー名 <span style="color:#e24b4a">*</span></label>
+      <label>ユーザーID <span style="color:#e24b4a">*</span> <span style="font-size:10px;color:#aaa">半角英数字・アンダースコアのみ・変更不可</span></label>
+      <div style="display:flex;align-items:center;gap:4px">
+        <span style="font-size:14px;color:#888;font-weight:500">@</span>
+        <input type="text" id="reg-username" placeholder="例：funeyama_music" maxlength="30" style="flex:1" oninput="this.value=this.value.replace(/[^a-zA-Z0-9_]/g,'').toLowerCase()">
+      </div>
+      <div id="username-check-msg" style="font-size:11px;margin-top:4px"></div>
+    </div>
+    <div class="form-row">
+      <label>表示名 <span style="color:#e24b4a">*</span> <span style="font-size:10px;color:#aaa">重複OK・後から変更可</span></label>
       <input type="text" id="reg-name" placeholder="例：音楽太郎" maxlength="30">
     </div>
     <div class="form-row">
@@ -802,12 +810,14 @@ async function loadUserProfile(authUser) {
     user = {
       id: authUser.id,
       name: res.data.name,
+      username: res.data.username || null,
       bio: res.data.bio || '',
       avatarUrl: res.data.avatar_url || null
     };
+    // usernameがまだない場合は登録モーダルを開く
+    if (!res.data.username) openRegModal(false);
   } else {
-    // プロフィール未作成の場合は登録モーダルを開く
-    user = {id: authUser.id, name: '', bio: '', avatarUrl: null};
+    user = {id: authUser.id, name: '', username: null, bio: '', avatarUrl: null};
     openRegModal(false);
   }
   // フォロー情報をDBから読み込む
@@ -891,13 +901,30 @@ async function logout() {
 var _origSaveUser = saveUser;
 saveUser = async function() {
   var name = document.getElementById('reg-name').value.trim();
-  if (!name) { showToast('ユーザー名を入力してください'); return; }
+  if (!name) { showToast('表示名を入力してください'); return; }
   if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+
+  // ユーザーID（新規登録時のみ）
+  var username = document.getElementById('reg-username').value.trim().toLowerCase();
+  var isNewUser = !user || !user.username;
+  if (isNewUser) {
+    if (!username) { showToast('ユーザーIDを入力してください'); return; }
+    if (!/^[a-zA-Z0-9_]{3,30}$/.test(username)) { showToast('ユーザーIDは3〜30文字の半角英数字・_のみ使えます'); return; }
+    // 重複チェック
+    var checkRes = await sb.from('profiles').select('id').eq('username', username).neq('id', currentAuthUser.id);
+    if (!checkRes.error && checkRes.data && checkRes.data.length > 0) {
+      document.getElementById('username-check-msg').textContent = 'このIDはすでに使われています';
+      document.getElementById('username-check-msg').style.color = '#e24b4a';
+      showToast('このユーザーIDはすでに使われています');
+      return;
+    }
+  } else {
+    username = user.username; // 編集時はそのまま
+  }
 
   var bio = document.getElementById('reg-bio').value.trim();
   var avatarUrl = tempAvatarUrl || (user ? user.avatarUrl : null);
 
-  // アバター画像をStorageにアップロード
   if (tempAvatarUrl && tempAvatarUrl.startsWith('blob:')) {
     var resp = await fetch(tempAvatarUrl);
     var blob = await resp.blob();
@@ -910,23 +937,23 @@ saveUser = async function() {
     }
   }
 
-  // profilesテーブルにupsert
   var res = await sb.from('profiles').upsert({
     id: currentAuthUser.id,
     name: name,
+    username: username,
     bio: bio,
     avatar_url: avatarUrl
   });
 
   if (res.error) { showToast('保存に失敗しました: ' + res.error.message); return; }
 
-  user = {id: currentAuthUser.id, name: name, bio: bio, avatarUrl: avatarUrl};
+  user = {id: currentAuthUser.id, name: name, username: username, bio: bio, avatarUrl: avatarUrl};
   closeModal('reg-modal');
   updateNavUser();
   renderUploadArea();
   renderUserPage();
   renderTracks();
-  showToast('プロフィールを保存しました！');
+  showToast(isNewUser ? '登録完了！ようこそ @' + username + ' さん🎵' : 'プロフィールを保存しました！');
 };
 
 // 初期化時に認証チェック
@@ -1310,16 +1337,29 @@ function addWallComment() {
 /* ---- user ---- */
 function openRegModal(edit) {
   document.getElementById('modal-title').textContent = edit ? 'プロフィール編集' : 'ユーザー登録';
+  var unameEl = document.getElementById('reg-username');
   if (edit && user) {
     document.getElementById('reg-name').value = user.name;
     document.getElementById('reg-bio').value = user.bio || '';
     document.getElementById('avatar-circle').innerHTML = user.avatarUrl ? '<img src="' + user.avatarUrl + '">' : '<i class="ti ti-user-circle"></i>';
     tempAvatarUrl = user.avatarUrl || null;
+    // IDは編集不可
+    unameEl.value = user.username || '';
+    unameEl.readOnly = true;
+    unameEl.style.background = '#f0f0ec';
+    unameEl.style.color = '#aaa';
+    document.getElementById('username-check-msg').textContent = 'ユーザーIDは変更できません';
+    document.getElementById('username-check-msg').style.color = '#aaa';
   } else {
     document.getElementById('reg-name').value = '';
     document.getElementById('reg-bio').value = '';
     document.getElementById('avatar-circle').innerHTML = '<i class="ti ti-user-circle"></i>';
     tempAvatarUrl = null;
+    unameEl.value = '';
+    unameEl.readOnly = false;
+    unameEl.style.background = '';
+    unameEl.style.color = '';
+    document.getElementById('username-check-msg').textContent = '';
   }
   document.getElementById('reg-modal').classList.add('open');
 }
@@ -2070,6 +2110,7 @@ function renderUserPage() {
         '<div class="user-avatar-lg">' + (user.avatarUrl ? '<img src="' + user.avatarUrl + '">' : '<i class="ti ti-user"></i>') + '</div>' +
         '<div class="user-meta">' +
           '<div class="user-name">' + esc(user.name) + '</div>' +
+          (user.username ? '<div style="font-size:11px;color:#7ec4e0;margin-bottom:4px">@' + esc(user.username) + '</div>' : '') +
           (user.bio ? '<div class="user-bio">' + esc(user.bio) + '</div>' : '') +
           '<div class="user-stats">' +
             '<div class="stat"><strong>' + myTracks.length + '</strong> 投稿</div>' +

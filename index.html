@@ -246,6 +246,37 @@ audio{display:none}
 .video-player-wrap{display:none;position:fixed;top:56px;left:0;right:0;background:#000;z-index:98;max-height:240px;justify-content:center}
 .video-player-wrap.show{display:flex}
 .video-player-wrap video{max-width:100%;max-height:240px;object-fit:contain}
+/* 通知 */
+.notif-panel{display:none;position:fixed;right:0;top:56px;bottom:144px;width:300px;background:#fff;border-left:0.5px solid #e0e0d8;flex-direction:column;z-index:50;box-shadow:-4px 0 16px rgba(0,0,0,.06)}
+.notif-panel.open{display:flex}
+.notif-header{padding:14px 16px;border-bottom:0.5px solid #e0e0d8;display:flex;align-items:center;justify-content:space-between}
+.notif-header-left{display:flex;align-items:center;gap:8px}
+.notif-title{font-size:13px;font-weight:500}
+.notif-clear{font-size:11px;color:#aaa;background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:5px}
+.notif-clear:hover{background:#f4f4f0;color:#555}
+.notif-body{flex:1;overflow-y:auto}
+.notif-body::-webkit-scrollbar{width:3px}
+.notif-body::-webkit-scrollbar-thumb{background:#e0e0d8;border-radius:2px}
+.notif-empty{text-align:center;padding:3rem 1rem;color:#bbb}
+.notif-empty i{font-size:32px;display:block;margin-bottom:8px}
+.notif-empty p{font-size:12px}
+.notif-item{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:0.5px solid #f4f4f0;cursor:pointer;transition:background .12s;position:relative}
+.notif-item:hover{background:#fafaf8}
+.notif-item.unread{background:#fafaf8}
+.notif-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#1a1a1a;border-radius:0 2px 2px 0}
+.notif-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.notif-icon.like{background:#fce8e8;color:#e24b4a}
+.notif-icon.comment{background:#e8f0fe;color:#4455cc}
+.notif-icon.follow{background:#e8f5e9;color:#2e7d32}
+.notif-content{flex:1;min-width:0}
+.notif-text{font-size:12px;color:#333;line-height:1.5}
+.notif-text strong{font-weight:500;color:#1a1a1a}
+.notif-time{font-size:10px;color:#bbb;margin-top:3px}
+.notif-thumb{width:32px;height:32px;border-radius:6px;overflow:hidden;flex-shrink:0;background:#f0f0ec;display:flex;align-items:center;justify-content:center}
+.notif-thumb img{width:100%;height:100%;object-fit:cover}
+.notif-thumb i{font-size:13px;color:#ccc}
+.notif-badge{position:absolute;top:-3px;right:-3px;background:#e24b4a;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;pointer-events:none}
+.bnav-notif-wrap{position:relative;display:inline-flex;flex-direction:column;align-items:center}
 </style>
 </head>
 <body>
@@ -341,6 +372,7 @@ audio{display:none}
   <button id="bnav-search" onclick="switchTab('search')"><i class="ti ti-search"></i>検索</button>
   <button id="bnav-playlist" onclick="switchTab('playlist')"><i class="ti ti-playlist"></i>プレイリスト</button>
   <button id="bnav-user" onclick="switchTab('user')"><i class="ti ti-user-circle"></i>ユーザー</button>
+  <button id="bnav-notif" onclick="toggleNotifPanel()"><span class="bnav-notif-wrap"><i class="ti ti-bell"></i><span id="notif-badge" class="notif-badge" style="display:none">0</span></span>通知</button>
   <button id="bnav-comments" onclick="toggleComments()"><i class="ti ti-message"></i>コメント</button>
 </div><div class="video-player-wrap" id="video-player-wrap"><video id="video-player" controls style="max-width:100%;max-height:240px"></video></div><div class="player">
   <div class="player-thumb" id="p-thumb"><i class="ti ti-music"></i></div>
@@ -454,6 +486,22 @@ audio{display:none}
     </div>
     <button class="btn-primary" onclick="saveTrackEdit()" style="margin-bottom:10px">保存する</button>
     <button onclick="deleteTrack()" style="width:100%;padding:9px;border:1px solid #e24b4a;border-radius:8px;background:#fff;color:#e24b4a;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><i class="ti ti-trash"></i>この曲を削除する</button>
+  </div>
+</div>
+
+<!-- 通知パネル -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-header">
+    <div class="notif-header-left">
+      <span class="notif-title">🔔 通知</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button class="notif-clear" onclick="markAllRead()">すべて既読</button>
+      <button class="icon-btn" onclick="toggleNotifPanel()"><i class="ti ti-x"></i></button>
+    </div>
+  </div>
+  <div class="notif-body" id="notif-body">
+    <div class="notif-empty"><i class="ti ti-bell-off"></i><p>通知はまだありません</p></div>
   </div>
 </div>
 
@@ -585,6 +633,10 @@ async function loadUserProfile(authUser) {
   renderUserPage();
   renderTracks();
   loadTracks();
+  loadNotifications();
+  // 30秒ごとに通知を再チェック
+  if (window._notifInterval) clearInterval(window._notifInterval);
+  window._notifInterval = setInterval(loadNotifications, 30000);
 }
 
 function toggleAuthMode() {
@@ -707,6 +759,116 @@ var supaTarget = null, supaType = null, supaAmt = 0;
 var searchQuery = '', searchFilter = 'all', searchCat = '', searchGenre = '';
 var following = {}, followerCounts = {};
 var wallComments = [];
+
+/* ---- notifications ---- */
+var notifications = [];
+var notifOpen = false;
+
+async function loadNotifications() {
+  if (!currentAuthUser) return;
+  var res = await sb.from('notifications').select('*').eq('user_id', currentAuthUser.id).order('created_at', {ascending: false}).limit(50);
+  if (!res.error && res.data) {
+    notifications = res.data;
+    updateNotifBadge();
+    if (notifOpen) renderNotifPanel();
+  }
+}
+
+function updateNotifBadge() {
+  var unread = notifications.filter(function(n){ return !n.is_read; }).length;
+  var badge = document.getElementById('notif-badge');
+  if (!badge) return;
+  if (unread > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = unread > 99 ? '99+' : unread;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function toggleNotifPanel() {
+  var panel = document.getElementById('notif-panel');
+  notifOpen = !panel.classList.contains('open');
+  panel.classList.toggle('open');
+  // コメントパネルは閉じる
+  document.getElementById('comments-panel').classList.remove('open');
+  if (notifOpen) {
+    renderNotifPanel();
+  }
+}
+
+function renderNotifPanel() {
+  var body = document.getElementById('notif-body');
+  if (!notifications.length) {
+    body.innerHTML = '<div class="notif-empty"><i class="ti ti-bell-off"></i><p>通知はまだありません</p></div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < notifications.length; i++) {
+    var n = notifications[i];
+    var iconClass = n.type === 'like' ? 'like' : (n.type === 'comment' ? 'comment' : 'follow');
+    var iconName = n.type === 'like' ? 'ti-heart-filled' : (n.type === 'comment' ? 'ti-message' : 'ti-user-plus');
+    var thumbHtml2 = n.track_thumb
+      ? '<div class="notif-thumb"><img src="' + n.track_thumb + '"></div>'
+      : '<div class="notif-thumb"><i class="ti ti-music"></i></div>';
+    var timeStr = n.created_at ? new Date(n.created_at).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    var onclick = n.track_id ? 'onNotifClick(\'' + n.id + '\',\'' + n.track_id + '\')' : 'onNotifClick(\'' + n.id + '\',null)';
+    html += '<div class="notif-item' + (n.is_read ? '' : ' unread') + '" onclick="' + onclick + '">' +
+      '<div class="notif-icon ' + iconClass + '"><i class="ti ' + iconName + '"></i></div>' +
+      '<div class="notif-content">' +
+        '<div class="notif-text">' + n.message + '</div>' +
+        '<div class="notif-time">' + timeStr + '</div>' +
+      '</div>' +
+      (n.track_id ? thumbHtml2 : '') +
+    '</div>';
+  }
+  body.innerHTML = html;
+}
+
+async function onNotifClick(notifId, trackId) {
+  // 既読にする
+  await sb.from('notifications').update({is_read: true}).eq('id', notifId);
+  for (var i = 0; i < notifications.length; i++) {
+    if (notifications[i].id === notifId) { notifications[i].is_read = true; break; }
+  }
+  updateNotifBadge();
+  renderNotifPanel();
+  // 該当トラックへジャンプ
+  if (trackId) {
+    toggleNotifPanel();
+    switchTab('feed');
+    var idx = -1;
+    for (var i = 0; i < tracks.length; i++) if (tracks[i].id === trackId) { idx = i; break; }
+    if (idx >= 0) {
+      setTimeout(function(){ playTrack(idx); }, 200);
+      setTimeout(function() {
+        var el = document.getElementById('track-' + trackId);
+        if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+      }, 300);
+    }
+  }
+}
+
+async function markAllRead() {
+  if (!currentAuthUser) return;
+  await sb.from('notifications').update({is_read: true}).eq('user_id', currentAuthUser.id);
+  for (var i = 0; i < notifications.length; i++) notifications[i].is_read = true;
+  updateNotifBadge();
+  renderNotifPanel();
+}
+
+async function sendNotification(targetUserId, type, message, trackId, trackThumb) {
+  if (!targetUserId || !currentAuthUser) return;
+  if (targetUserId === currentAuthUser.id) return; // 自分への通知は不要
+  await sb.from('notifications').insert({
+    user_id: targetUserId,
+    type: type,
+    message: message,
+    track_id: trackId || null,
+    track_thumb: trackThumb || null,
+    is_read: false
+  });
+}
 
 var CATS = [
   {id:'original',label:'オリジナル',color:'#7b5ea7',bg:'#f0eaf8'},
@@ -1767,12 +1929,26 @@ async function toggleLike(id) {
     // いいね取り消し
     await sb.from('likes').delete().eq('track_id', id).eq('user_id', currentAuthUser.id);
     likes[id] = 0;
+    if (window._likeCounts) window._likeCounts[id] = Math.max(0, (window._likeCounts[id] || 1) - 1);
     showToast('いいねを取り消しました');
   } else {
     // いいね追加
     await sb.from('likes').insert({ track_id: id, user_id: currentAuthUser.id });
     likes[id] = 1;
+    if (window._likeCounts) window._likeCounts[id] = (window._likeCounts[id] || 0) + 1;
     showToast('いいね！❤️');
+    // 通知を送る（曲の投稿者へ）
+    var t = null; for (var i = 0; i < tracks.length; i++) if (tracks[i].id === id) { t = tracks[i]; break; }
+    if (t && t.uploader_id) {
+      var fromName = user ? user.name : 'ゲスト';
+      await sendNotification(
+        t.uploader_id,
+        'like',
+        fromName + ' さんが「' + t.name + '」にいいね！しました ❤️',
+        id,
+        t.thumbUrl || null
+      );
+    }
   }
   renderTracks(); renderRanking(); renderUserPage();
 }
@@ -1854,6 +2030,19 @@ async function addComment() {
     if (!commentsData[openCommentTrackId]) commentsData[openCommentTrackId] = [];
     commentsData[openCommentTrackId].push({ user: c.user_name, text: c.body, time: new Date(c.created_at).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit'}), user_id: c.user_id, db_id: c.id });
     inp.value = ''; renderComments(); renderTracks();
+    // 通知を送る（曲の投稿者へ）
+    var t = null; for (var i = 0; i < tracks.length; i++) if (tracks[i].id === openCommentTrackId) { t = tracks[i]; break; }
+    if (t && t.uploader_id) {
+      var fromName = user ? user.name : 'ゲスト';
+      var preview = text.length > 20 ? text.slice(0, 20) + '…' : text;
+      await sendNotification(
+        t.uploader_id,
+        'comment',
+        fromName + ' さんが「' + t.name + '」にコメントしました：「' + preview + '」💬',
+        openCommentTrackId,
+        t.thumbUrl || null
+      );
+    }
   } else {
     showToast('エラー: ' + (res.error ? res.error.message : '不明'));
   }
@@ -1948,6 +2137,8 @@ function switchTab(tab) {
   var bBtn = document.getElementById('bnav-' + tab);
   if (bBtn) bBtn.classList.add('active');
   document.getElementById('comments-panel').classList.remove('open');
+  document.getElementById('notif-panel').classList.remove('open');
+  notifOpen = false;
   if (tab === 'ranking') renderRanking();
   if (tab === 'playlist') renderPlaylist();
   if (tab === 'user') renderUserPage();

@@ -2282,6 +2282,7 @@ function closeVideoPlayer() {
   videoEl.pause(); videoEl.src = '';
   videoWrap.classList.remove('show');
   document.querySelector('.main').style.paddingTop = '';
+  closeNpComments();
 }
 
 /* ---- 再生中コメントエリア ---- */

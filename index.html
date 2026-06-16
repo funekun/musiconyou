@@ -20,31 +20,13 @@ html, body {
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f9fc;color:#1a1a1a;min-height:100vh;position:relative}
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Ccircle cx='80' cy='80' r='60' fill='%23b8ddf0' opacity='0.30'/%3E%3Ccircle cx='270' cy='60' r='45' fill='%23cce8f5' opacity='0.32'/%3E%3Ccircle cx='420' cy='110' r='50' fill='%23a8d8ee' opacity='0.25'/%3E%3Ccircle cx='150' cy='230' r='55' fill='%23d8f0f8' opacity='0.35'/%3E%3Ccircle cx='370' cy='260' r='65' fill='%23b8ddf0' opacity='0.28'/%3E%3Ccircle cx='60' cy='390' r='48' fill='%23cce8f5' opacity='0.30'/%3E%3Ccircle cx='260' cy='410' r='58' fill='%23a8d8ee' opacity='0.26'/%3E%3Ccircle cx='440' cy='420' r='42' fill='%23d8f0f8' opacity='0.32'/%3E%3C/svg%3E");background-size:500px 500px;background-repeat:repeat}
 header{background:#fff;border-bottom:0.5px solid #d0eaf5;height:56px;position:sticky;top:0;z-index:100}
-.main{max-width:860px;margin:0 auto;padding:2rem 1.5rem 10rem;position:relative;z-index:1}
+.main{max-width:860px;margin:0 auto;padding:2rem 1.5rem 6rem;position:relative;z-index:1}
 .tab-content{display:none}.tab-content.active{display:block}
 .site-hero{text-align:center;padding:2rem 0 1.5rem;border-bottom:0.5px solid #d0eaf5;margin-bottom:2rem}
-.bottom-nav{position:fixed;bottom:72px;left:0;right:0;background:#fff;border-top:0.5px solid #d0eaf5;display:flex;z-index:99}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:0.5px solid #d0eaf5;display:flex;z-index:99}
 .bottom-nav button{flex:1;background:none;border:none;cursor:pointer;color:#aaa;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;transition:color .15s}
 .bottom-nav button.active{color:#1a1a1a}
 .bottom-nav button i{font-size:20px}
-.player{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:0.5px solid #d0eaf5;padding:0 1.2rem;height:72px;display:flex;align-items:center;gap:10px;z-index:100}
-.player-thumb{width:40px;height:40px;border-radius:8px;background:#d0eaf5;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.player-thumb img{width:100%;height:100%;object-fit:cover}
-.player-thumb i{font-size:16px;color:#999}
-.player-info{min-width:120px;max-width:160px;flex-shrink:0}
-.player-title{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.player-artist{font-size:10px;color:#999}
-.player-controls{display:flex;align-items:center;gap:4px;flex-shrink:0}
-.ctrl-btn{background:none;border:none;cursor:pointer;color:#888;padding:4px;display:flex;align-items:center;font-size:18px;border-radius:6px}
-.ctrl-btn:hover{color:#1a1a1a}
-.ctrl-btn.main-ctrl{color:#1a1a1a;font-size:22px}
-.progress-area{flex:1;display:flex;align-items:center;gap:6px}
-.time{font-size:10px;color:#bbb;min-width:26px}.time.right{text-align:right}
-.progress-bar{flex:1;height:3px;background:#d0eaf5;border-radius:2px;cursor:pointer}
-.progress-fill{height:100%;background:#1a1a1a;border-radius:2px;pointer-events:none}
-.volume-area{display:flex;align-items:center;gap:4px}
-.vol-slider{width:50px;height:3px;background:#d0eaf5;border-radius:2px;appearance:none;cursor:pointer}
-.vol-slider::-webkit-slider-thumb{appearance:none;width:11px;height:11px;border-radius:50%;background:#1a1a1a}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:#fff;border-radius:14px;padding:2rem;width:90%;max-width:460px;position:relative;max-height:90vh;overflow-y:auto}
@@ -235,10 +217,10 @@ header{background:#fff;border-bottom:0.5px solid #d0eaf5;height:56px;position:st
 .not-registered{text-align:center;padding:3rem 1rem}
 .not-registered i{font-size:44px;color:#ddd;margin-bottom:14px;display:block}
 .not-registered p{font-size:14px;color:#888;margin-bottom:18px}
-.comments-panel{display:none;position:fixed;right:0;top:56px;bottom:144px;width:320px;background:#fff;border-left:0.5px solid #d0eaf5;flex-direction:column;z-index:50;box-shadow:-4px 0 16px rgba(0,0,0,.05)}
+.comments-panel{display:none;position:fixed;right:0;top:56px;bottom:72px;width:320px;background:#fff;border-left:0.5px solid #d0eaf5;flex-direction:column;z-index:50;box-shadow:-4px 0 16px rgba(0,0,0,.05)}
 .comments-panel.open{display:flex}
 /* コメントフィードパネル */
-.cmt-feed-panel{display:none;position:fixed;right:0;top:56px;bottom:144px;width:320px;background:#fff;border-left:0.5px solid #d0eaf5;flex-direction:column;z-index:50;box-shadow:-4px 0 16px rgba(0,0,0,.05)}
+.cmt-feed-panel{display:none;position:fixed;right:0;top:56px;bottom:72px;width:320px;background:#fff;border-left:0.5px solid #d0eaf5;flex-direction:column;z-index:50;box-shadow:-4px 0 16px rgba(0,0,0,.05)}
 .cmt-feed-panel.open{display:flex}
 .cmt-feed-header{padding:12px 14px;border-bottom:0.5px solid #d0eaf5;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .cmt-feed-title{font-size:13px;font-weight:500}
@@ -407,7 +389,7 @@ audio{display:none}
 .video-player-wrap video{max-width:100%;max-height:240px;object-fit:contain}
 .video-close-btn{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;z-index:99;backdrop-filter:blur(4px)}
 /* 再生中コメントエリア */
-.np-comments{display:none;position:fixed;left:0;right:0;bottom:144px;background:#fff;border-top:0.5px solid #d0eaf5;z-index:96;flex-direction:column;max-height:220px}
+.np-comments{display:none;position:fixed;left:0;right:0;bottom:72px;background:#fff;border-top:0.5px solid #d0eaf5;z-index:96;flex-direction:column;max-height:220px}
 .np-comments.show{display:flex}
 .np-comments-header{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:0.5px solid #eef6fc;flex-shrink:0}
 .np-comments-label{font-size:11px;font-weight:500;color:#888;display:flex;align-items:center;gap:5px}
@@ -434,7 +416,7 @@ audio{display:none}
 .np-cmt-input{flex:1;border:0.5px solid #d0eaf5;border-radius:16px;padding:6px 11px;font-size:12px;outline:none;background:#fff;font-family:inherit}
 .np-cmt-input:focus{border-color:#888}
 .np-cmt-send{background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:12px}
-.notif-panel{display:none;position:fixed;right:0;top:56px;bottom:144px;width:300px;background:#fff;border-left:0.5px solid #d0eaf5;flex-direction:column;z-index:50;box-shadow:-4px 0 16px rgba(0,0,0,.06)}
+.notif-panel{display:none;position:fixed;right:0;top:56px;bottom:72px;width:300px;background:#fff;border-left:0.5px solid #d0eaf5;flex-direction:column;z-index:50;box-shadow:-4px 0 16px rgba(0,0,0,.06)}
 .notif-panel.open{display:flex}
 .notif-header{padding:14px 16px;border-bottom:0.5px solid #d0eaf5;display:flex;align-items:center;justify-content:space-between}
 .notif-header-left{display:flex;align-items:center;gap:8px}
@@ -569,27 +551,7 @@ audio{display:none}
   <button id="bnav-user" onclick="switchTab('user')"><i class="ti ti-user-circle"></i>ユーザー</button>
   <button id="bnav-notif" style="display:none" onclick="toggleNotifPanel()"><span class="bnav-notif-wrap"><i class="ti ti-bell"></i><span id="notif-badge" class="notif-badge" style="display:none">0</span></span>通知</button>
   <button id="bnav-comments" onclick="toggleCommentFeed()"><i class="ti ti-message"></i>コメント</button>
-</div><div class="video-player-wrap" id="video-player-wrap" style="position:fixed"><button class="video-close-btn" onclick="closeVideoPlayer()" title="閉じる"><i class="ti ti-x"></i></button><video id="video-player" controls style="max-width:100%;max-height:240px"></video></div><div class="player">
-  <div class="player-thumb" id="p-thumb"><i class="ti ti-music"></i></div>
-  <div class="player-info">
-    <div class="player-title" id="p-title">曲を選んでください</div>
-    <div class="player-artist" id="p-artist">—</div>
-  </div>
-  <div class="player-controls">
-    <button class="ctrl-btn" onclick="prevTrack()"><i class="ti ti-player-skip-back"></i></button>
-    <button class="ctrl-btn main-ctrl" id="main-play-btn" onclick="togglePlay()"><i class="ti ti-player-play"></i></button>
-    <button class="ctrl-btn" onclick="nextTrack()"><i class="ti ti-player-skip-forward"></i></button>
-  </div>
-  <div class="progress-area">
-    <span class="time" id="p-cur">0:00</span>
-    <div class="progress-bar" onclick="seek(event)" id="prog-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
-    <span class="time right" id="p-dur">0:00</span>
-  </div>
-  <div class="volume-area">
-    <button class="ctrl-btn" style="font-size:15px"><i class="ti ti-volume"></i></button>
-    <input type="range" class="vol-slider" min="0" max="100" value="80" oninput="setVolume(this.value)">
-  </div>
-</div>
+</div><div class="video-player-wrap" id="video-player-wrap" style="position:fixed"><button class="video-close-btn" onclick="closeVideoPlayer()" title="閉じる"><i class="ti ti-x"></i></button><video id="video-player" controls style="max-width:100%;max-height:240px"></video></div>
 
 <div class="comments-panel" id="comments-panel">
   <div class="cp-header">
@@ -2277,11 +2239,7 @@ function playTrack(i) {
     audio.src = t.url; audio.play();
   }
 
-  document.getElementById('p-title').textContent = t.name;
-  document.getElementById('p-artist').textContent = catInfo(t.cat).label + (t.uploader ? ' · ' + t.uploader : '');
-  var pThumb = document.getElementById('p-thumb');
-  pThumb.innerHTML = t.thumbUrl ? '<img src="' + t.thumbUrl + '" style="width:40px;height:40px;object-fit:cover">' : '<i class="ti ti-' + (t.isVideo ? 'video' : 'music') + '"></i>';
-  document.getElementById('main-play-btn').innerHTML = '<i class="ti ti-player-pause"></i>';
+  document.getElementById('main-play-btn') && (document.getElementById('main-play-btn').innerHTML = '<i class="ti ti-player-pause"></i>');
   renderTracks(); renderRanking(); renderPlaylist(); renderUserPage();
   openNpComments(t.id);
 }
@@ -2381,38 +2339,15 @@ async function addNpComment() {
 function togglePlay() {
   if (!tracks.length) return;
   if (currentIdx < 0) { playTrack(0); return; }
-  var t = tracks[currentIdx];
-  var videoEl = document.getElementById('video-player');
-  if (t && t.isVideo) {
-    if (videoEl.paused) { videoEl.play(); document.getElementById('main-play-btn').innerHTML = '<i class="ti ti-player-pause"></i>'; }
-    else { videoEl.pause(); document.getElementById('main-play-btn').innerHTML = '<i class="ti ti-player-play"></i>'; }
-  } else {
-    if (audio.paused) { audio.play(); document.getElementById('main-play-btn').innerHTML = '<i class="ti ti-player-pause"></i>'; }
-    else { audio.pause(); document.getElementById('main-play-btn').innerHTML = '<i class="ti ti-player-play"></i>'; }
-  }
+  if (audio.paused) audio.play();
+  else audio.pause();
   renderTracks(); renderUserPage();
 }
 function prevTrack() { if (tracks.length) playTrack((currentIdx - 1 + tracks.length) % tracks.length); }
 function nextTrack() { if (tracks.length) playTrack((currentIdx + 1) % tracks.length); }
-document.getElementById('video-player').ontimeupdate = function() {
-  var v = document.getElementById('video-player');
-  var pct = v.duration ? (v.currentTime / v.duration * 100) : 0;
-  document.getElementById('prog-fill').style.width = pct + '%';
-  document.getElementById('p-cur').textContent = fmtTime(v.currentTime);
-  document.getElementById('p-dur').textContent = fmtTime(v.duration);
-};
-document.getElementById('video-player').onended = function() {
-  document.getElementById('main-play-btn').innerHTML = '<i class="ti ti-player-play"></i>';
-  nextTrack();
-};
-audio.ontimeupdate = function() {
-  var pct = audio.duration ? (audio.currentTime / audio.duration * 100) : 0;
-  document.getElementById('prog-fill').style.width = pct + '%';
-  document.getElementById('p-cur').textContent = fmtTime(audio.currentTime);
-  document.getElementById('p-dur').textContent = fmtTime(audio.duration);
-};
+document.getElementById('video-player').onended = function() { nextTrack(); };
 audio.onended = function() { nextTrack(); };
-function seek(e) { if (!audio.duration) return; var r = document.getElementById('prog-bar').getBoundingClientRect(); audio.currentTime = (e.clientX - r.left) / r.width * audio.duration; }
+function seek(e) {}
 function setVolume(v) { audio.volume = v / 100; }
 audio.volume = 0.8;
 

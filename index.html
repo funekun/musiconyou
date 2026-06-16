@@ -229,22 +229,11 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;height:56px;position:st
 .cp-header{padding:14px;border-bottom:0.5px solid #e0e0d8;display:flex;align-items:center;justify-content:space-between}
 .cp-title{font-size:13px;font-weight:500}
 .cp-body{flex:1;overflow-y:auto;padding:10px}
-.comment{padding:10px 0;border-bottom:0.5px solid #f0f0ec}
+.comment{padding:7px 0;border-bottom:0.5px solid #f0f0ec}
 .comment:last-child{border:none}
-.comment-avatar{width:28px;height:28px;border-radius:50%;background:#f0f0ec;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
-.comment-avatar img{width:100%;height:100%;object-fit:cover}
-.comment-header{display:flex;align-items:center;gap:7px;margin-bottom:4px}
-.comment-user{font-size:12px;font-weight:600;color:#1a1a1a}
-.comment-time{font-size:10px;color:#bbb}
-.comment-text{font-size:12px;color:#444;line-height:1.6;margin-left:35px}
-.comment-actions{display:flex;align-items:center;gap:10px;margin-left:35px;margin-top:5px}
-.comment-like-btn{background:none;border:none;cursor:pointer;font-size:11px;color:#bbb;display:flex;align-items:center;gap:3px;padding:0}
-.comment-like-btn.liked{color:#e24b4a}
-.comment-reply-btn{background:none;border:none;cursor:pointer;font-size:11px;color:#bbb;padding:0}
-.reply-form{margin-left:35px;margin-top:6px;display:none}
-.reply-form input{width:100%;padding:5px 10px;border:1px solid #e0e0d8;border-radius:20px;font-size:12px;outline:none;box-sizing:border-box}
-.comment-reply{padding:7px 0 7px 35px;border-bottom:0.5px solid #f8f8f4;background:#fafafa}
-.comment-reply:last-child{border:none}
+.comment-user{font-size:11px;font-weight:500;margin-bottom:2px}
+.comment-text{font-size:12px;color:#555;line-height:1.5}
+.comment-time{font-size:10px;color:#bbb;margin-top:2px}
 .cp-input{padding:10px;border-top:0.5px solid #e0e0d8;display:flex;gap:7px}
 .cp-input input{flex:1;border:0.5px solid #e0e0d8;border-radius:6px;padding:6px 9px;font-size:12px;outline:none;background:#f9f9f7;font-family:inherit}
 .cp-input input:focus{border-color:#888}
@@ -489,12 +478,12 @@ sb.auth.onAuthStateChange(function(event, session) {
     loadUserProfile(session.user);
   } else {
     currentAuthUser = null;
+    overlay.style.display = 'flex';
     overlay.classList.add('open');
     user = null;
     updateNavUser();
     renderUploadArea();
     renderUserPage();
-    loadTracks();
   }
 });
 
@@ -700,7 +689,10 @@ saveUser = async function() {
 // 初期化時に認証チェック
 sb.auth.getSession().then(function(res) {
   if (!res.data.session) {
-    document.getElementById('auth-overlay').classList.add('open');
+    var overlay = document.getElementById('auth-overlay');
+    overlay.style.cssText = 'display:flex !important';
+    overlay.classList.add('open');
+    loadTracks();
   }
 });
 var tracks = [], currentIdx = -1, playlist = [];
@@ -1832,7 +1824,7 @@ function openComments(id) {
   sb.from('comments').select('*').eq('track_id', id).order('created_at', {ascending: true}).then(function(res) {
     if (!res.error && res.data) {
       commentsData[id] = res.data.map(function(c) {
-        return { user: c.user_name, text: c.body, time: new Date(c.created_at).toLocaleString('ja-JP', {year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}), user_id: c.user_id, db_id: c.id, avatar_url: c.avatar_url || null, likes_count: c.likes_count || 0, liked_by_me: false };
+        return { user: c.user_name, text: c.body, time: new Date(c.created_at).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit'}), user_id: c.user_id, db_id: c.id };
       });
     }
     renderComments();
@@ -1841,91 +1833,11 @@ function openComments(id) {
 }
 function toggleComments() { document.getElementById('comments-panel').classList.toggle('open'); }
 function renderComments() {
-  var body = document.getElementById('cp-body');
-  var cs = commentsData[openCommentTrackId] || [];
+  var body = document.getElementById('cp-body'); var cs = commentsData[openCommentTrackId] || [];
   if (!cs.length) { body.innerHTML = '<p style="font-size:12px;color:#bbb;padding:8px">まだコメントがありません</p>'; return; }
   var html = '';
-  for (var i = 0; i < cs.length; i++) {
-    var c = cs[i];
-    var avHtml = c.avatar_url
-      ? '<img src="' + c.avatar_url + '">'
-      : '<i class="ti ti-user" style="font-size:13px;color:#ccc"></i>';
-    var isLiked = c.liked_by_me ? ' liked' : '';
-    var likeCnt = c.likes_count || 0;
-    html += '<div class="comment" id="comment-' + c.db_id + '">' +
-      '<div class="comment-header">' +
-        '<div class="comment-avatar">' + avHtml + '</div>' +
-        '<span class="comment-user">' + (c.user || 'ゲスト') + '</span>' +
-        '<span class="comment-time">' + c.time + '</span>' +
-      '</div>' +
-      '<div class="comment-text">' + c.text + '</div>' +
-      '<div class="comment-actions">' +
-        '<button class="comment-like-btn' + isLiked + '" onclick="likeComment('' + c.db_id + '',' + i + ')">' +
-          '<i class="ti ti-heart" style="font-size:11px"></i>' +
-          '<span id="clikes-' + c.db_id + '">' + (likeCnt > 0 ? likeCnt : '') + '</span>' +
-        '</button>' +
-        '<button class="comment-reply-btn" onclick="toggleReplyForm('' + c.db_id + '')">' +
-          '<i class="ti ti-message-reply" style="font-size:11px"></i> 返信' +
-        '</button>' +
-      '</div>' +
-      '<div class="reply-form" id="reply-form-' + c.db_id + '">' +
-        '<input type="text" placeholder="返信を入力..." onkeydown="if(event.key==='Enter')addReply('' + c.db_id + '',this.value,this)">' +
-      '</div>' +
-    '</div>';
-  }
-  body.innerHTML = html;
-  body.scrollTop = body.scrollHeight;
-}
-function toggleReplyForm(commentId) {
-  var form = document.getElementById('reply-form-' + commentId);
-  if (!form) return;
-  if (form.style.display === 'block') {
-    form.style.display = 'none';
-  } else {
-    form.style.display = 'block';
-    form.querySelector('input').focus();
-  }
-}
-async function likeComment(commentId, idx) {
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
-  var cs = commentsData[openCommentTrackId] || [];
-  var c = cs[idx];
-  if (!c) return;
-  if (c.liked_by_me) {
-    c.likes_count = Math.max(0, (c.likes_count || 1) - 1);
-    c.liked_by_me = false;
-  } else {
-    c.likes_count = (c.likes_count || 0) + 1;
-    c.liked_by_me = true;
-  }
-  // DBを更新
-  await sb.from('comments').update({ likes_count: c.likes_count }).eq('id', commentId);
-  var btn = document.querySelector('#comment-' + commentId + ' .comment-like-btn');
-  var cnt = document.getElementById('clikes-' + commentId);
-  if (btn) btn.classList.toggle('liked', c.liked_by_me);
-  if (cnt) cnt.textContent = c.likes_count > 0 ? c.likes_count : '';
-}
-async function addReply(parentId, text, input) {
-  if (!text.trim() || !currentAuthUser) return;
-  var res = await sb.from('comments').insert({
-    track_id: openCommentTrackId,
-    user_id: currentAuthUser.id,
-    user_name: user ? user.name : 'ゲスト',
-    avatar_url: user ? user.avatarUrl : null,
-    body: '↩ ' + text.trim(),
-    parent_id: parentId
-  }).select().single();
-  if (!res.error && res.data) {
-    var c = res.data;
-    if (!commentsData[openCommentTrackId]) commentsData[openCommentTrackId] = [];
-    commentsData[openCommentTrackId].push({
-      user: c.user_name, text: c.body,
-      time: new Date(c.created_at).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit'}),
-      user_id: c.user_id, db_id: c.id, avatar_url: c.avatar_url, likes_count: 0
-    });
-    input.value = '';
-    renderComments();
-  }
+  for (var i = 0; i < cs.length; i++) html += '<div class="comment"><div class="comment-user">' + cs[i].user + '</div><div class="comment-text">' + cs[i].text + '</div><div class="comment-time">' + cs[i].time + '</div></div>';
+  body.innerHTML = html; body.scrollTop = body.scrollHeight;
 }
 async function addComment() {
   var inp = document.getElementById('comment-input'); var text = inp.value.trim();
@@ -1935,13 +1847,12 @@ async function addComment() {
     track_id: openCommentTrackId,
     user_id: currentAuthUser.id,
     user_name: user ? user.name : 'ゲスト',
-    avatar_url: user ? (user.avatarUrl || null) : null,
     body: text
   }).select().single();
   if (!res.error && res.data) {
     var c = res.data;
     if (!commentsData[openCommentTrackId]) commentsData[openCommentTrackId] = [];
-    commentsData[openCommentTrackId].push({ user: c.user_name, text: c.body, time: new Date(c.created_at).toLocaleString('ja-JP', {year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}), user_id: c.user_id, db_id: c.id, avatar_url: user ? user.avatarUrl : null, likes_count: 0, liked_by_me: false });
+    commentsData[openCommentTrackId].push({ user: c.user_name, text: c.body, time: new Date(c.created_at).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit'}), user_id: c.user_id, db_id: c.id });
     inp.value = ''; renderComments(); renderTracks();
   } else {
     showToast('エラー: ' + (res.error ? res.error.message : '不明'));

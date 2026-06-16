@@ -77,20 +77,19 @@ header{background:#fff;border-bottom:0.5px solid #d0eaf5;height:56px;position:st
 .supa-entry-top{display:flex;align-items:center;justify-content:space-between;gap:4px}
 .supa-entry-name,.supa-entry-pts{font-size:11px;font-weight:500}
 .supa-entry-msg{font-size:11px;margin-top:2px;line-height:1.4;word-break:break-word}
-.user-hero{background:#fff;border:0.5px solid #d0eaf5;border-radius:16px;padding:1.4rem 1.2rem 1.2rem;margin-bottom:1.2rem}
-.user-hero-top{display:flex;flex-direction:column;align-items:center;text-align:center;gap:0}
-.user-avatar-lg{width:80px;height:80px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#eef6fc;display:flex;align-items:center;justify-content:center;border:2px solid #d0eaf5;margin-bottom:10px}
+.user-hero{background:#fff;border-bottom:0.5px solid #d0eaf5;padding:10px 14px 8px;margin-bottom:0}
+.user-hero-top{display:flex;align-items:center;gap:12px;margin-bottom:7px}
+.user-avatar-lg{width:60px;height:60px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#eef6fc;display:flex;align-items:center;justify-content:center;border:1.5px solid #d0eaf5}
 .user-avatar-lg img{width:100%;height:100%;object-fit:cover}
-.user-avatar-lg i{font-size:30px;color:#ccc}
-.user-meta{width:100%}
-.user-name{font-size:20px;font-weight:600;margin-bottom:2px}
-.user-bio{font-size:12px;color:#888;line-height:1.6;margin:6px auto 10px;max-width:280px}
-.user-stats{display:flex;justify-content:center;gap:0;margin-bottom:12px;border-top:0.5px solid #eef6fc;border-bottom:0.5px solid #eef6fc;padding:10px 0}
-.user-stats .stat{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;border-right:0.5px solid #eef6fc}
-.user-stats .stat:last-child{border-right:none}
-.user-stats .stat strong{font-size:16px;font-weight:600;color:#1a1a1a}
-.user-stats .stat span{font-size:10px;color:#aaa}
-.user-actions{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+.user-avatar-lg i{font-size:24px;color:#ccc}
+.user-meta{flex:1;min-width:0}
+.user-name{font-size:16px;font-weight:600;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-bio{font-size:11px;color:#888;line-height:1.5;margin-top:5px;word-break:break-word}
+.user-stats{display:flex;gap:0;flex:1}
+.user-stats .stat{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px}
+.user-stats .stat strong{font-size:15px;font-weight:600;color:#1a1a1a}
+.user-stats .stat span{font-size:9px;color:#aaa}
+.user-actions{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
 .stat{font-size:12px;color:#888}.stat strong{color:#1a1a1a;font-weight:500}
 .stat.clickable{cursor:pointer}.stat.clickable:hover strong{text-decoration:underline}
 .supa-btn{background:#fff8e1;border:0.5px solid #f0c040;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:#b8860b;display:inline-flex;align-items:center;gap:4px}
@@ -450,7 +449,8 @@ audio{display:none}
 .notif-thumb img{width:100%;height:100%;object-fit:cover}
 .notif-thumb i{font-size:13px;color:#ccc}
 .notif-badge{position:absolute;top:-3px;right:-3px;background:#e24b4a;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;pointer-events:none}
-.bnav-notif-wrap{position:relative;display:inline-flex;flex-direction:column;align-items:center}
+#user-hero-fixed{position:sticky;top:56px;z-index:90;background:#fff;border-bottom:0.5px solid #d0eaf5;border-radius:0;margin-left:-1.5rem;margin-right:-1.5rem;padding:10px 16px 8px}
+#tab-user.active #user-hero-fixed{display:block}
 </style>
 </head>
 <body>
@@ -2110,30 +2110,30 @@ function renderUserPage() {
         : '<div class="track-grid">' + gridHtml + '</div>');
 
   content.innerHTML =
-    '<div class="user-hero">' +
+    '<div class="user-hero" id="user-hero-fixed">' +
       '<div class="user-hero-top">' +
         '<div class="user-avatar-lg">' + (user.avatarUrl ? '<img src="' + user.avatarUrl + '">' : '<i class="ti ti-user"></i>') + '</div>' +
         '<div class="user-meta">' +
           '<div class="user-name">' + esc(user.name) + '</div>' +
-          (user.username ? '<div style="font-size:12px;color:#7ec4e0;margin-bottom:2px">@' + esc(user.username) + '</div>' : '') +
-          (user.bio ? '<div class="user-bio">' + esc(user.bio) + '</div>' : '<div style="height:8px"></div>') +
-          '<div class="user-stats">' +
-            '<div class="stat"><strong>' + myTracks.length + '</strong><span>投稿</span></div>' +
-            '<div class="stat"><strong>' + totalPl + '</strong><span>再生</span></div>' +
-            '<div class="stat"><strong>' + totalLk + '</strong><span>いいね</span></div>' +
-            '<div class="stat clickable" onclick="openFollowModal()"><strong>' + flCount + '</strong><span>フォロー中</span></div>' +
-            '<div class="stat"><strong>' + frCount + '</strong><span>フォロワー</span></div>' +
-          '</div>' +
-          '<div class="user-actions">' +
-            '<button onclick="toggleNotifPanel()" style="background:#fff;border:1px solid #d0eaf5;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;position:relative">' +
-              '<i class="ti ti-bell"></i>通知' +
-              '<span id="notif-badge-user" style="display:none;position:absolute;top:-4px;right:-4px;background:#e24b4a;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;align-items:center;justify-content:center;padding:0 3px">0</span>' +
-            '</button>' +
-            '<button class="btn-ghost" onclick="openRegModal(true)"><i class="ti ti-edit" style="margin-right:3px"></i>編集</button>' +
-            '<button class="supa-btn" onclick="openSupaModal(\'user\',\'' + esc(user.name) + '\')"><i class="ti ti-coin"></i>サポート</button>' +
-            '<button onclick="logout()" style="background:#fff;color:#e24b4a;border:1px solid #e24b4a;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-logout"></i>ログアウト</button>' +
-          '</div>' +
+          (user.username ? '<div style="font-size:11px;color:#7ec4e0">@' + esc(user.username) + '</div>' : '') +
         '</div>' +
+        '<div class="user-stats">' +
+          '<div class="stat"><strong>' + myTracks.length + '</strong><span>投稿</span></div>' +
+          '<div class="stat"><strong>' + totalLk + '</strong><span>いいね</span></div>' +
+          '<div class="stat clickable" onclick="openFollowModal()"><strong>' + flCount + '</strong><span>フォロー中</span></div>' +
+          '<div class="stat"><strong>' + frCount + '</strong><span>フォロワー</span></div>' +
+        '</div>' +
+      '</div>' +
+      (user.bio ? '<div class="user-bio">' + esc(user.bio) + '</div>' : '') +
+      '<div class="user-actions">' +
+        '<button onclick="toggleNotifPanel()" style="background:#fff;border:1px solid #d0eaf5;border-radius:16px;padding:5px 11px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;position:relative">' +
+          '<i class="ti ti-bell" style="font-size:13px"></i>通知' +
+          '<span id="notif-badge-user" style="display:none;position:absolute;top:-4px;right:-4px;background:#e24b4a;color:#fff;font-size:9px;font-weight:700;min-width:15px;height:15px;border-radius:8px;align-items:center;justify-content:center;padding:0 2px">0</span>' +
+        '</button>' +
+        '<button onclick="openRegModal(true)" style="background:#fff;border:1px solid #d0eaf5;border-radius:16px;padding:5px 11px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-edit" style="font-size:13px"></i>編集</button>' +
+        '<button class="supa-btn" onclick="openSupaModal(\'user\',\'' + esc(user.name) + '\')" style="padding:5px 11px;font-size:11px"><i class="ti ti-coin" style="font-size:13px"></i>サポート</button>' +
+        '<button onclick="scrollToUpload()" style="background:#1a1a1a;color:#fff;border:none;border-radius:16px;padding:5px 11px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-upload" style="font-size:13px"></i>投稿</button>' +
+        '<button onclick="logout()" style="background:#fff;color:#e24b4a;border:1px solid #e24b4a;border-radius:16px;padding:5px 11px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-logout" style="font-size:13px"></i>ログアウト</button>' +
       '</div>' +
     '</div>' +
     (uSupa.length ? renderSupaList(uSupa, '受け取ったサポートランキング') : '') +
@@ -2145,9 +2145,7 @@ function renderUserPage() {
         '<button class="wall-send" onclick="addWallComment()"><i class="ti ti-send"></i></button>' +
       '</div>' +
     '</div>' +
-    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">' +
-      (userSubTab === 'works' ? '<button onclick="scrollToUpload()" style="margin-left:auto;background:#1a1a1a;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px"><i class="ti ti-upload"></i>投稿する</button>' : '') +
-    '</div>' +
+    '<div style="margin-bottom:.6rem"></div>' +
     subTabs +
     tabContent;
 

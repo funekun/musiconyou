@@ -2122,13 +2122,17 @@ function renderUserPage() {
           '<div class="user-name">' + esc(user.name) + '</div>' +
           (user.username ? '<div style="font-size:11px;color:#7ec4e0">@' + esc(user.username) + '</div>' : '') +
         '</div>' +
-        '<div class="user-stats">' +
-          '<div class="stat"><strong>' + myTracks.length + '</strong><span>投稿</span></div>' +
-          '<div class="stat"><strong>' + totalLk + '</strong><span>いいね</span></div>' +
-          '<div class="stat"><strong>' + totalPl + '</strong><span>再生</span></div>' +
-          '<div class="stat"><strong>' + totalPts(uSupa) + '</strong><span>pt</span></div>' +
-          '<div class="stat clickable" onclick="openFollowModal()"><strong>' + flCount + '</strong><span>フォロー中</span></div>' +
-          '<div class="stat"><strong>' + frCount + '</strong><span>フォロワー</span></div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div class="user-stats" style="margin-bottom:6px">' +
+            '<div class="stat"><strong>' + myTracks.length + '</strong><span>投稿</span></div>' +
+            '<div class="stat"><strong>' + totalPl + '</strong><span>再生</span></div>' +
+            '<div class="stat"><strong>' + totalLk + '</strong><span>いいね</span></div>' +
+          '</div>' +
+          '<div class="user-stats">' +
+            '<div class="stat"><strong>' + totalPts(uSupa) + '</strong><span>pt</span></div>' +
+            '<div class="stat clickable" onclick="openFollowModal()"><strong>' + flCount + '</strong><span>フォロー中</span></div>' +
+            '<div class="stat"><strong>' + frCount + '</strong><span>フォロワー</span></div>' +
+          '</div>' +
         '</div>' +
       '</div>' +
       (user.bio ? '<div class="user-bio">' + esc(user.bio) + '</div>' : '') +

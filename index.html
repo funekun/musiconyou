@@ -2664,16 +2664,19 @@ async function renderDmList() {
   // 承認済みDM
   if (accepted.length) {
     html += '<div style="padding:8px 16px;font-size:10px;color:#aaa;font-weight:500;letter-spacing:.5px">💬 メッセージ</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:16px;padding:12px 16px">';
     for (var i = 0; i < accepted.length; i++) {
       var r = accepted[i];
       var isFrom = r.from_user_id === currentAuthUser.id;
       var partner = isFrom ? (r.to_profile||{}) : (r.from_profile||{});
-      html += '<div class="dm-request-item" onclick="openDmChat(\'' + r.id + '\',\'' + esc(partner.name||'?') + '\',\'' + esc(partner.avatar_url||'') + '\')">' +
-        '<div class="dm-av">' + (partner.avatar_url ? '<img src="' + partner.avatar_url + '">' : '<i class="ti ti-user"></i>') + '</div>' +
-        '<div><div class="dm-item-name">' + esc(partner.name||'?') + '</div><div class="dm-item-sub">@' + esc(partner.username||'') + '</div></div>' +
-        '<i class="ti ti-chevron-right" style="color:#ccc;margin-left:auto"></i>' +
+      html += '<div onclick="openDmChat(\'' + r.id + '\',\'' + esc(partner.name||'?') + '\',\'' + esc(partner.avatar_url||'') + '\')" style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;width:60px">' +
+        '<div style="width:52px;height:52px;border-radius:50%;overflow:hidden;background:#eef6fc;border:2px solid #d0eaf5;display:flex;align-items:center;justify-content:center;flex-shrink:0">' +
+          (partner.avatar_url ? '<img src="' + partner.avatar_url + '" style="width:100%;height:100%;object-fit:cover">' : '<i class="ti ti-user" style="font-size:20px;color:#ccc"></i>') +
+        '</div>' +
+        '<div style="font-size:10px;color:#333;text-align:center;width:60px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(partner.name||'?') + '</div>' +
       '</div>';
     }
+    html += '</div>';
   }
 
   // 送信済み申請（承認待ち）
@@ -2690,7 +2693,7 @@ async function renderDmList() {
   }
 
   if (!requests.length) {
-    html += '<div class="news-empty"><i class="ti ti-send" style="font-size:28px;display:block;margin-bottom:8px"></i><p style="font-size:12px">メッセージはまだありません<br><span style="font-size:10px;color:#ccc">他のユーザーページからDMを送れます</span></p></div>';
+    html += '<div class="news-empty"><i class="ti ti-send" style="font-size:28px;display:block;margin-bottom:8px"></i><p style="font-size:12px">メッセージはまだありません<br><span style="font-size:10px;color:#ccc">他のユーザーページからメッセージを送れます</span></p></div>';
   }
 
   html += '</div>';

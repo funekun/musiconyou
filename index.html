@@ -305,7 +305,41 @@ header{background:#fff;border-bottom:0.5px solid #d0eaf5;height:56px;position:st
 .cp-input input:focus{border-color:#888}
 .cp-input button{background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:13px}
 .toast{position:fixed;bottom:155px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:12px;padding:7px 16px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:400;white-space:nowrap}
-/* お知らせ */
+/* ---- DM ---- */
+.dm-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:flex-end;justify-content:center}
+.dm-modal-overlay.open{display:flex}
+.dm-sheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;height:80vh;display:flex;flex-direction:column}
+.dm-sheet-header{padding:14px 16px;border-bottom:0.5px solid #d0eaf5;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.dm-sheet-back{background:none;border:none;cursor:pointer;color:#555;font-size:18px;padding:4px}
+.dm-sheet-title{font-size:14px;font-weight:600;flex:1}
+.dm-list{flex:1;overflow-y:auto;padding:8px 0}
+.dm-list::-webkit-scrollbar{width:3px}
+.dm-list::-webkit-scrollbar-thumb{background:#d0eaf5;border-radius:2px}
+.dm-request-item{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:0.5px solid #f0f8fd;cursor:pointer;transition:background .12s}
+.dm-request-item:hover{background:#f4f9fc}
+.dm-av{width:36px;height:36px;border-radius:50%;overflow:hidden;background:#eef6fc;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dm-av img{width:100%;height:100%;object-fit:cover}
+.dm-av i{font-size:15px;color:#ccc}
+.dm-item-name{font-size:13px;font-weight:500;flex:1}
+.dm-item-sub{font-size:11px;color:#aaa}
+.dm-badge{background:#e24b4a;color:#fff;font-size:9px;font-weight:700;border-radius:8px;padding:2px 6px}
+/* メッセージ画面 */
+.dm-messages{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.dm-msg{display:flex;gap:7px;align-items:flex-end;max-width:85%}
+.dm-msg.mine{align-self:flex-end;flex-direction:row-reverse}
+.dm-msg-av{width:24px;height:24px;border-radius:50%;overflow:hidden;background:#eef6fc;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.dm-msg-av img{width:100%;height:100%;object-fit:cover}
+.dm-msg-av i{font-size:10px;color:#ccc}
+.dm-msg-bubble{background:#f0f8fd;border-radius:16px 16px 16px 4px;padding:8px 12px;font-size:12px;color:#1a1a1a;line-height:1.5;word-break:break-word}
+.dm-msg.mine .dm-msg-bubble{background:#1a1a1a;color:#fff;border-radius:16px 16px 4px 16px}
+.dm-msg-time{font-size:9px;color:#bbb;margin-top:2px;white-space:nowrap}
+.dm-input-row{display:flex;gap:8px;align-items:center;padding:10px 12px;border-top:0.5px solid #d0eaf5;flex-shrink:0}
+.dm-input{flex:1;border:0.5px solid #d0eaf5;border-radius:20px;padding:8px 14px;font-size:12px;outline:none;background:#f4f9fc;font-family:inherit}
+.dm-input:focus{border-color:#7ec4e0}
+.dm-send-btn{background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:14px}
+.dm-request-btns{display:flex;gap:6px;margin-top:6px}
+.dm-accept-btn{background:#1a7aaa;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:500}
+.dm-reject-btn{background:#f4f4f0;color:#888;border:none;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer}
 .news-card{background:#fff;border:0.5px solid #d0eaf5;border-radius:12px;padding:14px 16px;margin-bottom:10px}
 .news-card-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .news-card-icon{width:32px;height:32px;border-radius:50%;background:#eef6fc;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
@@ -712,6 +746,18 @@ audio{display:none}
     </div>
   </div>
 </div>
+<!-- DM モーダル -->
+<div class="dm-modal-overlay" id="dm-modal" onclick="if(event.target===this)closeDmModal()">
+  <div class="dm-sheet">
+    <div class="dm-sheet-header">
+      <button class="dm-sheet-back" id="dm-back-btn" onclick="dmGoBack()" style="display:none"><i class="ti ti-arrow-left"></i></button>
+      <span class="dm-sheet-title" id="dm-sheet-title">💬 ダイレクトメッセージ</span>
+      <button class="icon-btn" onclick="closeDmModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="dm-content" style="display:flex;flex-direction:column;flex:1;overflow:hidden"></div>
+  </div>
+</div>
+
 <!-- 通知パネル -->
 <div class="notif-panel" id="notif-panel">
   <div class="notif-header">
@@ -2186,7 +2232,10 @@ function renderUserPage() {
   content.innerHTML =
     (uSupa.length ? renderSupaList(uSupa, '受け取ったサポートランキング') : '') +
     '<div class="wall-box">' +
-      '<div class="wall-title"><i class="ti ti-message-2" style="font-size:13px"></i>一言</div>' +
+      '<div class="wall-title" style="justify-content:space-between">' +
+        '<span style="display:flex;align-items:center;gap:6px"><i class="ti ti-message-2" style="font-size:13px"></i>一言</span>' +
+        '<button onclick="openDmModal()" style="background:#eef6fc;border:0.5px solid #d0eaf5;border-radius:14px;padding:4px 11px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;color:#1a7aaa;font-weight:500"><i class="ti ti-send" style="font-size:12px"></i>DM</button>' +
+      '</div>' +
       '<div class="wall-comments" id="wall-comments-list">' + wallListHtml() + '</div>' +
       '<div class="wall-input-row">' +
         '<input type="text" class="wall-input" id="wall-input" placeholder="一言コメントを書く..." maxlength="100" onkeydown="if(event.key===\'Enter\')addWallComment()">' +
@@ -2276,6 +2325,7 @@ function runSearch() {
           '<div style="font-size:10px;color:#bbb;margin-top:2px">' + mc + '曲投稿</div>' +
         '</div>' +
         (user && u.name !== user.name ? '<button onclick="toggleFollow(\'' + u.name + '\')" class="follow-btn ' + (isF?'following':'not-following') + '">' + (isF?'<i class="ti ti-user-check"></i>フォロー中':'<i class="ti ti-user-plus"></i>フォロー') + '</button>' : '') +
+        (user && u.id && u.name !== user.name ? '<button onclick="sendDmRequest(\'' + u.id + '\',\'' + esc(u.name) + '\')" style="background:#eef6fc;border:0.5px solid #d0eaf5;border-radius:16px;padding:5px 10px;font-size:11px;cursor:pointer;color:#1a7aaa;display:inline-flex;align-items:center;gap:3px;margin-left:4px"><i class="ti ti-send" style="font-size:12px"></i>DM</button>' : '') +
         '</div>';
     }
   }
@@ -2548,7 +2598,187 @@ function toggleComments() {
   notifOpen = false;
 }
 
-/* ---- お知らせ ---- */
+/* ---- DM機能 ---- */
+var dmCurrentRequestId = null;
+var dmCurrentPartner = null;
+var dmPollingInterval = null;
+
+function openDmModal() {
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  document.getElementById('dm-modal').classList.add('open');
+  document.getElementById('dm-back-btn').style.display = 'none';
+  document.getElementById('dm-sheet-title').textContent = '💬 ダイレクトメッセージ';
+  dmCurrentRequestId = null;
+  dmCurrentPartner = null;
+  renderDmList();
+}
+
+function closeDmModal() {
+  document.getElementById('dm-modal').classList.remove('open');
+  if (dmPollingInterval) { clearInterval(dmPollingInterval); dmPollingInterval = null; }
+}
+
+function dmGoBack() {
+  if (dmPollingInterval) { clearInterval(dmPollingInterval); dmPollingInterval = null; }
+  dmCurrentRequestId = null;
+  dmCurrentPartner = null;
+  document.getElementById('dm-back-btn').style.display = 'none';
+  document.getElementById('dm-sheet-title').textContent = '💬 ダイレクトメッセージ';
+  renderDmList();
+}
+
+async function renderDmList() {
+  var content = document.getElementById('dm-content');
+  content.innerHTML = '<div style="text-align:center;padding:2rem;color:#bbb;font-size:12px">読み込み中...</div>';
+
+  // 自分が関係するDM申請を取得
+  var res = await sb.from('dm_requests').select('*, from_profile:profiles!dm_requests_from_user_id_fkey(name,username,avatar_url), to_profile:profiles!dm_requests_to_user_id_fkey(name,username,avatar_url)').or('from_user_id.eq.' + currentAuthUser.id + ',to_user_id.eq.' + currentAuthUser.id).order('created_at', {ascending: false});
+  var requests = (!res.error && res.data) ? res.data : [];
+
+  var pendingReceived = requests.filter(function(r){ return r.to_user_id === currentAuthUser.id && r.status === 'pending'; });
+  var accepted = requests.filter(function(r){ return r.status === 'accepted'; });
+  var pendingSent = requests.filter(function(r){ return r.from_user_id === currentAuthUser.id && r.status === 'pending'; });
+
+  var html = '<div class="dm-list">';
+
+  // 受信した申請
+  if (pendingReceived.length) {
+    html += '<div style="padding:8px 16px;font-size:10px;color:#aaa;font-weight:500;letter-spacing:.5px">📨 メッセージ申請</div>';
+    for (var i = 0; i < pendingReceived.length; i++) {
+      var r = pendingReceived[i];
+      var prof = r.from_profile || {};
+      html += '<div class="dm-request-item" style="flex-direction:column;align-items:flex-start">' +
+        '<div style="display:flex;align-items:center;gap:10px;width:100%">' +
+          '<div class="dm-av">' + (prof.avatar_url ? '<img src="' + prof.avatar_url + '">' : '<i class="ti ti-user"></i>') + '</div>' +
+          '<div style="flex:1"><div class="dm-item-name">' + esc(prof.name||'?') + '</div><div class="dm-item-sub">@' + esc(prof.username||'') + ' からメッセージ申請が届いています</div></div>' +
+          '<span class="dm-badge">NEW</span>' +
+        '</div>' +
+        '<div class="dm-request-btns">' +
+          '<button class="dm-accept-btn" onclick="acceptDmRequest(\'' + r.id + '\')">✓ 許可する</button>' +
+          '<button class="dm-reject-btn" onclick="rejectDmRequest(\'' + r.id + '\')">× 断る</button>' +
+        '</div>' +
+      '</div>';
+    }
+  }
+
+  // 承認済みDM
+  if (accepted.length) {
+    html += '<div style="padding:8px 16px;font-size:10px;color:#aaa;font-weight:500;letter-spacing:.5px">💬 メッセージ</div>';
+    for (var i = 0; i < accepted.length; i++) {
+      var r = accepted[i];
+      var isFrom = r.from_user_id === currentAuthUser.id;
+      var partner = isFrom ? (r.to_profile||{}) : (r.from_profile||{});
+      html += '<div class="dm-request-item" onclick="openDmChat(\'' + r.id + '\',\'' + esc(partner.name||'?') + '\',\'' + esc(partner.avatar_url||'') + '\')">' +
+        '<div class="dm-av">' + (partner.avatar_url ? '<img src="' + partner.avatar_url + '">' : '<i class="ti ti-user"></i>') + '</div>' +
+        '<div><div class="dm-item-name">' + esc(partner.name||'?') + '</div><div class="dm-item-sub">@' + esc(partner.username||'') + '</div></div>' +
+        '<i class="ti ti-chevron-right" style="color:#ccc;margin-left:auto"></i>' +
+      '</div>';
+    }
+  }
+
+  // 送信済み申請（承認待ち）
+  if (pendingSent.length) {
+    html += '<div style="padding:8px 16px;font-size:10px;color:#aaa;font-weight:500;letter-spacing:.5px">📤 申請中</div>';
+    for (var i = 0; i < pendingSent.length; i++) {
+      var r = pendingSent[i];
+      var prof = r.to_profile || {};
+      html += '<div class="dm-request-item">' +
+        '<div class="dm-av">' + (prof.avatar_url ? '<img src="' + prof.avatar_url + '">' : '<i class="ti ti-user"></i>') + '</div>' +
+        '<div><div class="dm-item-name">' + esc(prof.name||'?') + '</div><div class="dm-item-sub">承認待ち...</div></div>' +
+      '</div>';
+    }
+  }
+
+  if (!requests.length) {
+    html += '<div class="news-empty"><i class="ti ti-send" style="font-size:28px;display:block;margin-bottom:8px"></i><p style="font-size:12px">DMはまだありません<br><span style="font-size:10px;color:#ccc">他のユーザーページからDMを送れます</span></p></div>';
+  }
+
+  html += '</div>';
+  content.innerHTML = html;
+}
+
+async function sendDmRequest(toUserId, toUserName) {
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (toUserId === currentAuthUser.id) { showToast('自分にはDMを送れません'); return; }
+  // 既存の申請チェック
+  var existing = await sb.from('dm_requests').select('id,status').or('and(from_user_id.eq.' + currentAuthUser.id + ',to_user_id.eq.' + toUserId + '),and(from_user_id.eq.' + toUserId + ',to_user_id.eq.' + currentAuthUser.id + ')');
+  if (!existing.error && existing.data && existing.data.length) {
+    var s = existing.data[0].status;
+    if (s === 'pending') { showToast('すでに申請中です'); return; }
+    if (s === 'accepted') { showToast('すでにDM可能です'); openDmModal(); return; }
+  }
+  var res = await sb.from('dm_requests').insert({ from_user_id: currentAuthUser.id, to_user_id: toUserId });
+  if (res.error) { showToast('申請に失敗しました'); return; }
+  // 通知を送る
+  await sendNotification(toUserId, 'dm', (user ? user.name : 'ゲスト') + ' さんからメッセージ申請が届いています 💬', null, null);
+  showToast(toUserName + ' さんにDM申請を送りました！');
+}
+
+async function acceptDmRequest(requestId) {
+  await sb.from('dm_requests').update({status: 'accepted'}).eq('id', requestId);
+  showToast('DMを許可しました！');
+  renderDmList();
+}
+
+async function rejectDmRequest(requestId) {
+  await sb.from('dm_requests').update({status: 'rejected'}).eq('id', requestId);
+  showToast('申請を断りました');
+  renderDmList();
+}
+
+async function openDmChat(requestId, partnerName, partnerAvatar) {
+  dmCurrentRequestId = requestId;
+  dmCurrentPartner = {name: partnerName, avatar: partnerAvatar};
+  document.getElementById('dm-back-btn').style.display = 'block';
+  document.getElementById('dm-sheet-title').textContent = partnerName;
+  await renderDmChat();
+  // 15秒ごとにポーリング
+  if (dmPollingInterval) clearInterval(dmPollingInterval);
+  dmPollingInterval = setInterval(renderDmChat, 15000);
+}
+
+async function renderDmChat() {
+  var content = document.getElementById('dm-content');
+  var res = await sb.from('dm_messages').select('*, sender:profiles!dm_messages_sender_id_fkey(name,avatar_url)').eq('request_id', dmCurrentRequestId).order('created_at', {ascending: true});
+  var messages = (!res.error && res.data) ? res.data : [];
+
+  var msgsHtml = '';
+  for (var i = 0; i < messages.length; i++) {
+    var m = messages[i];
+    var isMine = m.sender_id === currentAuthUser.id;
+    var sender = m.sender || {};
+    var timeStr = m.created_at ? new Date(m.created_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}) : '';
+    msgsHtml += '<div class="dm-msg' + (isMine ? ' mine' : '') + '">' +
+      (!isMine ? '<div class="dm-msg-av">' + (sender.avatar_url ? '<img src="' + sender.avatar_url + '">' : '<i class="ti ti-user"></i>') + '</div>' : '') +
+      '<div>' +
+        '<div class="dm-msg-bubble">' + esc(m.body) + '</div>' +
+        '<div class="dm-msg-time" style="text-align:' + (isMine ? 'right' : 'left') + '">' + timeStr + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  if (!msgsHtml) msgsHtml = '<div style="text-align:center;padding:2rem;color:#ccc;font-size:12px">メッセージを送ってみましょう！</div>';
+
+  content.innerHTML =
+    '<div class="dm-messages" id="dm-messages">' + msgsHtml + '</div>' +
+    '<div class="dm-input-row">' +
+      '<input class="dm-input" id="dm-msg-input" placeholder="メッセージを入力..." onkeydown="if(event.key===\'Enter\')sendDmMessage()">' +
+      '<button class="dm-send-btn" onclick="sendDmMessage()"><i class="ti ti-send"></i></button>' +
+    '</div>';
+
+  // 最下部へスクロール
+  var msgs = document.getElementById('dm-messages');
+  if (msgs) msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendDmMessage() {
+  var inp = document.getElementById('dm-msg-input');
+  if (!inp) return;
+  var text = inp.value.trim();
+  if (!text || !dmCurrentRequestId) return;
+  var res = await sb.from('dm_messages').insert({ request_id: dmCurrentRequestId, sender_id: currentAuthUser.id, body: text });
+  if (!res.error) { inp.value = ''; await renderDmChat(); }
+}
 var ADMIN_USERNAME = 'fune3'; // 運営アカウントのusername
 
 async function renderNewsPage() {

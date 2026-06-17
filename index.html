@@ -2076,13 +2076,13 @@ function renderRankBlock(src, label, color) {
         '</div>' +
         '<button onclick="playTrack(' + tIdx + ')" style="background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:14px"><i class="ti ti-player-play"></i></button>' +
       '</div>' +
-      // 中段：ポイント・再生数・いいね・サポート
-      '<div style="display:flex;align-items:center;gap:10px;margin-top:7px">' +
+      // 中段：ポイント・再生数・いいね・サポート・日付
+      '<div style="display:flex;align-items:center;gap:10px;margin-top:7px;flex-wrap:wrap">' +
         '<span style="font-size:12px;font-weight:700;color:#1a7aaa;display:flex;align-items:center;gap:2px"><i class="ti ti-award" style="font-size:11px"></i>' + cnt + 'pt</span>' +
         '<span style="font-size:11px;color:#888;display:flex;align-items:center;gap:2px"><i class="ti ti-player-play" style="font-size:10px"></i>' + pPlay + '</span>' +
         '<span style="font-size:11px;color:#e24b4a;display:flex;align-items:center;gap:2px"><i class="ti ti-heart" style="font-size:10px"></i>' + lk + '</span>' +
         (spPts > 0 ? '<span style="font-size:11px;color:#c4980a;display:flex;align-items:center;gap:2px"><i class="ti ti-coin" style="font-size:10px"></i>' + spPts + '</span>' : '') +
-        '<div style="flex:1;height:4px;background:#f0f0ec;border-radius:2px;margin-left:4px"><div style="height:100%;width:' + barPct + '%;background:' + (color === '#888' ? '#1a7aaa' : color) + ';border-radius:2px"></div></div>' +
+        (t.createdAt ? '<span style="font-size:9px;color:#ccc;margin-left:auto">' + fmtDate(t.createdAt) + '</span>' : '') +
       '</div>' +
       // 下段：タグ・紹介文
       (tagsHtml || descHtml ? '<div style="margin-top:2px">' + tagsHtml + descHtml + '</div>' : '') +

@@ -905,6 +905,7 @@ async function loadUserProfile(authUser) {
   renderTracks();
   loadTracks();
   loadNotifications();
+  loadWallComment();
   // 30秒ごとに通知を再チェック
   if (window._notifInterval) clearInterval(window._notifInterval);
   window._notifInterval = setInterval(loadNotifications, 30000);
@@ -1382,32 +1383,58 @@ function renderSupaList(entries, title) {
 /* ---- wall (一言) ---- */
 function wallListHtml() {
   if (!wallComments.length) return '<div class="wall-empty">まだ一言がありません。最初のコメントを書いてみよう！</div>';
-  var c = wallComments[wallComments.length - 1];
+  var c = wallComments[0];
   return '<div class="wall-comment">' +
     '<div class="wall-av">' + (c.avatarUrl ? '<img src="' + c.avatarUrl + '">' : '<i class="ti ti-user" style="font-size:12px;color:#ccc"></i>') + '</div>' +
-    '<div class="wall-body"><div class="wall-uname">' + c.user + '</div><div class="wall-text">' + c.text + '</div><div class="wall-time">' + c.time + '</div></div>' +
+    '<div class="wall-body"><div class="wall-uname">' + esc(c.user) + '</div><div class="wall-text">' + esc(c.text) + '</div><div class="wall-time">' + c.time + '</div></div>' +
     '<button onclick="deleteWallComment()" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:13px;padding:4px;flex-shrink:0;align-self:flex-start"><i class="ti ti-trash"></i></button>' +
     '</div>';
 }
 
-function deleteWallComment() {
+async function loadWallComment() {
+  if (!currentAuthUser) return;
+  var res = await sb.from('wall_messages').select('*').eq('user_id', currentAuthUser.id).single();
+  if (!res.error && res.data) {
+    var d = res.data;
+    var timeStr = d.updated_at ? new Date(d.updated_at).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    wallComments = [{user: d.user_name, avatarUrl: d.avatar_url, text: d.body, time: timeStr}];
+  } else {
+    wallComments = [];
+  }
+  var list = document.getElementById('wall-comments-list');
+  if (list) list.innerHTML = wallListHtml();
+}
+
+async function deleteWallComment() {
   if (!confirm('一言を削除しますか？')) return;
+  await sb.from('wall_messages').delete().eq('user_id', currentAuthUser.id);
   wallComments = [];
   var list = document.getElementById('wall-comments-list');
   if (list) list.innerHTML = wallListHtml();
   showToast('一言を削除しました');
 }
-function addWallComment() {
+
+async function addWallComment() {
   if (!user) { showToast('コメントにはユーザー登録が必要です'); return; }
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
   var inp = document.getElementById('wall-input');
   if (!inp) return;
   var text = inp.value.trim();
   if (!text) return;
-  // 既存の一言をすべて削除して新しい1件だけにする
-  wallComments = [{user:user.name, avatarUrl:user.avatarUrl||null, text:text, time:nowTime()}];
+  var now = new Date().toISOString();
+  var res = await sb.from('wall_messages').upsert({
+    user_id: currentAuthUser.id,
+    user_name: user.name,
+    avatar_url: user.avatarUrl || null,
+    body: text,
+    updated_at: now
+  }, {onConflict: 'user_id'});
+  if (res.error) { showToast('保存に失敗しました: ' + res.error.message); return; }
+  var timeStr = new Date(now).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  wallComments = [{user: user.name, avatarUrl: user.avatarUrl||null, text: text, time: timeStr}];
   inp.value = '';
   var list = document.getElementById('wall-comments-list');
-  if (list) { list.innerHTML = wallListHtml(); }
+  if (list) list.innerHTML = wallListHtml();
   showToast('一言を更新しました！');
 }
 

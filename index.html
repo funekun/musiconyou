@@ -751,7 +751,7 @@ audio{display:none}
   <div class="dm-sheet">
     <div class="dm-sheet-header">
       <button class="dm-sheet-back" id="dm-back-btn" onclick="dmGoBack()" style="display:none"><i class="ti ti-arrow-left"></i></button>
-      <span class="dm-sheet-title" id="dm-sheet-title">💬 ダイレクトメッセージ</span>
+      <span class="dm-sheet-title" id="dm-sheet-title">💬 みんなのメッセージ</span>
       <button class="icon-btn" onclick="closeDmModal()"><i class="ti ti-x"></i></button>
     </div>
     <div id="dm-content" style="display:flex;flex-direction:column;flex:1;overflow:hidden"></div>
@@ -2234,7 +2234,7 @@ function renderUserPage() {
     '<div class="wall-box">' +
       '<div class="wall-title" style="justify-content:space-between">' +
         '<span style="display:flex;align-items:center;gap:6px"><i class="ti ti-message-2" style="font-size:13px"></i>一言</span>' +
-        '<button onclick="openDmModal()" style="background:#eef6fc;border:0.5px solid #d0eaf5;border-radius:14px;padding:4px 11px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;color:#1a7aaa;font-weight:500"><i class="ti ti-send" style="font-size:12px"></i>DM</button>' +
+        '<button onclick="openDmModal()" style="background:#eef6fc;border:0.5px solid #d0eaf5;border-radius:14px;padding:4px 10px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;color:#1a7aaa;font-weight:500"><i class="ti ti-send" style="font-size:13px"></i></button>' +
       '</div>' +
       '<div class="wall-comments" id="wall-comments-list">' + wallListHtml() + '</div>' +
       '<div class="wall-input-row">' +
@@ -2607,7 +2607,7 @@ function openDmModal() {
   if (!currentAuthUser) { showToast('ログインが必要です'); return; }
   document.getElementById('dm-modal').classList.add('open');
   document.getElementById('dm-back-btn').style.display = 'none';
-  document.getElementById('dm-sheet-title').textContent = '💬 ダイレクトメッセージ';
+  document.getElementById('dm-sheet-title').textContent = '💬 みんなのメッセージ';
   dmCurrentRequestId = null;
   dmCurrentPartner = null;
   renderDmList();
@@ -2623,7 +2623,7 @@ function dmGoBack() {
   dmCurrentRequestId = null;
   dmCurrentPartner = null;
   document.getElementById('dm-back-btn').style.display = 'none';
-  document.getElementById('dm-sheet-title').textContent = '💬 ダイレクトメッセージ';
+  document.getElementById('dm-sheet-title').textContent = '💬 みんなのメッセージ';
   renderDmList();
 }
 
@@ -2690,7 +2690,7 @@ async function renderDmList() {
   }
 
   if (!requests.length) {
-    html += '<div class="news-empty"><i class="ti ti-send" style="font-size:28px;display:block;margin-bottom:8px"></i><p style="font-size:12px">DMはまだありません<br><span style="font-size:10px;color:#ccc">他のユーザーページからDMを送れます</span></p></div>';
+    html += '<div class="news-empty"><i class="ti ti-send" style="font-size:28px;display:block;margin-bottom:8px"></i><p style="font-size:12px">メッセージはまだありません<br><span style="font-size:10px;color:#ccc">他のユーザーページからDMを送れます</span></p></div>';
   }
 
   html += '</div>';

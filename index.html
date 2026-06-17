@@ -2033,7 +2033,6 @@ function renderRankBlock(src, label, color) {
   for (var i = 0; i < src.length; i++) sorted.push({t:src[i], score:calcScore(src[i]), play:calcPlayForPeriod(src[i])});
   sorted.sort(function(a,b){ return b.score - a.score; });
   var max = sorted[0].score || 1;
-  var medals = ['🥇','🥈','🥉'];
   var rankColors = ['#f5c400','#aaa','#cd7f32'];
   var rows = '';
   for (var i = 0; i < sorted.length; i++) {
@@ -2041,39 +2040,63 @@ function renderRankBlock(src, label, color) {
     var ci = catInfo(t.cat);
     var tIdx = tracks.indexOf(t); var spPts = totalPts(supaTrack[t.id]);
     var lk = (window._likeCounts && window._likeCounts[t.id]) || 0;
-    var rowStyle = '';
-    if (i === 0) rowStyle = 'background:linear-gradient(90deg,#fffbea 0%,#fff 100%);border-left:3px solid #f5c400';
-    else if (i === 1) rowStyle = 'background:linear-gradient(90deg,#f6f6f6 0%,#fff 100%);border-left:3px solid #aaa';
-    else if (i === 2) rowStyle = 'background:linear-gradient(90deg,#fff5f0 0%,#fff 100%);border-left:3px solid #cd7f32';
+    var rowStyle = 'border-radius:12px;margin-bottom:8px;overflow:hidden;';
+    if (i === 0) rowStyle += 'background:linear-gradient(90deg,#fffbea 0%,#fff 100%);border-left:3px solid #f5c400';
+    else if (i === 1) rowStyle += 'background:linear-gradient(90deg,#f6f6f6 0%,#fff 100%);border-left:3px solid #aaa';
+    else if (i === 2) rowStyle += 'background:linear-gradient(90deg,#fff5f0 0%,#fff 100%);border-left:3px solid #cd7f32';
+    else rowStyle += 'background:#fff;border:0.5px solid #e8e8e0';
     var badgeStyle = i < 3
-      ? 'font-size:15px;font-weight:700;color:' + rankColors[i] + ';min-width:22px;text-align:center'
-      : 'font-size:11px;font-weight:600;color:#bbb;min-width:22px;text-align:center';
-    rows += '<div class="rank-item ' + (i < 3 ? 'rank-' + (i+1) : 'rank-other') + '" style="' + rowStyle + '" onclick="playTrack(' + tIdx + ')">' +
-      '<div class="rank-badge"><span style="' + badgeStyle + '">' + (i+1) + '</span></div>' +
-      '<div class="rank-thumb">' + thumbHtml(t, 36) + '</div>' +
-      '<div class="rank-info">' +
-        '<div class="rank-title">' + esc(t.name) + '</div>' +
-        '<div class="rank-plays">' +
-          (color !== '#888' ? '' : '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>') +
-          '<span><i class="ti ti-player-play" style="font-size:9px"></i> ' + pPlay + '再生</span>' +
-          '<span style="color:#e24b4a">♥' + lk + '</span>' +
-          '<span style="color:#888;font-weight:500">' + cnt + 'pt</span>' +
-          (spPts > 0 ? '<span style="color:#c4980a">🪙' + spPts + '</span>' : '') +
+      ? 'font-size:16px;font-weight:700;color:' + rankColors[i] + ';min-width:24px;text-align:center;flex-shrink:0'
+      : 'font-size:12px;font-weight:600;color:#bbb;min-width:24px;text-align:center;flex-shrink:0';
+
+    // タグ
+    var tagsHtml = '';
+    if (t.tags) {
+      var tagArr = t.tags.split(' ').filter(function(tg){ return tg.startsWith('#'); });
+      if (tagArr.length) tagsHtml = '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:5px">' +
+        tagArr.map(function(tg){ return '<span style="font-size:10px;color:#4455cc;background:#e8f0fe;border-radius:8px;padding:1px 6px">' + esc(tg) + '</span>'; }).join('') + '</div>';
+    }
+    // 紹介文
+    var descHtml = t.description ? '<div style="font-size:11px;color:#777;line-height:1.5;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + esc(t.description) + '</div>' : '';
+
+    // スコアバー
+    var barPct = Math.round(cnt / max * 100);
+
+    rows += '<div style="' + rowStyle + ';padding:10px 12px">' +
+      // 上段：順位 + サムネ + 再生ボタン + タイトル/カテゴリ + 再生ボタン
+      '<div style="display:flex;align-items:center;gap:8px">' +
+        '<span style="' + badgeStyle + '">' + (i+1) + '</span>' +
+        '<div style="flex-shrink:0">' + thumbHtml(t, 44) + '</div>' +
+        '<div style="flex:1;min-width:0;cursor:pointer" onclick="playTrack(' + tIdx + ')">' +
+          '<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1a1a1a">' + esc(t.name) + '</div>' +
+          '<div style="display:flex;align-items:center;gap:5px;margin-top:2px">' +
+            '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' +
+            (t.uploader ? '<span style="font-size:10px;color:#bbb"><i class="ti ti-user" style="font-size:9px"></i> ' + esc(t.uploader) + '</span>' : '') +
+          '</div>' +
         '</div>' +
+        '<button onclick="playTrack(' + tIdx + ')" style="background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:14px"><i class="ti ti-player-play"></i></button>' +
       '</div>' +
-      '<div class="rank-bar-wrap"><div class="rank-bar" style="width:' + Math.round(cnt/max*100) + '%;background:' + color + '"></div></div>' +
-      '<button class="rank-play-btn" onclick="event.stopPropagation();playTrack(' + tIdx + ')"><i class="ti ti-player-play"></i></button>' +
+      // 中段：ポイント・再生数・いいね・サポート
+      '<div style="display:flex;align-items:center;gap:10px;margin-top:7px">' +
+        '<span style="font-size:12px;font-weight:700;color:#1a7aaa;display:flex;align-items:center;gap:2px"><i class="ti ti-award" style="font-size:11px"></i>' + cnt + 'pt</span>' +
+        '<span style="font-size:11px;color:#888;display:flex;align-items:center;gap:2px"><i class="ti ti-player-play" style="font-size:10px"></i>' + pPlay + '</span>' +
+        '<span style="font-size:11px;color:#e24b4a;display:flex;align-items:center;gap:2px"><i class="ti ti-heart" style="font-size:10px"></i>' + lk + '</span>' +
+        (spPts > 0 ? '<span style="font-size:11px;color:#c4980a;display:flex;align-items:center;gap:2px"><i class="ti ti-coin" style="font-size:10px"></i>' + spPts + '</span>' : '') +
+        '<div style="flex:1;height:4px;background:#f0f0ec;border-radius:2px;margin-left:4px"><div style="height:100%;width:' + barPct + '%;background:' + (color === '#888' ? '#1a7aaa' : color) + ';border-radius:2px"></div></div>' +
+      '</div>' +
+      // 下段：タグ・紹介文
+      (tagsHtml || descHtml ? '<div style="margin-top:2px">' + tagsHtml + descHtml + '</div>' : '') +
     '</div>';
   }
   return '<div style="margin-bottom:1.5rem">' +
-    '<div style="display:flex;align-items:center;gap:6px;margin-bottom:.6rem">' +
+    '<div style="display:flex;align-items:center;gap:6px;margin-bottom:.8rem">' +
     (color !== '#888'
       ? '<span style="width:9px;height:9px;border-radius:50%;background:' + color + ';display:inline-block"></span>'
       : '<i class="ti ti-list-numbers" style="font-size:13px;color:#888"></i>') +
     '<span style="font-size:12px;font-weight:500;color:' + color + '">' + label + '</span>' +
     '<span style="font-size:10px;color:#bbb">' + src.length + '曲</span>' +
     '</div>' +
-    '<div class="rank-list">' + rows + '</div></div>';
+    '<div>' + rows + '</div></div>';
 }
 function setRankCat(v) { rankCat = v; renderRanking(); }
 function setRankGenre(v) { rankGenre = v; renderRanking(); }

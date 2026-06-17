@@ -1336,15 +1336,20 @@ function renderSupaList(entries, title) {
 /* ---- wall (一言) ---- */
 function wallListHtml() {
   if (!wallComments.length) return '<div class="wall-empty">まだ一言がありません。最初のコメントを書いてみよう！</div>';
-  var html = '';
-  for (var i = 0; i < wallComments.length; i++) {
-    var c = wallComments[i];
-    html += '<div class="wall-comment">' +
-      '<div class="wall-av">' + (c.avatarUrl ? '<img src="' + c.avatarUrl + '">' : '<i class="ti ti-user" style="font-size:12px;color:#ccc"></i>') + '</div>' +
-      '<div class="wall-body"><div class="wall-uname">' + c.user + '</div><div class="wall-text">' + c.text + '</div><div class="wall-time">' + c.time + '</div></div>' +
-      '</div>';
-  }
-  return html;
+  var c = wallComments[wallComments.length - 1];
+  return '<div class="wall-comment">' +
+    '<div class="wall-av">' + (c.avatarUrl ? '<img src="' + c.avatarUrl + '">' : '<i class="ti ti-user" style="font-size:12px;color:#ccc"></i>') + '</div>' +
+    '<div class="wall-body"><div class="wall-uname">' + c.user + '</div><div class="wall-text">' + c.text + '</div><div class="wall-time">' + c.time + '</div></div>' +
+    '<button onclick="deleteWallComment()" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:13px;padding:4px;flex-shrink:0;align-self:flex-start"><i class="ti ti-trash"></i></button>' +
+    '</div>';
+}
+
+function deleteWallComment() {
+  if (!confirm('一言を削除しますか？')) return;
+  wallComments = [];
+  var list = document.getElementById('wall-comments-list');
+  if (list) list.innerHTML = wallListHtml();
+  showToast('一言を削除しました');
 }
 function addWallComment() {
   if (!user) { showToast('コメントにはユーザー登録が必要です'); return; }
@@ -1352,10 +1357,12 @@ function addWallComment() {
   if (!inp) return;
   var text = inp.value.trim();
   if (!text) return;
-  wallComments.push({user:user.name, avatarUrl:user.avatarUrl||null, text:text, time:nowTime()});
+  // 既存の一言をすべて削除して新しい1件だけにする
+  wallComments = [{user:user.name, avatarUrl:user.avatarUrl||null, text:text, time:nowTime()}];
   inp.value = '';
   var list = document.getElementById('wall-comments-list');
-  if (list) { list.innerHTML = wallListHtml(); list.scrollTop = list.scrollHeight; }
+  if (list) { list.innerHTML = wallListHtml(); }
+  showToast('一言を更新しました！');
 }
 
 /* ---- user ---- */

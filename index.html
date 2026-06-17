@@ -1930,34 +1930,65 @@ async function renderWallsFeed() {
 }
 function trackRowHtml(t, idx, opts) {
   opts = opts || {};
-  var playing = currentIdx === idx; var ci = catInfo(t.cat);
-  var liked = likes[t.id]; var lc = (commentsData[t.id] || []).length;
+  var playing = currentIdx === idx;
+  var ci = catInfo(t.cat);
+  var liked = likes[t.id];
+  var lc = (commentsData[t.id] || []).length;
   var inPl = false; for (var pi = 0; pi < playlist.length; pi++) if (playlist[pi].id === t.id) { inPl = true; break; }
   var spPts = totalPts(supaTrack[t.id]);
-  return '<div class="track' + (playing ? ' playing' : '') + '" id="track-' + t.id + '">' +
-    '<div class="track-thumb" style="position:relative">' + thumbHtml(t, 40) + (t.youtubeUrl ? '<span style="position:absolute;bottom:1px;right:1px;background:#e24b4a;color:#fff;font-size:7px;padding:1px 3px;border-radius:3px;font-weight:bold">YT</span>' : '') + '</div>' +
-    '<button class="play-btn" onclick="playTrack(' + idx + ')"><i class="ti ti-player-' + (playing && !audio.paused ? 'pause' : 'play') + '"></i></button>' +
-    '<div class="track-info" onclick="playTrack(' + idx + ')">' +
-      '<div class="track-title">' + t.name + '</div>' +
-      '<div class="track-meta">' +
-        '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' +
-        (t.uploader ? '<span style="font-size:10px;color:#bbb"><i class="ti ti-user" style="font-size:9px"></i> ' + t.uploader + '</span>' : '') +
-        '<span style="font-size:10px;color:#1a1a1a;font-weight:500"><i class="ti ti-player-play" style="font-size:9px"></i> ' + ((plays[t.id]||{}).alltime||0) + '</span>' +
-        (spPts > 0 ? '<span style="color:#c4980a;font-size:10px">🪙' + spPts + 'pt</span>' : '') +
-        (t.tags ? t.tags.split(' ').filter(function(tg){return tg.startsWith('#')}).map(function(tg){return '<span onclick="event.stopPropagation();searchByTag(\'' + tg + '\')" style="font-size:10px;color:#4455cc;cursor:pointer">' + tg + '</span>'}).join('') : '') +
-        (t.createdAt ? '<span style="font-size:9px;color:#aaa">' + fmtDate(t.createdAt) + '</span>' : '') +
+  var likeCount = (window._likeCounts && window._likeCounts[t.id]) || 0;
+  var playCount = (plays[t.id]||{}).alltime||0;
+
+  // タグHTML
+  var tagsHtml = '';
+  if (t.tags) {
+    var tagArr = t.tags.split(' ').filter(function(tg){ return tg.startsWith('#'); });
+    if (tagArr.length) tagsHtml = '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px">' +
+      tagArr.map(function(tg){ return '<span onclick="event.stopPropagation();searchByTag(\'' + tg + '\')" style="font-size:10px;color:#4455cc;cursor:pointer;background:#e8f0fe;border-radius:8px;padding:1px 6px">' + esc(tg) + '</span>'; }).join('') +
+      '</div>';
+  }
+
+  // 紹介文（長すぎる場合は省略、3行まで）
+  var descHtml = '';
+  if (t.description) {
+    descHtml = '<div style="font-size:11px;color:#777;line-height:1.55;margin-top:5px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word">' + esc(t.description) + '</div>';
+  }
+
+  return '<div class="track' + (playing ? ' playing' : '') + '" id="track-' + t.id + '" style="flex-direction:column;padding:10px 12px;gap:0">' +
+    // 上段：サムネ＋再生ボタン＋タイトル＋アクションボタン
+    '<div style="display:flex;align-items:center;gap:8px">' +
+      '<div style="position:relative;flex-shrink:0">' +
+        thumbHtml(t, 44) +
+        (t.youtubeUrl ? '<span style="position:absolute;bottom:1px;right:1px;background:#e24b4a;color:#fff;font-size:7px;padding:1px 3px;border-radius:3px;font-weight:bold">YT</span>' : '') +
+      '</div>' +
+      '<button class="play-btn" onclick="playTrack(' + idx + ')"><i class="ti ti-player-' + (playing && !audio.paused ? 'pause' : 'play') + '"></i></button>' +
+      '<div class="track-info" onclick="playTrack(' + idx + ')" style="flex:1;min-width:0">' +
+        '<div class="track-title" style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(t.name) + '</div>' +
+        '<div style="display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap">' +
+          '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' +
+          (t.uploader ? '<span style="font-size:10px;color:#bbb"><i class="ti ti-user" style="font-size:9px"></i> ' + esc(t.uploader) + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="track-actions" style="flex-shrink:0">' +
+        (opts.noComment ? '' : '<button class="icon-btn" onclick="openComments(\'' + t.id + '\')"><i class="ti ti-message"></i></button>') +
+        '<button class="icon-btn' + (inPl ? ' in-playlist' : '') + '" onclick="addToPlaylist(\'' + t.id + '\')"><i class="ti ti-playlist-add"></i></button>' +
+        (opts.noTrash ? '' : '<button class="icon-btn" onclick="removeTrack(\'' + t.id + '\')"><i class="ti ti-trash"></i></button>') +
       '</div>' +
     '</div>' +
-    '<div class="track-actions">' +
-      '<button class="supa-icon-btn" onclick="openSupaModal(\'track\',\'' + t.id + '\')">🪙</button>' +
-      '<button class="icon-btn' + (liked ? ' liked' : '') + '" onclick="toggleLike(\'' + t.id + '\')"><i class="ti ti-heart' + (liked ? '-filled' : '') + '"></i></button>' +
-      '<span class="like-count">' + ((window._likeCounts && window._likeCounts[t.id]) || 0) + '</span>' +
-      (opts.noComment ? '' : '<button class="icon-btn" onclick="openComments(\'' + t.id + '\')"><i class="ti ti-message"></i></button><span class="comment-count">' + (lc || '') + '</span>') +
-      '<button class="icon-btn' + (inPl ? ' in-playlist' : '') + '" onclick="addToPlaylist(\'' + t.id + '\')"><i class="ti ti-playlist-add"></i></button>' +
-      '<span style="font-size:10px;color:' + (inPl ? '#1a1a1a' : '#bbb') + '">' + (inPl ? '✓' : '') + '</span>' +
-      (opts.noTrash ? '' : '<button class="icon-btn" onclick="removeTrack(\'' + t.id + '\')"><i class="ti ti-trash"></i></button>') +
-    '</div></div>' +
-    ((supaTrack[t.id] || []).length ? '<div style="padding:0 12px 8px;margin-top:-4px">' + renderSupaList(supaTrack[t.id], 'このトラックへのサポート') + '</div>' : '');
+    // 中段：再生数・いいね・サポートpt・コメント数
+    '<div style="display:flex;align-items:center;gap:10px;margin-top:7px;padding-left:2px">' +
+      '<span style="font-size:11px;color:#888;display:flex;align-items:center;gap:3px"><i class="ti ti-player-play" style="font-size:10px"></i>' + playCount + '</span>' +
+      (spPts > 0 ? '<span style="font-size:11px;color:#c4980a;display:flex;align-items:center;gap:2px">🪙' + spPts + '</span>' : '') +
+      '<button class="icon-btn' + (liked ? ' liked' : '') + '" onclick="toggleLike(\'' + t.id + '\')" style="padding:2px;font-size:13px"><i class="ti ti-heart' + (liked ? '-filled' : '') + '"></i></button>' +
+      '<span style="font-size:11px;color:' + (liked ? '#e24b4a' : '#bbb') + ';margin-left:-6px">' + likeCount + '</span>' +
+      (lc > 0 ? '<span style="font-size:11px;color:#888;display:flex;align-items:center;gap:2px"><i class="ti ti-message" style="font-size:10px"></i>' + lc + '</span>' : '') +
+      '<button class="supa-icon-btn" onclick="openSupaModal(\'track\',\'' + t.id + '\')" style="margin-left:auto">🪙</button>' +
+      (t.createdAt ? '<span style="font-size:9px;color:#ccc">' + fmtDate(t.createdAt) + '</span>' : '') +
+    '</div>' +
+    // 下段：タグ＋紹介文
+    (tagsHtml || descHtml ? '<div style="margin-top:2px;padding-left:2px">' + tagsHtml + descHtml + '</div>' : '') +
+    ((supaTrack[t.id] || []).length ? '<div style="margin-top:6px">' + renderSupaList(supaTrack[t.id], 'このトラックへのサポート') + '</div>' : '') +
+  '</div>';
 }
 
 function renderTracks() {

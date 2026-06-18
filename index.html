@@ -2425,21 +2425,17 @@ function renderSearchPage() {
   page.innerHTML =
     '<div class="search-box"><i class="ti ti-search search-icon"></i>' +
     '<input type="text" id="search-input" placeholder="タイトル・ユーザー名・ジャンルで検索..." value="' + searchQuery + '" oninput="onSearchInput(this.value)"></div>' +
-    '<div class="sf-btns">' +
+    '<div class="sf-btns" style="flex-wrap:wrap">' +
     '<button class="sf-btn' + (searchFilter==='all'?' active':'') + '" onclick="setSearchFilter(\'all\')">すべて</button>' +
     '<button class="sf-btn' + (searchFilter==='track'?' active':'') + '" onclick="setSearchFilter(\'track\')"><i class="ti ti-music" style="font-size:10px;margin-right:2px"></i>曲</button>' +
     '<button class="sf-btn' + (searchFilter==='user'?' active':'') + '" onclick="setSearchFilter(\'user\')"><i class="ti ti-user" style="font-size:10px;margin-right:2px"></i>ユーザー</button>' +
-    '</div>' +
-    '<div class="search-selects">' +
-    '<select id="srch-cat" onchange="setSearchCat(this.value)">' + catOpts + '</select>' +
-    '<select id="srch-gen" onchange="setSearchGenre(this.value)">' + genOpts + '</select>' +
-    '</div>' +
-    '<div class="search-selects" style="margin-top:5px">' +
-    '<select id="srch-sort" onchange="setSearchSort(this.value)" style="border:0.5px solid #d0eaf5;border-radius:8px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">' +
-      '<option value="newest">🕐 新しい順</option>' +
-      '<option value="oldest">🕐 古い順</option>' +
+    '<select id="srch-cat" onchange="setSearchCat(this.value)" style="border:0.5px solid #d0eaf5;border-radius:20px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">' + catOpts + '</select>' +
+    '<select id="srch-gen" onchange="setSearchGenre(this.value)" style="border:0.5px solid #d0eaf5;border-radius:20px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">' + genOpts + '</select>' +
+    '<select id="srch-sort" onchange="setSearchSort(this.value)" style="border:0.5px solid #d0eaf5;border-radius:20px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">' +
+      '<option value="newest">新しい順</option>' +
+      '<option value="oldest">古い順</option>' +
     '</select>' +
-    '<select id="srch-sort-val" onchange="setSearchSortVal(this.value)" style="border:0.5px solid #d0eaf5;border-radius:8px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">' +
+    '<select id="srch-sort-val" onchange="setSearchSortVal(this.value)" style="border:0.5px solid #d0eaf5;border-radius:20px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">' +
       '<option value="">数値で絞る</option>' +
       '<option value="plays">再生数↓</option>' +
       '<option value="plays_asc">再生数↑</option>' +

@@ -1047,7 +1047,7 @@ var pendingFiles = [], pendingCat = null, pendingThumbUrl = null;
 var user = null, tempAvatarUrl = null;
 var supaTrack = {}, supaUser = {};
 var supaTarget = null, supaType = null, supaAmt = 0;
-var searchQuery = '', searchFilter = 'all', searchCat = '', searchGenre = '';
+var searchQuery = '', searchFilter = 'all', searchCat = '', searchGenre = '', searchSort = 'newest';
 var following = {}, followerCounts = {};
 var wallComments = [];
 var userSubTab = 'works'; // 'works' | 'stats'
@@ -2430,11 +2430,24 @@ function renderSearchPage() {
     '<button class="sf-btn' + (searchFilter==='track'?' active':'') + '" onclick="setSearchFilter(\'track\')"><i class="ti ti-music" style="font-size:10px;margin-right:2px"></i>曲</button>' +
     '<button class="sf-btn' + (searchFilter==='user'?' active':'') + '" onclick="setSearchFilter(\'user\')"><i class="ti ti-user" style="font-size:10px;margin-right:2px"></i>ユーザー</button>' +
     '</div>' +
-    '<div class="search-selects"><select id="srch-cat" onchange="setSearchCat(this.value)">' + catOpts + '</select>' +
-    '<select id="srch-gen" onchange="setSearchGenre(this.value)">' + genOpts + '</select></div>' +
+    '<div class="search-selects">' +
+    '<select id="srch-cat" onchange="setSearchCat(this.value)">' + catOpts + '</select>' +
+    '<select id="srch-gen" onchange="setSearchGenre(this.value)">' + genOpts + '</select>' +
+    '<select id="srch-sort" onchange="setSearchSort(this.value)" style="border:0.5px solid #d0eaf5;border-radius:8px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">' +
+      '<option value="newest">新しい順</option>' +
+      '<option value="oldest">古い順</option>' +
+      '<option value="plays">再生数↓</option>' +
+      '<option value="plays_asc">再生数↑</option>' +
+      '<option value="likes">いいね↓</option>' +
+      '<option value="likes_asc">いいね↑</option>' +
+      '<option value="pts">ポイント↓</option>' +
+      '<option value="pts_asc">ポイント↑</option>' +
+    '</select>' +
+    '</div>' +
     '<div id="search-results-area"></div>';
   document.getElementById('srch-cat').value = searchCat;
   document.getElementById('srch-gen').value = searchGenre;
+  document.getElementById('srch-sort').value = searchSort;
   runSearch();
 }
 function onSearchInput(v) { searchQuery = v; runSearch(); }
@@ -2446,6 +2459,7 @@ function searchByTag(tag) {
 function setSearchFilter(f) { searchFilter = f; renderSearchPage(); }
 function setSearchCat(v) { searchCat = v; runSearch(); }
 function setSearchGenre(v) { searchGenre = v; runSearch(); }
+function setSearchSort(v) { searchSort = v; runSearch(); }
 function runSearch() {
   var area = document.getElementById('search-results-area');
   if (!area) return;
@@ -2459,7 +2473,18 @@ function runSearch() {
       var inQ = !q || t.name.toLowerCase().indexOf(q) >= 0 || (t.uploader && t.uploader.toLowerCase().indexOf(q) >= 0) || (t.tags && t.tags.toLowerCase().indexOf(q) >= 0) || (t.description && t.description.toLowerCase().indexOf(q) >= 0);
       if (inCat && inQ) matchedTracks.push(t);
     }
-  }
+    // 並び替え
+    var sortFns = {
+      newest:   function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); },
+      oldest:   function(a,b){ return new Date(a.createdAt||0) - new Date(b.createdAt||0); },
+      plays:    function(a,b){ return ((plays[b.id]||{}).alltime||0) - ((plays[a.id]||{}).alltime||0); },
+      plays_asc:function(a,b){ return ((plays[a.id]||{}).alltime||0) - ((plays[b.id]||{}).alltime||0); },
+      likes:    function(a,b){ return ((window._likeCounts&&window._likeCounts[b.id])||0) - ((window._likeCounts&&window._likeCounts[a.id])||0); },
+      likes_asc:function(a,b){ return ((window._likeCounts&&window._likeCounts[a.id])||0) - ((window._likeCounts&&window._likeCounts[b.id])||0); },
+      pts:      function(a,b){ return totalPts(supaTrack[b.id]||[]) - totalPts(supaTrack[a.id]||[]); },
+      pts_asc:  function(a,b){ return totalPts(supaTrack[a.id]||[]) - totalPts(supaTrack[b.id]||[]); }
+    };
+    if (sortFns[searchSort]) matchedTracks.sort(sortFns[searchSort]);
   var matchedUsers = [];
   if (searchFilter !== 'track' && user) {
     var uMatch = !q || user.name.toLowerCase().indexOf(q) >= 0 || (user.bio && user.bio.toLowerCase().indexOf(q) >= 0);

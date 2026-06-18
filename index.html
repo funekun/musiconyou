@@ -2065,7 +2065,10 @@ function trackRowHtml(t, idx, opts) {
         '<button class="icon-btn' + (liked ? ' liked' : '') + '" onclick="toggleLike(\'' + t.id + '\')" style="padding:2px;font-size:13px"><i class="ti ti-heart' + (liked ? '-filled' : '') + '"></i></button>' +
         '<span style="font-size:11px;color:' + (liked ? '#e24b4a' : '#bbb') + ';cursor:pointer;min-width:16px" onclick="openLikersModal(\'' + t.id + '\',\'' + esc(t.name) + '\')">' + likeCount + '</span>' +
       '</div>' +
-      (lc > 0 ? '<span style="font-size:11px;color:#888;display:flex;align-items:center;gap:2px"><i class="ti ti-message" style="font-size:10px"></i>' + lc + '</span>' : '') +
+      '<div style="display:flex;align-items:center;gap:4px;cursor:pointer" onclick="openComments(\'' + t.id + '\')">' +
+        '<i class="ti ti-message" style="font-size:13px;color:#bbb"></i>' +
+        '<span style="font-size:11px;color:#bbb">' + (lc || 0) + '</span>' +
+      '</div>' +
       (spPts > 0 ? '<span style="font-size:11px;color:#c4980a">🪙' + spPts + '</span>' : '') +
       '<div style="margin-left:auto;display:flex;align-items:center;gap:8px">' +
         '<button class="supa-icon-btn" onclick="openSupaModal(\'track\',\'' + t.id + '\')">🪙</button>' +
@@ -2190,6 +2193,10 @@ function renderRankBlock(src, label, color) {
         '<div style="display:flex;align-items:center;gap:4px;cursor:pointer" onclick="openLikersModal(\'' + t.id + '\',\'' + esc(t.name) + '\')">' +
           '<i class="ti ti-heart' + (lk > 0 ? '-filled' : '') + '" style="font-size:12px;color:#e24b4a"></i>' +
           '<span style="font-size:11px;color:#e24b4a">' + lk + '</span>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:4px;cursor:pointer" onclick="openComments(\'' + t.id + '\')">' +
+          '<i class="ti ti-message" style="font-size:12px;color:#bbb"></i>' +
+          '<span style="font-size:11px;color:#bbb">' + ((commentsData[t.id]||[]).length||0) + '</span>' +
         '</div>' +
         (spPts > 0 ? '<span style="font-size:11px;color:#c4980a;display:flex;align-items:center;gap:2px"><i class="ti ti-coin" style="font-size:10px"></i>' + spPts + '</span>' : '') +
         (t.createdAt ? '<span style="font-size:9px;color:#ccc;margin-left:auto">' + fmtDate(t.createdAt) + '</span>' : '') +
@@ -2418,6 +2425,7 @@ function renderUserPage() {
       '<div class="grid-meta" style="margin-top:3px;color:#1a1a1a;font-weight:500">' +
         '<span><i class="ti ti-player-play" style="font-size:9px"></i> ' + ((plays[t.id]||{}).alltime||0) + '</span>' +
         '<span style="color:#e24b4a;cursor:pointer" onclick="event.stopPropagation();openLikersModal(\'' + t.id + '\',\'' + esc(t.name) + '\')"><i class="ti ti-heart' + (((window._likeCounts&&window._likeCounts[t.id])||0) > 0 ? '-filled' : '') + '" style="font-size:9px"></i> ' + ((window._likeCounts && window._likeCounts[t.id])||0) + '</span>' +
+        '<span style="color:#bbb;cursor:pointer" onclick="event.stopPropagation();openComments(\'' + t.id + '\')"><i class="ti ti-message" style="font-size:9px"></i> ' + ((commentsData[t.id]||[]).length||0) + '</span>' +
       '</div>' +
       (t.description ? '<div style="font-size:10px;color:#888;margin-top:3px;line-height:1.4;word-break:break-word">' + esc(t.description) + '</div>' : '') +
       (t.tags ? '<div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:3px">' + t.tags.split(' ').filter(function(tg){return tg.startsWith('#')}).map(function(tg){return '<span style="font-size:9px;color:#4455cc">' + tg + '</span>'}).join('') + '</div>' : '') +

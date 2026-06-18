@@ -787,6 +787,29 @@ audio{display:none}
   </div>
 </div>
 
+<!-- シェアモーダル -->
+<div class="modal-overlay" id="share-modal" onclick="if(event.target===this)closeModal('share-modal')">
+  <div class="modal" style="max-width:340px">
+    <button class="modal-close" onclick="closeModal('share-modal')"><i class="ti ti-x"></i></button>
+    <h2 style="margin-bottom:14px"><i class="ti ti-share" style="margin-right:6px"></i>シェア</h2>
+    <div id="share-track-info" style="background:#f4f9fc;border:0.5px solid #d0eaf5;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#555"></div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button onclick="shareToX()" style="background:#000;color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:500">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.213 5.567zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        X（Twitter）でシェア
+      </button>
+      <button onclick="shareToThreads()" style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:500">
+        <i class="ti ti-at" style="font-size:16px"></i>
+        Threadsでシェア
+      </button>
+      <button onclick="copyTrackLink()" style="background:#f4f9fc;color:#1a1a1a;border:0.5px solid #d0eaf5;border-radius:10px;padding:11px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        <i class="ti ti-link" style="font-size:16px"></i>
+        リンクをコピー
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- 通知パネル -->
 <div class="notif-panel" id="notif-panel">
   <div class="notif-header">
@@ -2030,6 +2053,7 @@ function trackRowHtml(t, idx, opts) {
         '</div>' +
       '</div>' +
       '<div class="track-actions" style="flex-shrink:0">' +
+        '<button class="icon-btn" onclick="event.stopPropagation();shareTrack(\'' + t.id + '\')" title="シェア"><i class="ti ti-share"></i></button>' +
         (opts.noComment ? '' : '<button class="icon-btn" onclick="openComments(\'' + t.id + '\')"><i class="ti ti-message"></i></button>') +
         '<button class="icon-btn' + (inPl ? ' in-playlist' : '') + '" onclick="addToPlaylist(\'' + t.id + '\')"><i class="ti ti-playlist-add"></i></button>' +
         (opts.noTrash ? '' : '<button class="icon-btn" onclick="removeTrack(\'' + t.id + '\')"><i class="ti ti-trash"></i></button>') +
@@ -3364,6 +3388,68 @@ async function addComment() {
     showToast('エラー: ' + (res.error ? res.error.message : '不明'));
   }
 }
+/* ---- シェア機能 ---- */
+var shareTrackId = null;
+
+function shareTrack(id) {
+  shareTrackId = id;
+  var t = null; for (var i = 0; i < tracks.length; i++) if (tracks[i].id === id) { t = tracks[i]; break; }
+  if (!t) return;
+  var info = document.getElementById('share-track-info');
+  if (info) {
+    info.innerHTML = '<div style="display:flex;align-items:center;gap:8px">' +
+      (t.thumbUrl ? '<img src="' + t.thumbUrl + '" style="width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0">' : '<div style="width:36px;height:36px;border-radius:6px;background:#eef6fc;display:flex;align-items:center;justify-content:center"><i class="ti ti-music" style="color:#ccc"></i></div>') +
+      '<div><div style="font-size:13px;font-weight:500;color:#1a1a1a">' + esc(t.name) + '</div>' +
+      '<div style="font-size:11px;color:#aaa">' + esc(t.uploader||'') + '</div></div>' +
+    '</div>';
+  }
+  document.getElementById('share-modal').classList.add('open');
+}
+
+function getShareUrl(id) {
+  return 'https://funekun.github.io/?track=' + id;
+}
+
+function getShareText(id) {
+  var t = null; for (var i = 0; i < tracks.length; i++) if (tracks[i].id === id) { t = tracks[i]; break; }
+  var name = t ? t.name : '曲';
+  var uploader = t ? (t.uploader || '') : '';
+  return '🎵 ' + name + (uploader ? '（' + uploader + '）' : '') + ' - みゅーじっく音友で聴いてみて！\n';
+}
+
+function shareToX() {
+  var url = getShareUrl(shareTrackId);
+  var text = getShareText(shareTrackId);
+  var shareUrl = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url) + '&hashtags=みゅーじっく音友';
+  window.open(shareUrl, '_blank');
+  closeModal('share-modal');
+}
+
+function shareToThreads() {
+  var url = getShareUrl(shareTrackId);
+  var text = getShareText(shareTrackId) + url;
+  var shareUrl = 'https://www.threads.net/intent/post?text=' + encodeURIComponent(text);
+  window.open(shareUrl, '_blank');
+  closeModal('share-modal');
+}
+
+function copyTrackLink() {
+  var url = getShareUrl(shareTrackId);
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(function() {
+      showToast('リンクをコピーしました！🔗');
+      closeModal('share-modal');
+    });
+  } else {
+    var el = document.createElement('textarea');
+    el.value = url; document.body.appendChild(el);
+    el.select(); document.execCommand('copy');
+    document.body.removeChild(el);
+    showToast('リンクをコピーしました！🔗');
+    closeModal('share-modal');
+  }
+}
+
 /* ---- マイリスト ---- */
 var MY_LISTS = [];           // [{id, name, icon, trackIds:[]}]
 var myListView = 'list';     // 'list' | detail listId

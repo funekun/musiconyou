@@ -2054,7 +2054,6 @@ function trackRowHtml(t, idx, opts) {
       '<div class="track-actions" style="flex-shrink:0">' +
         '<button class="icon-btn" onclick="event.stopPropagation();shareTrack(\'' + t.id + '\')" title="シェア"><i class="ti ti-share"></i></button>' +
         '<button class="icon-btn' + (inPl ? ' in-playlist' : '') + '" onclick="addToPlaylist(\'' + t.id + '\')"><i class="ti ti-playlist-add"></i></button>' +
-        (user && t.uploader === user.name ? '<button class="icon-btn" onclick="removeTrack(\'' + t.id + '\')" style="color:#ddd"><i class="ti ti-trash"></i></button>' : '') +
       '</div>' +
     '</div>' +
     // 中段：再生数・いいね・サポートpt・コメント数

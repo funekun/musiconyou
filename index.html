@@ -876,7 +876,8 @@ async function loadTracks() {
       description: d.description || '',
       tags: d.tags || '',
       youtubeUrl: d.youtube_url || '',
-      visibility: d.visibility || 'public'
+      visibility: d.visibility || 'public',
+      playCount: d.play_count || 0
     };
     tracks.push(t);
     commentsData[t.id] = commentsData[t.id] || [];
@@ -884,23 +885,11 @@ async function loadTracks() {
     supaTrack[t.id] = supaTrack[t.id] || [];
   }
 
-  // play_countsから再生数を集計
-  var now = new Date();
-  var dayAgo   = new Date(now - 86400000).toISOString();
-  var weekAgo  = new Date(now - 86400000*7).toISOString();
-  var monthAgo = new Date(now - 86400000*30).toISOString();
-  var yearAgo  = new Date(now - 86400000*365).toISOString();
-  var pcRes = await sb.from('play_counts').select('track_id, played_at');
-  if (!pcRes.error && pcRes.data) {
-    for (var j = 0; j < pcRes.data.length; j++) {
-      var pc = pcRes.data[j]; var tid = pc.track_id; var pt = pc.played_at;
-      if (!plays[tid]) plays[tid] = {daily:0,weekly:0,monthly:0,yearly:0,alltime:0};
-      plays[tid].alltime++;
-      if (pt >= yearAgo)  plays[tid].yearly++;
-      if (pt >= monthAgo) plays[tid].monthly++;
-      if (pt >= weekAgo)  plays[tid].weekly++;
-      if (pt >= dayAgo)   plays[tid].daily++;
-    }
+  // play_countをtracksテーブルから直接読み込み
+  for (var i = 0; i < tracks.length; i++) {
+    var t = tracks[i];
+    var pc = t.playCount || 0;
+    plays[t.id] = {daily: pc, weekly: pc, monthly: pc, yearly: pc, alltime: pc};
   }
 
   // likesをDBから取得
@@ -2626,9 +2615,9 @@ function playTrack(i) {
   if (currentIdx === i) { togglePlay(); return; }
   currentIdx = i; var t = tracks[i];
   if (!plays[t.id]) plays[t.id] = {daily:0, weekly:0, monthly:0, yearly:0, alltime:0};
-  plays[t.id].daily++; plays[t.id].weekly++; plays[t.id].monthly++; plays[t.id].yearly++; plays[t.id].alltime++;
-  // ログイン状態に関わらず再生数をDBに保存
-  sb.from('play_counts').insert({ track_id: t.id, played_at: new Date().toISOString() });
+  plays[t.id].alltime++;
+  // tracksテーブルのplay_countを直接インクリメント
+  sb.rpc('increment_play_count', {track_id: t.id});
 
   var videoWrap = document.getElementById('video-player-wrap');
   var videoEl = document.getElementById('video-player');

@@ -1047,7 +1047,7 @@ var pendingFiles = [], pendingCat = null, pendingThumbUrl = null;
 var user = null, tempAvatarUrl = null;
 var supaTrack = {}, supaUser = {};
 var supaTarget = null, supaType = null, supaAmt = 0;
-var searchQuery = '', searchFilter = 'all', searchCat = '', searchGenre = '', searchSort = 'newest';
+var searchQuery = '', searchFilter = 'all', searchCat = '', searchGenre = '', searchSort = 'newest', searchSortVal = '';
 var following = {}, followerCounts = {};
 var wallComments = [];
 var userSubTab = 'works'; // 'works' | 'stats'
@@ -2433,9 +2433,14 @@ function renderSearchPage() {
     '<div class="search-selects">' +
     '<select id="srch-cat" onchange="setSearchCat(this.value)">' + catOpts + '</select>' +
     '<select id="srch-gen" onchange="setSearchGenre(this.value)">' + genOpts + '</select>' +
+    '</div>' +
+    '<div class="search-selects" style="margin-top:5px">' +
     '<select id="srch-sort" onchange="setSearchSort(this.value)" style="border:0.5px solid #d0eaf5;border-radius:8px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">' +
-      '<option value="newest">新しい順</option>' +
-      '<option value="oldest">古い順</option>' +
+      '<option value="newest">🕐 新しい順</option>' +
+      '<option value="oldest">🕐 古い順</option>' +
+    '</select>' +
+    '<select id="srch-sort-val" onchange="setSearchSortVal(this.value)" style="border:0.5px solid #d0eaf5;border-radius:8px;padding:5px 9px;font-size:11px;color:#666;background:#fff;outline:none;cursor:pointer">' +
+      '<option value="">数値で絞る</option>' +
       '<option value="plays">再生数↓</option>' +
       '<option value="plays_asc">再生数↑</option>' +
       '<option value="likes">いいね↓</option>' +
@@ -2448,6 +2453,7 @@ function renderSearchPage() {
   document.getElementById('srch-cat').value = searchCat;
   document.getElementById('srch-gen').value = searchGenre;
   document.getElementById('srch-sort').value = searchSort;
+  document.getElementById('srch-sort-val').value = searchSortVal;
   runSearch();
 }
 function onSearchInput(v) { searchQuery = v; runSearch(); }
@@ -2460,6 +2466,7 @@ function setSearchFilter(f) { searchFilter = f; renderSearchPage(); }
 function setSearchCat(v) { searchCat = v; runSearch(); }
 function setSearchGenre(v) { searchGenre = v; runSearch(); }
 function setSearchSort(v) { searchSort = v; runSearch(); }
+function setSearchSortVal(v) { searchSortVal = v; runSearch(); }
 function runSearch() {
   var area = document.getElementById('search-results-area');
   if (!area) return;
@@ -2473,7 +2480,7 @@ function runSearch() {
       var inQ = !q || t.name.toLowerCase().indexOf(q) >= 0 || (t.uploader && t.uploader.toLowerCase().indexOf(q) >= 0) || (t.tags && t.tags.toLowerCase().indexOf(q) >= 0) || (t.description && t.description.toLowerCase().indexOf(q) >= 0);
       if (inCat && inQ) matchedTracks.push(t);
     }
-    // 並び替え
+    // 並び替え：数値ソートが指定されていればそちらを優先、なければ時間順
     var sortFns = {
       newest:   function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); },
       oldest:   function(a,b){ return new Date(a.createdAt||0) - new Date(b.createdAt||0); },
@@ -2484,7 +2491,10 @@ function runSearch() {
       pts:      function(a,b){ return totalPts(supaTrack[b.id]||[]) - totalPts(supaTrack[a.id]||[]); },
       pts_asc:  function(a,b){ return totalPts(supaTrack[a.id]||[]) - totalPts(supaTrack[b.id]||[]); }
     };
+    // 時間ソートを先に適用
     if (sortFns[searchSort]) matchedTracks.sort(sortFns[searchSort]);
+    // 数値ソートが選ばれていればさらに上書き
+    if (searchSortVal && sortFns[searchSortVal]) matchedTracks.sort(sortFns[searchSortVal]);
   }
   var matchedUsers = [];
   if (searchFilter !== 'track' && user) {

@@ -3741,7 +3741,7 @@ function switchTab(tab) {
   function isMobile() { return window.innerWidth <= 600; }
 
   function getCurrentTab() {
-    var tabIds = {feed:'tab-feed',ranking:'tab-ranking',playlist:'tab-playlist-inline',user:'tab-user',search:'tab-search'};
+    var tabIds = {feed:'tab-feed',ranking:'tab-ranking',playlist:'tab-playlist-inline',user:'tab-user',search:'tab-search',news:'tab-news'};
     for (var t in tabIds) {
       var el = document.getElementById(tabIds[t]);
       if (el && el.classList.contains('active')) return t;

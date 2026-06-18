@@ -787,6 +787,15 @@ audio{display:none}
   </div>
 </div>
 
+<!-- いいねしたユーザー一覧モーダル -->
+<div class="modal-overlay" id="likers-modal" onclick="if(event.target===this)closeModal('likers-modal')">
+  <div class="modal" style="max-width:340px">
+    <button class="modal-close" onclick="closeModal('likers-modal')"><i class="ti ti-x"></i></button>
+    <h2 style="margin-bottom:14px"><i class="ti ti-heart-filled" style="color:#e24b4a;margin-right:6px"></i><span id="likers-modal-title">いいね</span></h2>
+    <div id="likers-list" style="display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- シェアモーダル -->
 <div class="modal-overlay" id="share-modal" onclick="if(event.target===this)closeModal('share-modal')">
   <div class="modal" style="max-width:340px">
@@ -892,22 +901,23 @@ async function loadTracks() {
     plays[t.id] = {daily: pc, weekly: pc, monthly: pc, yearly: pc, alltime: pc};
   }
 
-  // likesをDBから取得
-  var likesRes = await sb.from('likes').select('track_id, user_id');
+  // likesをDBから取得（プロフィール情報も含む）
+  var likesRes = await sb.from('likes').select('track_id, user_id, profiles(name, username, avatar_url)');
   if (!likesRes.error && likesRes.data) {
-    // いいね数をカウント
+    // いいね数とユーザー情報を保存
+    window._likeCounts = {};
+    window._likeUsers = {}; // track_id → [{name, username, avatar_url}]
     for (var k = 0; k < likesRes.data.length; k++) {
       var lk = likesRes.data[k];
-      likes[lk.track_id] = (likes[lk.track_id] || 0) + 1;
+      window._likeCounts[lk.track_id] = (window._likeCounts[lk.track_id] || 0) + 1;
+      if (!window._likeUsers[lk.track_id]) window._likeUsers[lk.track_id] = [];
+      if (lk.profiles) window._likeUsers[lk.track_id].push(lk.profiles);
     }
-    // 自分がいいねしたかどうかをboolに上書き（表示用）
     if (currentAuthUser) {
       var myLikes = {};
       for (var k = 0; k < likesRes.data.length; k++) {
         if (likesRes.data[k].user_id === currentAuthUser.id) myLikes[likesRes.data[k].track_id] = 1;
       }
-      // likes[id]を「自分がいいねしたか」で上書き（カウントは別途renderで使う）
-      window._likeCounts = likes;
       window._myLikes = myLikes;
       likes = myLikes;
     }
@@ -2053,7 +2063,7 @@ function trackRowHtml(t, idx, opts) {
       '<span style="font-size:11px;color:#888;display:flex;align-items:center;gap:3px"><i class="ti ti-player-play" style="font-size:10px"></i>' + playCount + '</span>' +
       (spPts > 0 ? '<span style="font-size:11px;color:#c4980a;display:flex;align-items:center;gap:2px">🪙' + spPts + '</span>' : '') +
       '<button class="icon-btn' + (liked ? ' liked' : '') + '" onclick="toggleLike(\'' + t.id + '\')" style="padding:2px;font-size:13px"><i class="ti ti-heart' + (liked ? '-filled' : '') + '"></i></button>' +
-      '<span style="font-size:11px;color:' + (liked ? '#e24b4a' : '#bbb') + ';margin-left:-6px">' + likeCount + '</span>' +
+      '<span style="font-size:11px;color:' + (liked ? '#e24b4a' : '#bbb') + ';margin-left:-6px;cursor:pointer" onclick="openLikersModal(\'' + t.id + '\',\'' + esc(t.name) + '\')">' + likeCount + '</span>' +
       (lc > 0 ? '<span style="font-size:11px;color:#888;display:flex;align-items:center;gap:2px"><i class="ti ti-message" style="font-size:10px"></i>' + lc + '</span>' : '') +
       '<button class="supa-icon-btn" onclick="openSupaModal(\'track\',\'' + t.id + '\')" style="margin-left:auto">🪙</button>' +
       (t.createdAt ? '<span style="font-size:9px;color:#ccc">' + fmtDate(t.createdAt) + '</span>' : '') +
@@ -3378,6 +3388,32 @@ async function addComment() {
     showToast('エラー: ' + (res.error ? res.error.message : '不明'));
   }
 }
+function openLikersModal(trackId, trackName) {
+  var likers = (window._likeUsers && window._likeUsers[trackId]) || [];
+  var count = (window._likeCounts && window._likeCounts[trackId]) || 0;
+  document.getElementById('likers-modal-title').textContent = '「' + trackName + '」のいいね ' + count + '件';
+  var list = document.getElementById('likers-list');
+  if (!likers.length) {
+    list.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#bbb;font-size:12px"><i class="ti ti-heart" style="font-size:24px;display:block;margin-bottom:8px"></i>まだいいねがありません</div>';
+  } else {
+    var html = '';
+    for (var i = 0; i < likers.length; i++) {
+      var u = likers[i];
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #f4f4f0">' +
+        '<div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:#eef6fc;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid #d0eaf5">' +
+          (u.avatar_url ? '<img src="' + u.avatar_url + '" style="width:100%;height:100%;object-fit:cover">' : '<i class="ti ti-user" style="font-size:15px;color:#ccc"></i>') +
+        '</div>' +
+        '<div>' +
+          '<div style="font-size:13px;font-weight:500;color:#1a1a1a">' + esc(u.name || '') + '</div>' +
+          (u.username ? '<div style="font-size:11px;color:#7ec4e0">@' + esc(u.username) + '</div>' : '') +
+        '</div>' +
+      '</div>';
+    }
+    list.innerHTML = html;
+  }
+  document.getElementById('likers-modal').classList.add('open');
+}
+
 /* ---- シェア機能 ---- */
 var shareTrackId = null;
 

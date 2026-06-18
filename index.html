@@ -2485,6 +2485,7 @@ function runSearch() {
       pts_asc:  function(a,b){ return totalPts(supaTrack[a.id]||[]) - totalPts(supaTrack[b.id]||[]); }
     };
     if (sortFns[searchSort]) matchedTracks.sort(sortFns[searchSort]);
+  }
   var matchedUsers = [];
   if (searchFilter !== 'track' && user) {
     var uMatch = !q || user.name.toLowerCase().indexOf(q) >= 0 || (user.bio && user.bio.toLowerCase().indexOf(q) >= 0);

@@ -701,11 +701,12 @@ audio{display:none}
       <label>金額を選択（100円 = 10ポイント）</label>
       <div class="amount-grid">
         <button class="amount-btn" onclick="selectAmt(100)">¥100<small>1pt</small></button>
-        <button class="amount-btn" onclick="selectAmt(300)">¥300<small>3pt</small></button>
-        <button class="amount-btn" onclick="selectAmt(500)">¥500<small>5pt</small></button>
-        <button class="amount-btn" onclick="selectAmt(1000)">¥1,000<small>10pt</small></button>
-        <button class="amount-btn" onclick="selectAmt(3000)">¥3,000<small>30pt</small></button>
-        <button class="amount-btn" onclick="selectAmt(5000)">¥5,000<small>50pt</small></button>
+        <button class="amount-btn" onclick="selectAmt(100)">¥100<small>10pt</small></button>
+        <button class="amount-btn" onclick="selectAmt(300)">¥300<small>30pt</small></button>
+        <button class="amount-btn" onclick="selectAmt(500)">¥500<small>50pt</small></button>
+        <button class="amount-btn" onclick="selectAmt(1000)">¥1,000<small>100pt</small></button>
+        <button class="amount-btn" onclick="selectAmt(3000)">¥3,000<small>300pt</small></button>
+        <button class="amount-btn" onclick="selectAmt(5000)">¥5,000<small>500pt</small></button>
       </div>
     </div>
     <input type="text" class="supa-msg-input" id="supa-msg" placeholder="メッセージ（任意）" maxlength="80">
@@ -1390,7 +1391,7 @@ function sendSupa() {
   var gross = supaAmt;
   var adminCut = Math.floor(gross * 0.1);
   var creatorCut = gross - adminCut;
-  var pts = Math.floor(creatorCut / 100);
+  var pts = Math.floor(creatorCut / 100) * 10; // 100円＝10pt
   adminEarnings += adminCut;
   var msg = document.getElementById('supa-msg').value.trim();
   var entry = {from:user.name, fromAvatar:user.avatarUrl||null, pts:pts, amt:creatorCut, gross:gross, adminCut:adminCut, msg:msg};

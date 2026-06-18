@@ -2077,10 +2077,14 @@ function renderRankBlock(src, label, color) {
       '<div style="display:flex;align-items:center;gap:8px">' +
         '<span style="' + badgeStyle + '">' + (i+1) + '</span>' +
         '<div style="flex-shrink:0">' + thumbHtml(t, 44) + '</div>' +
-          '<div style="display:flex;align-items:center;min-width:0;cursor:pointer" onclick="playTrack(' + tIdx + ')">' +
-            '<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1a1a1a">' + esc(t.name) + '</div>' +
-            newBadge +
+        '<div style="flex:1;min-width:0;cursor:pointer" onclick="playTrack(' + tIdx + ')">' +
+          '<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1a1a1a">' + esc(t.name) + '</div>' +
+          '<div style="display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap">' +
+            (isNew ? '<span style="font-size:9px;font-weight:700;color:#1a7aaa;background:#e0f2fe;border-radius:6px;padding:1px 6px;letter-spacing:.3px">NEW</span>' : '') +
+            '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' +
+            (t.uploader ? '<span style="font-size:10px;color:#bbb"><i class="ti ti-user" style="font-size:9px"></i> ' + esc(t.uploader) + '</span>' : '') +
           '</div>' +
+        '</div>' +
           '<div style="display:flex;align-items:center;gap:5px;margin-top:2px">' +
             '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' +
             (t.uploader ? '<span style="font-size:10px;color:#bbb"><i class="ti ti-user" style="font-size:9px"></i> ' + esc(t.uploader) + '</span>' : '') +

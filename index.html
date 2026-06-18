@@ -2053,9 +2053,8 @@ function trackRowHtml(t, idx, opts) {
       '</div>' +
       '<div class="track-actions" style="flex-shrink:0">' +
         '<button class="icon-btn" onclick="event.stopPropagation();shareTrack(\'' + t.id + '\')" title="シェア"><i class="ti ti-share"></i></button>' +
-        (opts.noComment ? '' : '<button class="icon-btn" onclick="openComments(\'' + t.id + '\')"><i class="ti ti-message"></i></button>') +
         '<button class="icon-btn' + (inPl ? ' in-playlist' : '') + '" onclick="addToPlaylist(\'' + t.id + '\')"><i class="ti ti-playlist-add"></i></button>' +
-        (opts.noTrash ? '' : '<button class="icon-btn" onclick="removeTrack(\'' + t.id + '\')"><i class="ti ti-trash"></i></button>') +
+        (user && t.uploader === user.name ? '<button class="icon-btn" onclick="removeTrack(\'' + t.id + '\')" style="color:#ddd"><i class="ti ti-trash"></i></button>' : '') +
       '</div>' +
     '</div>' +
     // 中段：再生数・いいね・サポートpt・コメント数
@@ -2148,6 +2147,7 @@ function renderRankBlock(src, label, color) {
     var ci = catInfo(t.cat);
     var tIdx = tracks.indexOf(t); var spPts = totalPts(supaTrack[t.id]);
     var lk = (window._likeCounts && window._likeCounts[t.id]) || 0;
+    var inPl = false; for (var pi = 0; pi < playlist.length; pi++) if (playlist[pi].id === t.id) { inPl = true; break; }
     var rowStyle = 'border-radius:12px;margin-bottom:8px;overflow:hidden;';
     if (i === 0) rowStyle += 'background:linear-gradient(90deg,#fffbea 0%,#fff 100%);border-left:3px solid #f5c400';
     else if (i === 1) rowStyle += 'background:linear-gradient(90deg,#f6f6f6 0%,#fff 100%);border-left:3px solid #aaa';
@@ -2186,6 +2186,8 @@ function renderRankBlock(src, label, color) {
           '</div>' +
         '</div>' +
         '<button onclick="playTrack(' + tIdx + ')" style="background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:14px"><i class="ti ti-player-play"></i></button>' +
+        '<button class="icon-btn" onclick="event.stopPropagation();shareTrack(\'' + t.id + '\')" title="シェア"><i class="ti ti-share"></i></button>' +
+        '<button class="icon-btn' + (inPl ? ' in-playlist' : '') + '" onclick="addToPlaylist(\'' + t.id + '\')"><i class="ti ti-playlist-add"></i></button>' +
       '</div>' +
       '<div style="display:flex;align-items:center;gap:10px;margin-top:7px;flex-wrap:wrap">' +
         '<span style="font-size:12px;font-weight:700;color:#1a7aaa;display:flex;align-items:center;gap:2px"><i class="ti ti-award" style="font-size:11px"></i>' + cnt + 'pt</span>' +
@@ -2413,13 +2415,17 @@ function renderUserPage() {
   for (var i = 0; i < myTracks.length; i++) {
     var t = myTracks[i]; var tIdx = tracks.indexOf(t); var playing = currentIdx === tIdx;
     var ci = catInfo(t.cat); var spPts = totalPts(supaTrack[t.id]);
+    var isNew = t.createdAt && (Date.now() - new Date(t.createdAt).getTime()) < 86400000;
+    var inPl = false; for (var pi = 0; pi < playlist.length; pi++) if (playlist[pi].id === t.id) { inPl = true; break; }
     gridHtml += '<div class="grid-card' + (playing ? ' playing' : '') + '" onclick="playTrack(' + tIdx + ')">' +
       '<div class="grid-thumb">' + (t.thumbUrl ? '<img src="' + t.thumbUrl + '">' : '<i class="ti ti-' + (t.isVideo ? 'video' : 'music') + '"></i>') +
       '<div class="grid-ov"><i class="ti ti-' + (playing && !audio.paused ? 'player-pause' : 'player-play') + '"></i></div></div>' +
       '<div class="grid-info">' +
       '<div style="display:flex;align-items:center;justify-content:space-between;gap:4px">' +
-        '<div class="grid-title" style="flex:1">' + esc(t.name) + '</div>' +
-        '<button onclick="event.stopPropagation();openTrackEdit(\'' + t.id + '\')" style="background:none;border:none;cursor:pointer;color:#bbb;padding:2px 4px;border-radius:5px;font-size:13px;flex-shrink:0"><i class="ti ti-edit"></i></button>' +
+        '<div class="grid-title" style="flex:1">' + esc(t.name) + (isNew ? '<span style="font-size:8px;font-weight:700;color:#1a7aaa;background:#e0f2fe;border-radius:5px;padding:1px 5px;margin-left:4px">NEW</span>' : '') + '</div>' +
+        '<button onclick="event.stopPropagation();shareTrack(\'' + t.id + '\')" style="background:none;border:none;cursor:pointer;color:#bbb;padding:2px 4px;font-size:13px"><i class="ti ti-share"></i></button>' +
+        '<button onclick="event.stopPropagation();addToPlaylist(\'' + t.id + '\')" style="background:none;border:none;cursor:pointer;color:' + (inPl?'#1a1a1a':'#bbb') + ';padding:2px 4px;font-size:13px"><i class="ti ti-playlist-add"></i></button>' +
+        '<button onclick="event.stopPropagation();openTrackEdit(\'' + t.id + '\')" style="background:none;border:none;cursor:pointer;color:#bbb;padding:2px 4px;font-size:13px"><i class="ti ti-edit"></i></button>' +
       '</div>' +
       '<div class="grid-meta"><span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' + (t.duration ? fmtTime(t.duration) : '') + '</div>' +
       '<div class="grid-meta" style="margin-top:3px;color:#1a1a1a;font-weight:500">' +

@@ -2616,10 +2616,9 @@ function playTrack(i) {
   currentIdx = i; var t = tracks[i];
   if (!plays[t.id]) plays[t.id] = {daily:0, weekly:0, monthly:0, yearly:0, alltime:0};
   plays[t.id].alltime++;
-  // tracksテーブルのplay_countを直接インクリメント
-  sb.rpc('increment_play_count', {track_id: t.id}).then(function(res) {
-    if (res.error) console.error('play_count error:', res.error);
-  });
+  // play_countを直接update
+  var currentCount = (plays[t.id]||{}).alltime || 0;
+  sb.from('tracks').update({ play_count: currentCount }).eq('id', t.id);
 
   var videoWrap = document.getElementById('video-player-wrap');
   var videoEl = document.getElementById('video-player');

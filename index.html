@@ -1050,7 +1050,7 @@ var supaTarget = null, supaType = null, supaAmt = 0;
 var searchQuery = '', searchFilter = 'all', searchCat = '', searchGenre = '', searchSort = 'newest', searchSortVal = '';
 var following = {}, followerCounts = {};
 var wallComments = [];
-var userSubTab = 'works'; // 'works' | 'stats'
+var userSubTab = 'works'; // 'works' | 'stats' | 'support'
 
 /* ---- notifications ---- */
 var notifications = [];
@@ -2163,7 +2163,113 @@ function switchUserSubTab(tab) {
   renderUserPage();
 }
 
-function renderStatsTab(myTracks) {
+function renderSupportTab(myTracks, uSupa) {
+  // 全サポートデータを収集（曲へのサポート＋ユーザーへのサポート）
+  var supportMap = {}; // from_name → {name, avatar, pts, count, items:[]}
+
+  // ユーザーへの直接サポート
+  for (var i = 0; i < uSupa.length; i++) {
+    var s = uSupa[i];
+    var key = s.from || '匿名';
+    if (!supportMap[key]) supportMap[key] = {name: s.from || '匿名', avatar: s.avatar || null, pts: 0, count: 0, items: []};
+    supportMap[key].pts += s.pts || 0;
+    supportMap[key].count++;
+    supportMap[key].items.push({trackName: 'ユーザーへ', pts: s.pts, time: s.time});
+  }
+
+  // 曲へのサポート
+  for (var i = 0; i < myTracks.length; i++) {
+    var t = myTracks[i];
+    var tSupa = supaTrack[t.id] || [];
+    for (var j = 0; j < tSupa.length; j++) {
+      var s = tSupa[j];
+      var key = s.from || '匿名';
+      if (!supportMap[key]) supportMap[key] = {name: s.from || '匿名', avatar: s.avatar || null, pts: 0, count: 0, items: []};
+      supportMap[key].pts += s.pts || 0;
+      supportMap[key].count++;
+      supportMap[key].items.push({trackName: t.name, pts: s.pts, time: s.time});
+    }
+  }
+
+  var supporters = [];
+  for (var k in supportMap) supporters.push(supportMap[k]);
+  supporters.sort(function(a,b){ return b.pts - a.pts; });
+
+  // 合計
+  var totalPt = 0;
+  for (var i = 0; i < supporters.length; i++) totalPt += supporters[i].pts;
+  var totalYen = Math.floor(totalPt / 10) * 100;
+
+  if (!supporters.length) {
+    return '<div class="empty"><i class="ti ti-coin"></i><p>まだサポートはありません</p></div>';
+  }
+
+  // サマリーカード
+  var html = '<div class="stat-cards" style="margin-bottom:1rem">' +
+    '<div class="stat-card"><div class="stat-card-label"><i class="ti ti-coin" style="font-size:11px;color:#c4980a"></i>累計pt</div><div class="stat-card-val" style="color:#c4980a">' + totalPt + '</div><div class="stat-card-sub">pt</div></div>' +
+    '<div class="stat-card"><div class="stat-card-label"><i class="ti ti-currency-yen" style="font-size:11px"></i>換算金額</div><div class="stat-card-val">' + totalYen.toLocaleString() + '</div><div class="stat-card-sub">円相当</div></div>' +
+    '<div class="stat-card"><div class="stat-card-label"><i class="ti ti-users" style="font-size:11px"></i>サポーター</div><div class="stat-card-val">' + supporters.length + '</div><div class="stat-card-sub">人</div></div>' +
+  '</div>';
+
+  // サポーターランキング
+  html += '<div class="stats-section"><div class="stats-section-title"><i class="ti ti-trophy" style="font-size:12px"></i>サポーターランキング</div>';
+  var rankColors = ['#f5c400', '#aaa', '#cd7f32'];
+  for (var i = 0; i < supporters.length; i++) {
+    var s = supporters[i];
+    var yen = Math.floor(s.pts / 10) * 100;
+    var leftBorder = i < 3 ? 'border-left:3px solid ' + rankColors[i] + ';padding-left:10px;' : 'padding-left:13px;';
+    html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid #f4f4f0;' + leftBorder + '">' +
+      '<div style="width:34px;height:34px;border-radius:50%;overflow:hidden;background:#eef6fc;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid #d0eaf5">' +
+        (s.avatar ? '<img src="' + s.avatar + '" style="width:100%;height:100%;object-fit:cover">' : '<i class="ti ti-user" style="font-size:14px;color:#ccc"></i>') +
+      '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:13px;font-weight:500;color:#1a1a1a">' + esc(s.name) + '</div>' +
+        '<div style="font-size:10px;color:#aaa">' + s.count + '回サポート</div>' +
+      '</div>' +
+      '<div style="text-align:right;flex-shrink:0">' +
+        '<div style="font-size:14px;font-weight:700;color:#c4980a">' + s.pts + 'pt</div>' +
+        '<div style="font-size:10px;color:#bbb">¥' + yen.toLocaleString() + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+  html += '</div>';
+
+  // 曲別サポート集計
+  var trackSupaMap = {};
+  for (var i = 0; i < myTracks.length; i++) {
+    var t = myTracks[i];
+    var tp = totalPts(supaTrack[t.id] || []);
+    if (tp > 0) trackSupaMap[t.name] = {name: t.name, pts: tp, thumb: t.thumbUrl};
+  }
+  var trackList = [];
+  for (var k in trackSupaMap) trackList.push(trackSupaMap[k]);
+  trackList.sort(function(a,b){ return b.pts - a.pts; });
+
+  if (trackList.length) {
+    html += '<div class="stats-section" style="margin-top:1rem"><div class="stats-section-title"><i class="ti ti-music" style="font-size:12px"></i>曲別サポート</div>';
+    for (var i = 0; i < trackList.length; i++) {
+      var t = trackList[i];
+      var yen = Math.floor(t.pts / 10) * 100;
+      var max = trackList[0].pts || 1;
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid #f4f4f0">' +
+        '<div style="width:32px;height:32px;border-radius:6px;overflow:hidden;background:#eef6fc;flex-shrink:0;display:flex;align-items:center;justify-content:center">' +
+          (t.thumb ? '<img src="' + t.thumb + '" style="width:100%;height:100%;object-fit:cover">' : '<i class="ti ti-music" style="font-size:13px;color:#ccc"></i>') +
+        '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(t.name) + '</div>' +
+          '<div style="height:4px;background:#f0f0ec;border-radius:2px;margin-top:4px"><div style="height:100%;width:' + Math.round(t.pts/max*100) + '%;background:#c4980a;border-radius:2px"></div></div>' +
+        '</div>' +
+        '<div style="text-align:right;flex-shrink:0">' +
+          '<div style="font-size:12px;font-weight:600;color:#c4980a">' + t.pts + 'pt</div>' +
+          '<div style="font-size:10px;color:#bbb">¥' + yen.toLocaleString() + '</div>' +
+        '</div>' +
+      '</div>';
+    }
+    html += '</div>';
+  }
+
+  return html;
+}
   if (!myTracks.length) {
     return '<div class="empty"><i class="ti ti-chart-bar"></i><p>曲を投稿すると統計が表示されます</p></div>';
   }
@@ -2329,10 +2435,13 @@ function renderUserPage() {
   var subTabs = '<div class="user-subtabs">' +
     '<button class="user-subtab' + (userSubTab==='works'?' active':'') + '" onclick="switchUserSubTab(\'works\')"><i class="ti ti-music" style="font-size:12px"></i>作品</button>' +
     '<button class="user-subtab' + (userSubTab==='stats'?' active':'') + '" onclick="switchUserSubTab(\'stats\')"><i class="ti ti-chart-bar" style="font-size:12px"></i>統計</button>' +
+    '<button class="user-subtab' + (userSubTab==='support'?' active':'') + '" onclick="switchUserSubTab(\'support\')"><i class="ti ti-coin" style="font-size:12px"></i>サポート</button>' +
   '</div>';
 
   var tabContent = userSubTab === 'stats'
     ? renderStatsTab(myTracks)
+    : userSubTab === 'support'
+    ? renderSupportTab(myTracks, uSupa)
     : (myTracks.length === 0
         ? '<div class="empty"><i class="ti ti-music-off"></i><p>まだ投稿がありません</p></div>'
         : '<div class="track-grid">' + gridHtml + '</div>');

@@ -2617,7 +2617,9 @@ function playTrack(i) {
   if (!plays[t.id]) plays[t.id] = {daily:0, weekly:0, monthly:0, yearly:0, alltime:0};
   plays[t.id].alltime++;
   // tracksテーブルのplay_countを直接インクリメント
-  sb.rpc('increment_play_count', {track_id: t.id});
+  sb.rpc('increment_play_count', {track_id: t.id}).then(function(res) {
+    if (res.error) console.error('play_count error:', res.error);
+  });
 
   var videoWrap = document.getElementById('video-player-wrap');
   var videoEl = document.getElementById('video-player');

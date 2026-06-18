@@ -3065,7 +3065,11 @@ async function renderNewsPage() {
       '</div>';
     }
   }
-  page.innerHTML = html;
+  page.innerHTML = html + '<div style="margin-top:2rem;padding-top:1rem;border-top:0.5px solid #d0eaf5;text-align:center;display:flex;justify-content:center;gap:16px;flex-wrap:wrap">' +
+    '<a href="tos.html" style="font-size:11px;color:#1a7aaa;text-decoration:none">利用規約</a>' +
+    '<a href="privacy.html" style="font-size:11px;color:#1a7aaa;text-decoration:none">プライバシーポリシー</a>' +
+    '<span style="font-size:11px;color:#ccc">© 2026 みゅーじっく音友</span>' +
+  '</div>';
 }
 
 async function postNews() {

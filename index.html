@@ -2627,7 +2627,8 @@ function playTrack(i) {
   currentIdx = i; var t = tracks[i];
   if (!plays[t.id]) plays[t.id] = {daily:0, weekly:0, monthly:0, yearly:0, alltime:0};
   plays[t.id].daily++; plays[t.id].weekly++; plays[t.id].monthly++; plays[t.id].yearly++; plays[t.id].alltime++;
-  if (currentAuthUser) { sb.from('play_counts').insert({ track_id: t.id }); }
+  // ログイン状態に関わらず再生数をDBに保存
+  sb.from('play_counts').insert({ track_id: t.id, played_at: new Date().toISOString() });
 
   var videoWrap = document.getElementById('video-player-wrap');
   var videoEl = document.getElementById('video-player');

@@ -668,7 +668,17 @@ audio{display:none}
       <label>自己紹介</label>
       <textarea id="reg-bio" placeholder="好きな音楽のジャンルなど…" maxlength="200"></textarea>
     </div>
-    <button class="btn-primary" onclick="saveUser()">登録する</button>
+    <div id="reg-terms-row" style="background:#f4f9fc;border:0.5px solid #d0eaf5;border-radius:10px;padding:12px 14px;margin-bottom:14px">
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+        <input type="checkbox" id="reg-terms-check" style="margin-top:2px;width:16px;height:16px;accent-color:#1a7aaa;flex-shrink:0">
+        <span style="font-size:12px;color:#444;line-height:1.7">
+          <a href="tos.html" target="_blank" style="color:#1a7aaa;font-weight:500">利用規約</a>および
+          <a href="privacy.html" target="_blank" style="color:#1a7aaa;font-weight:500">プライバシーポリシー</a>
+          を読み、内容に同意します。
+        </span>
+      </label>
+    </div>
+    <button class="btn-primary" id="reg-submit-btn" onclick="saveUser()" style="opacity:.5;pointer-events:none">登録する</button>
   </div>
 </div>
 
@@ -1462,18 +1472,26 @@ async function addWallComment() {
 function openRegModal(edit) {
   document.getElementById('modal-title').textContent = edit ? 'プロフィール編集' : 'ユーザー登録';
   var unameEl = document.getElementById('reg-username');
+  var termsRow = document.getElementById('reg-terms-row');
+  var submitBtn = document.getElementById('reg-submit-btn');
+  var termsCheck = document.getElementById('reg-terms-check');
+
   if (edit && user) {
     document.getElementById('reg-name').value = user.name;
     document.getElementById('reg-bio').value = user.bio || '';
     document.getElementById('avatar-circle').innerHTML = user.avatarUrl ? '<img src="' + user.avatarUrl + '">' : '<i class="ti ti-user-circle"></i>';
     tempAvatarUrl = user.avatarUrl || null;
-    // IDは編集不可
     unameEl.value = user.username || '';
     unameEl.readOnly = true;
     unameEl.style.background = '#f0f0ec';
     unameEl.style.color = '#aaa';
     document.getElementById('username-check-msg').textContent = 'ユーザーIDは変更できません';
     document.getElementById('username-check-msg').style.color = '#aaa';
+    // 編集時は同意チェック不要
+    termsRow.style.display = 'none';
+    submitBtn.style.opacity = '1';
+    submitBtn.style.pointerEvents = 'auto';
+    submitBtn.textContent = '保存する';
   } else {
     document.getElementById('reg-name').value = '';
     document.getElementById('reg-bio').value = '';
@@ -1484,6 +1502,22 @@ function openRegModal(edit) {
     unameEl.style.background = '';
     unameEl.style.color = '';
     document.getElementById('username-check-msg').textContent = '';
+    // 新規登録時は同意チェック必須
+    termsRow.style.display = 'block';
+    termsCheck.checked = false;
+    submitBtn.style.opacity = '0.5';
+    submitBtn.style.pointerEvents = 'none';
+    submitBtn.textContent = '登録する';
+    // チェックボックスの変化を監視
+    termsCheck.onchange = function() {
+      if (this.checked) {
+        submitBtn.style.opacity = '1';
+        submitBtn.style.pointerEvents = 'auto';
+      } else {
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.pointerEvents = 'none';
+      }
+    };
   }
   document.getElementById('reg-modal').classList.add('open');
 }

@@ -1275,6 +1275,23 @@ function totalPts(arr) {
   if (!arr) return 0;
   var s = 0; for (var i = 0; i < arr.length; i++) s += arr[i].pts; return s;
 }
+
+// 曲の総獲得ポイント（再生×1 + いいね×5 + サポートpt）
+function calcTrackPts(t) {
+  var playPts  = (plays[t.id]||{}).alltime || 0;
+  var likePts  = ((window._likeCounts && window._likeCounts[t.id]) || 0) * 5;
+  var supaPts  = totalPts(supaTrack[t.id] || []);
+  return playPts + likePts + supaPts;
+}
+
+// ユーザーの総獲得ポイント
+function calcUserTotalPts(myTracks, uSupa) {
+  var pts = 0;
+  for (var i = 0; i < myTracks.length; i++) {
+    pts += calcTrackPts(myTracks[i]);
+  }
+  return pts;
+}
 function thumbHtml(t, sz) {
   sz = sz || 40;
   if (t.thumbUrl) return '<img src="' + t.thumbUrl + '" style="width:' + sz + 'px;height:' + sz + 'px;border-radius:7px;object-fit:cover">';
@@ -2051,7 +2068,7 @@ function trackRowHtml(t, idx, opts) {
     // 中段：再生数・いいね・サポートpt・コメント数
     '<div style="display:flex;align-items:center;gap:10px;margin-top:7px;padding-left:2px">' +
       '<span style="font-size:11px;color:#888;display:flex;align-items:center;gap:3px"><i class="ti ti-player-play" style="font-size:10px"></i>' + playCount + '</span>' +
-      (spPts > 0 ? '<span style="font-size:11px;color:#c4980a;display:flex;align-items:center;gap:2px">🪙' + spPts + '</span>' : '') +
+      (calcTrackPts(t) > 0 ? '<span style="font-size:11px;color:#1a7aaa">' + calcTrackPts(t) + 'pt</span>' : '') +
       '<button class="icon-btn' + (liked ? ' liked' : '') + '" onclick="toggleLike(\'' + t.id + '\')" style="padding:2px;font-size:13px"><i class="ti ti-heart' + (liked ? '-filled' : '') + '"></i></button>' +
       '<span style="font-size:11px;color:' + (liked ? '#e24b4a' : '#bbb') + ';margin-left:-6px">' + likeCount + '</span>' +
       (lc > 0 ? '<span style="font-size:11px;color:#888;display:flex;align-items:center;gap:2px"><i class="ti ti-message" style="font-size:10px"></i>' + lc + '</span>' : '') +
@@ -2064,7 +2081,16 @@ function trackRowHtml(t, idx, opts) {
   '</div>';
 }
 
-function isTrackVisible(t) {
+function canCountPlay(trackId) {
+  var key = 'last_play_' + trackId;
+  var last = localStorage.getItem(key);
+  var now = Date.now();
+  if (!last || now - parseInt(last) >= 3600000) {
+    localStorage.setItem(key, now);
+    return true; // 1時間以上経過 or 初回 → カウントする
+  }
+  return false; // 1時間以内 → カウントしない
+}
   if (user && t.uploader === user.name) return true;
   var vis = t.visibility || 'public';
   if (vis === 'private') return false;
@@ -2111,7 +2137,7 @@ function calcScore(t) {
   var key = PERIOD_KEY[currentPeriod] || 'alltime';
   var playPts = (plays[t.id]||{})[key] || 0;
   var likePts = ((window._likeCounts && window._likeCounts[t.id]) || 0) * 5;
-  var supaPts = totalPts(supaTrack[t.id] || []) * 50;
+  var supaPts = totalPts(supaTrack[t.id] || []);
   return playPts + likePts + supaPts;
 }
 function calcPlayForPeriod(t) {
@@ -2437,7 +2463,7 @@ function renderUserPage() {
             '<div class="stat"><strong>' + totalLk + '</strong><span>いいね</span></div>' +
           '</div>' +
           '<div class="user-stats">' +
-            '<div class="stat"><strong>' + totalPts(uSupa) + '</strong><span>pt</span></div>' +
+            '<div class="stat"><strong>' + calcUserTotalPts(myTracks, uSupa) + '</strong><span>pt</span></div>' +
             '<div class="stat clickable" onclick="openFollowModal()"><strong>' + flCount + '</strong><span>フォロー中</span></div>' +
             '<div class="stat"><strong>' + frCount + '</strong><span>フォロワー</span></div>' +
           '</div>' +
@@ -2616,8 +2642,11 @@ function playTrack(i) {
   currentIdx = i; var t = tracks[i];
   if (!plays[t.id]) plays[t.id] = {daily:0, weekly:0, monthly:0, yearly:0, alltime:0};
   plays[t.id].alltime++;
-  // play_countをインクリメント（rpc使用）
-  sb.rpc('increment_play_count', {p_track_id: t.id});
+  // 1時間に1カウント制限
+  if (canCountPlay(t.id)) {
+    plays[t.id].alltime++;
+    sb.rpc('increment_play_count', {p_track_id: t.id});
+  }
 
   var videoWrap = document.getElementById('video-player-wrap');
   var videoEl = document.getElementById('video-player');

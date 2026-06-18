@@ -2164,8 +2164,9 @@ function switchUserSubTab(tab) {
 }
 
 function renderSupportTab(myTracks, uSupa) {
-  // 全サポートデータを収集（曲へのサポート＋ユーザーへのサポート）
-  var supportMap = {}; // from_name → {name, avatar, pts, count, items:[]}
+  if (!myTracks) myTracks = [];
+  if (!uSupa) uSupa = [];
+  var supportMap = {};
 
   // ユーザーへの直接サポート
   for (var i = 0; i < uSupa.length; i++) {
@@ -2180,7 +2181,7 @@ function renderSupportTab(myTracks, uSupa) {
   // 曲へのサポート
   for (var i = 0; i < myTracks.length; i++) {
     var t = myTracks[i];
-    var tSupa = supaTrack[t.id] || [];
+    var tSupa = (supaTrack && supaTrack[t.id]) ? supaTrack[t.id] : [];
     for (var j = 0; j < tSupa.length; j++) {
       var s = tSupa[j];
       var key = s.from || '匿名';

@@ -2061,12 +2061,16 @@ function trackRowHtml(t, idx, opts) {
     // 中段：再生数・いいね・サポートpt・コメント数
     '<div style="display:flex;align-items:center;gap:10px;margin-top:7px;padding-left:2px">' +
       '<span style="font-size:11px;color:#888;display:flex;align-items:center;gap:3px"><i class="ti ti-player-play" style="font-size:10px"></i>' + playCount + '</span>' +
-      (spPts > 0 ? '<span style="font-size:11px;color:#c4980a;display:flex;align-items:center;gap:2px">🪙' + spPts + '</span>' : '') +
-      '<button class="icon-btn' + (liked ? ' liked' : '') + '" onclick="toggleLike(\'' + t.id + '\')" style="padding:2px;font-size:13px"><i class="ti ti-heart' + (liked ? '-filled' : '') + '"></i></button>' +
-      '<span style="font-size:11px;color:' + (liked ? '#e24b4a' : '#bbb') + ';margin-left:-6px;cursor:pointer" onclick="openLikersModal(\'' + t.id + '\',\'' + esc(t.name) + '\')">' + likeCount + '</span>' +
+      '<div style="display:flex;align-items:center;gap:4px">' +
+        '<button class="icon-btn' + (liked ? ' liked' : '') + '" onclick="toggleLike(\'' + t.id + '\')" style="padding:2px;font-size:13px"><i class="ti ti-heart' + (liked ? '-filled' : '') + '"></i></button>' +
+        '<span style="font-size:11px;color:' + (liked ? '#e24b4a' : '#bbb') + ';cursor:pointer;min-width:16px" onclick="openLikersModal(\'' + t.id + '\',\'' + esc(t.name) + '\')">' + likeCount + '</span>' +
+      '</div>' +
       (lc > 0 ? '<span style="font-size:11px;color:#888;display:flex;align-items:center;gap:2px"><i class="ti ti-message" style="font-size:10px"></i>' + lc + '</span>' : '') +
-      '<button class="supa-icon-btn" onclick="openSupaModal(\'track\',\'' + t.id + '\')" style="margin-left:auto">🪙</button>' +
-      (t.createdAt ? '<span style="font-size:9px;color:#ccc">' + fmtDate(t.createdAt) + '</span>' : '') +
+      (spPts > 0 ? '<span style="font-size:11px;color:#c4980a">🪙' + spPts + '</span>' : '') +
+      '<div style="margin-left:auto;display:flex;align-items:center;gap:8px">' +
+        '<button class="supa-icon-btn" onclick="openSupaModal(\'track\',\'' + t.id + '\')">🪙</button>' +
+        (t.createdAt ? '<span style="font-size:9px;color:#ccc">' + fmtDate(t.createdAt) + '</span>' : '') +
+      '</div>' +
     '</div>' +
     // 下段：タグ＋紹介文
     (tagsHtml || descHtml ? '<div style="margin-top:2px;padding-left:2px">' + tagsHtml + descHtml + '</div>' : '') +
@@ -2183,7 +2187,10 @@ function renderRankBlock(src, label, color) {
       '<div style="display:flex;align-items:center;gap:10px;margin-top:7px;flex-wrap:wrap">' +
         '<span style="font-size:12px;font-weight:700;color:#1a7aaa;display:flex;align-items:center;gap:2px"><i class="ti ti-award" style="font-size:11px"></i>' + cnt + 'pt</span>' +
         '<span style="font-size:11px;color:#888;display:flex;align-items:center;gap:2px"><i class="ti ti-player-play" style="font-size:10px"></i>' + pPlay + '</span>' +
-        '<span style="font-size:11px;color:#e24b4a;display:flex;align-items:center;gap:2px"><i class="ti ti-heart" style="font-size:10px"></i>' + lk + '</span>' +
+        '<div style="display:flex;align-items:center;gap:4px;cursor:pointer" onclick="openLikersModal(\'' + t.id + '\',\'' + esc(t.name) + '\')">' +
+          '<i class="ti ti-heart' + (lk > 0 ? '-filled' : '') + '" style="font-size:12px;color:#e24b4a"></i>' +
+          '<span style="font-size:11px;color:#e24b4a">' + lk + '</span>' +
+        '</div>' +
         (spPts > 0 ? '<span style="font-size:11px;color:#c4980a;display:flex;align-items:center;gap:2px"><i class="ti ti-coin" style="font-size:10px"></i>' + spPts + '</span>' : '') +
         (t.createdAt ? '<span style="font-size:9px;color:#ccc;margin-left:auto">' + fmtDate(t.createdAt) + '</span>' : '') +
       '</div>' +
@@ -2410,7 +2417,7 @@ function renderUserPage() {
       '<div class="grid-meta"><span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' + (t.duration ? fmtTime(t.duration) : '') + '</div>' +
       '<div class="grid-meta" style="margin-top:3px;color:#1a1a1a;font-weight:500">' +
         '<span><i class="ti ti-player-play" style="font-size:9px"></i> ' + ((plays[t.id]||{}).alltime||0) + '</span>' +
-        '<span style="color:#e24b4a"><i class="ti ti-heart" style="font-size:9px"></i> ' + ((window._likeCounts && window._likeCounts[t.id])||0) + '</span>' +
+        '<span style="color:#e24b4a;cursor:pointer" onclick="event.stopPropagation();openLikersModal(\'' + t.id + '\',\'' + esc(t.name) + '\')"><i class="ti ti-heart' + (((window._likeCounts&&window._likeCounts[t.id])||0) > 0 ? '-filled' : '') + '" style="font-size:9px"></i> ' + ((window._likeCounts && window._likeCounts[t.id])||0) + '</span>' +
       '</div>' +
       (t.description ? '<div style="font-size:10px;color:#888;margin-top:3px;line-height:1.4;word-break:break-word">' + esc(t.description) + '</div>' : '') +
       (t.tags ? '<div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:3px">' + t.tags.split(' ').filter(function(tg){return tg.startsWith('#')}).map(function(tg){return '<span style="font-size:9px;color:#4455cc">' + tg + '</span>'}).join('') + '</div>' : '') +

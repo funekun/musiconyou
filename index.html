@@ -2073,7 +2073,6 @@ function renderRankBlock(src, label, color) {
     var barPct = Math.round(cnt / max * 100);
 
     rows += '<div style="' + rowStyle + ';padding:10px 12px">' +
-      // 上段：順位 + サムネ + 再生ボタン + タイトル/カテゴリ + 再生ボタン
       '<div style="display:flex;align-items:center;gap:8px">' +
         '<span style="' + badgeStyle + '">' + (i+1) + '</span>' +
         '<div style="flex-shrink:0">' + thumbHtml(t, 44) + '</div>' +
@@ -2085,14 +2084,8 @@ function renderRankBlock(src, label, color) {
             (t.uploader ? '<span style="font-size:10px;color:#bbb"><i class="ti ti-user" style="font-size:9px"></i> ' + esc(t.uploader) + '</span>' : '') +
           '</div>' +
         '</div>' +
-          '<div style="display:flex;align-items:center;gap:5px;margin-top:2px">' +
-            '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' +
-            (t.uploader ? '<span style="font-size:10px;color:#bbb"><i class="ti ti-user" style="font-size:9px"></i> ' + esc(t.uploader) + '</span>' : '') +
-          '</div>' +
-        '</div>' +
         '<button onclick="playTrack(' + tIdx + ')" style="background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:14px"><i class="ti ti-player-play"></i></button>' +
       '</div>' +
-      // 中段：ポイント・再生数・いいね・サポート・日付
       '<div style="display:flex;align-items:center;gap:10px;margin-top:7px;flex-wrap:wrap">' +
         '<span style="font-size:12px;font-weight:700;color:#1a7aaa;display:flex;align-items:center;gap:2px"><i class="ti ti-award" style="font-size:11px"></i>' + cnt + 'pt</span>' +
         '<span style="font-size:11px;color:#888;display:flex;align-items:center;gap:2px"><i class="ti ti-player-play" style="font-size:10px"></i>' + pPlay + '</span>' +
@@ -2100,7 +2093,6 @@ function renderRankBlock(src, label, color) {
         (spPts > 0 ? '<span style="font-size:11px;color:#c4980a;display:flex;align-items:center;gap:2px"><i class="ti ti-coin" style="font-size:10px"></i>' + spPts + '</span>' : '') +
         (t.createdAt ? '<span style="font-size:9px;color:#ccc;margin-left:auto">' + fmtDate(t.createdAt) + '</span>' : '') +
       '</div>' +
-      // 下段：タグ・紹介文
       (tagsHtml || descHtml ? '<div style="margin-top:2px">' + tagsHtml + descHtml + '</div>' : '') +
     '</div>';
   }

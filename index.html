@@ -691,6 +691,31 @@ audio{display:none}
   </div>
 </div>
 
+<!-- 動画再生モード選択 -->
+<div class="modal-overlay" id="video-mode-modal" onclick="if(event.target===this)closeModal('video-mode-modal')">
+  <div class="modal" style="max-width:320px">
+    <button class="modal-close" onclick="closeModal('video-mode-modal')"><i class="ti ti-x"></i></button>
+    <h2 style="margin-bottom:6px"><i class="ti ti-video" style="margin-right:6px"></i>再生方法を選択</h2>
+    <p style="font-size:12px;color:#aaa;margin-bottom:16px" id="video-mode-track-name"></p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="playVideoMode('video')" style="background:#1a1a1a;color:#fff;border:none;border-radius:12px;padding:14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:10px;font-weight:500">
+        <i class="ti ti-device-tv" style="font-size:20px"></i>
+        <div style="text-align:left">
+          <div>動画で再生</div>
+          <div style="font-size:10px;font-weight:400;opacity:.7;margin-top:2px">映像と音声を一緒に再生</div>
+        </div>
+      </button>
+      <button onclick="playVideoMode('audio')" style="background:#f4f9fc;color:#1a1a1a;border:0.5px solid #d0eaf5;border-radius:12px;padding:14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:10px;font-weight:500">
+        <i class="ti ti-music" style="font-size:20px;color:#1a7aaa"></i>
+        <div style="text-align:left">
+          <div>音声のみで再生</div>
+          <div style="font-size:10px;font-weight:400;color:#aaa;margin-top:2px">音楽として聴く</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- サポートモーダル -->
 <div class="modal-overlay" id="supa-modal">
   <div class="modal">
@@ -2677,9 +2702,9 @@ function playTrack(i) {
     videoWrap.classList.add('show');
     document.querySelector('.main').style.paddingTop = '256px';
   } else if (t.isVideo && t.url) {
-    // 動画ファイル → 音声のみ（audioタグで再生）
-    audio.src = t.url;
-    audio.play();
+    // 動画ファイル → 選択ダイアログを表示
+    showVideoModeDialog(t);
+    return;
   } else {
     // 通常音声ファイル
     audio.src = t.url; audio.play();
@@ -2689,6 +2714,43 @@ function playTrack(i) {
   renderTracks(); renderRanking(); renderPlaylist(); renderUserPage();
   openNpComments(t.id);
 }
+var _pendingVideoTrack = null;
+
+function showVideoModeDialog(t) {
+  _pendingVideoTrack = t;
+  document.getElementById('video-mode-track-name').textContent = t.name;
+  document.getElementById('video-mode-modal').classList.add('open');
+}
+
+function playVideoMode(mode) {
+  closeModal('video-mode-modal');
+  var t = _pendingVideoTrack;
+  if (!t) return;
+
+  var videoWrap = document.getElementById('video-player-wrap');
+  var videoEl = document.getElementById('video-player');
+
+  if (mode === 'video') {
+    // 動画あり再生
+    audio.pause(); audio.src = '';
+    videoEl.style.display = 'block';
+    videoEl.src = t.url;
+    videoEl.play();
+    videoWrap.classList.add('show');
+    document.querySelector('.main').style.paddingTop = '256px';
+  } else {
+    // 音声のみ
+    videoEl.pause(); videoEl.src = ''; videoEl.style.display = 'none';
+    videoWrap.classList.remove('show');
+    document.querySelector('.main').style.paddingTop = '';
+    audio.src = t.url;
+    audio.play();
+  }
+
+  renderTracks(); renderRanking(); renderPlaylist(); renderUserPage();
+  openNpComments(t.id);
+}
+
 function closeVideoPlayer() {
   var videoWrap = document.getElementById('video-player-wrap');
   var videoEl = document.getElementById('video-player');

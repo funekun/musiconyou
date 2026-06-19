@@ -441,6 +441,7 @@ audio{display:none}
 /* 再生中コメントエリア */
 .np-comments{display:none;position:fixed;left:0;right:0;bottom:72px;background:#fff;border-top:0.5px solid #d0eaf5;z-index:96;flex-direction:column;max-height:220px}
 .np-comments.show{display:flex}
+.np-comments.below-video{top:296px;bottom:auto;border-top:0.5px solid #d0eaf5;border-bottom:0.5px solid #d0eaf5}
 .np-comments-header{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:0.5px solid #eef6fc;flex-shrink:0}
 .np-comments-label{font-size:11px;font-weight:500;color:#888;display:flex;align-items:center;gap:5px}
 .np-comments-toggle{background:none;border:none;cursor:pointer;color:#bbb;font-size:13px;padding:2px 6px;border-radius:6px}
@@ -2738,6 +2739,8 @@ function playVideoMode(mode) {
     videoEl.play();
     videoWrap.classList.add('show');
     document.querySelector('.main').style.paddingTop = '256px';
+    // コメントを動画の下に移動
+    document.getElementById('np-comments').classList.add('below-video');
   } else {
     // 音声のみ
     videoEl.pause(); videoEl.src = ''; videoEl.style.display = 'none';
@@ -2756,9 +2759,11 @@ function closeVideoPlayer() {
   var videoEl = document.getElementById('video-player');
   var ytFrame = document.getElementById('yt-embed-frame');
   if (ytFrame) { ytFrame.src = ''; ytFrame.style.display = 'none'; }
-  videoEl.pause(); videoEl.src = '';
+  videoEl.pause(); videoEl.src = ''; videoEl.style.display = 'none';
   videoWrap.classList.remove('show');
   document.querySelector('.main').style.paddingTop = '';
+  // コメントを元の位置に戻す
+  document.getElementById('np-comments').classList.remove('below-video');
   closeNpComments();
 }
 

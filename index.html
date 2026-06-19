@@ -2876,31 +2876,126 @@ function shiftPlayerUp(on) {
 async function loadNpComments(trackId) {
   var body = document.getElementById('np-comments-body');
   body.innerHTML = '<div style="text-align:center;padding:1rem;color:#bbb;font-size:11px">読み込み中...</div>';
-  var res = await sb.from('comments').select('*').eq('track_id', trackId).order('created_at', {ascending: false}).limit(50);
+
+  // 親コメントを取得
+  var res = await sb.from('comments').select('*').eq('track_id', trackId).is('parent_id', null).order('created_at', {ascending: false}).limit(30);
+  // 返信を取得
+  var repRes = await sb.from('comments').select('*').eq('track_id', trackId).not('parent_id', 'is', null).order('created_at', {ascending: true});
+  // コメントいいねを取得
+  var clRes = await sb.from('comment_likes').select('comment_id, user_id');
+  var clData = (!clRes.error && clRes.data) ? clRes.data : [];
+  var replies = (!repRes.error && repRes.data) ? repRes.data : [];
+
   var countEl = document.getElementById('np-comments-count');
   if (res.error || !res.data || !res.data.length) {
     body.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#ccc;font-size:11px"><i class="ti ti-message-off" style="display:block;font-size:22px;margin-bottom:6px"></i>まだコメントがありません</div>';
     if (countEl) countEl.textContent = '';
     return;
   }
+
   var cmts = res.data;
   if (countEl) countEl.textContent = cmts.length + '件';
   var html = '';
+
   for (var i = 0; i < cmts.length; i++) {
     var c = cmts[i];
     var av = c.avatar_url ? '<img src="' + c.avatar_url + '">' : '<i class="ti ti-user"></i>';
     var timeStr = c.created_at ? fmtCommentTime(c.created_at) : '';
-    var isReply = !!c.parent_id;
-    html += '<div class="np-cmt">' +
+    var cLikes = clData.filter(function(cl){ return cl.comment_id === c.id; }).length;
+    var cLiked = currentAuthUser ? clData.some(function(cl){ return cl.comment_id === c.id && cl.user_id === currentAuthUser.id; }) : false;
+
+    // 返信HTML
+    var cReplies = replies.filter(function(r){ return r.parent_id === c.id; });
+    var repHtml = '';
+    for (var j = 0; j < cReplies.length; j++) {
+      var r = cReplies[j];
+      var rAv = r.avatar_url ? '<img src="' + r.avatar_url + '">' : '<i class="ti ti-user"></i>';
+      var rLikes = clData.filter(function(cl){ return cl.comment_id === r.id; }).length;
+      var rLiked = currentAuthUser ? clData.some(function(cl){ return cl.comment_id === r.id && cl.user_id === currentAuthUser.id; }) : false;
+      repHtml += '<div class="np-cmt" style="background:#f4f9fc;border-radius:8px;margin:4px 0 0 0;padding:6px 10px">' +
+        '<div class="np-cmt-av">' + rAv + '</div>' +
+        '<div class="np-cmt-main">' +
+          '<div class="np-cmt-top"><span class="np-cmt-name">' + esc(r.user_name||'ゲスト') + '</span><span class="np-cmt-time">' + fmtCommentTime(r.created_at) + '</span></div>' +
+          '<div class="np-cmt-text">' + esc(r.body) + '</div>' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-top:3px">' +
+            '<button onclick="toggleNpCommentLike(\'' + r.id + '\',this,' + rLiked + ')" style="background:none;border:none;cursor:pointer;color:' + (rLiked?'#e24b4a':'#ccc') + ';font-size:11px;padding:0;display:flex;align-items:center;gap:2px"><i class="ti ti-heart' + (rLiked?'-filled':'') + '"></i></button>' +
+            '<span style="font-size:10px;color:' + (rLiked?'#e24b4a':'#bbb') + '">' + (rLikes||0) + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    html += '<div class="np-cmt" id="np-cmt-' + c.id + '">' +
       '<div class="np-cmt-av">' + av + '</div>' +
-      '<div class="np-cmt-main">' +
-        '<div class="np-cmt-top"><span class="np-cmt-name">' + esc(c.user_name || 'ゲスト') + '</span><span class="np-cmt-time">' + timeStr + '</span></div>' +
-        (isReply ? '<div class="np-cmt-reply">↩ 返信</div>' : '') +
+      '<div class="np-cmt-main" style="flex:1">' +
+        '<div class="np-cmt-top"><span class="np-cmt-name">' + esc(c.user_name||'ゲスト') + '</span><span class="np-cmt-time">' + timeStr + '</span></div>' +
         '<div class="np-cmt-text">' + esc(c.body) + '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-top:3px">' +
+          '<button onclick="toggleNpCommentLike(\'' + c.id + '\',this,' + cLiked + ')" style="background:none;border:none;cursor:pointer;color:' + (cLiked?'#e24b4a':'#ccc') + ';font-size:11px;padding:0;display:flex;align-items:center;gap:2px"><i class="ti ti-heart' + (cLiked?'-filled':'') + '"></i></button>' +
+          '<span style="font-size:10px;color:' + (cLiked?'#e24b4a':'#bbb') + '">' + (cLikes||0) + '</span>' +
+          '<button onclick="openNpReplyInput(\'' + c.id + '\',\'' + esc(c.user_name||'') + '\')" style="background:none;border:none;cursor:pointer;color:#4455cc;font-size:10px;padding:0">↩ 返信</button>' +
+        '</div>' +
+        repHtml +
+        '<div id="np-reply-input-' + c.id + '" style="display:none;margin-top:6px">' +
+          '<div style="font-size:10px;color:#888;margin-bottom:4px">↩ ' + esc(c.user_name||'') + ' に返信</div>' +
+          '<div style="display:flex;gap:6px;align-items:center">' +
+            '<input type="text" id="np-reply-text-' + c.id + '" placeholder="返信を入力..." style="flex:1;border:0.5px solid #d0eaf5;border-radius:16px;padding:5px 10px;font-size:11px;outline:none;background:#f4f9fc" onkeydown="if(event.key===\'Enter\')submitNpReply(\'' + c.id + '\',\'' + trackId + '\')">' +
+            '<button onclick="submitNpReply(\'' + c.id + '\',\'' + trackId + '\')" style="background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:11px"><i class="ti ti-send"></i></button>' +
+            '<button onclick="document.getElementById(\'np-reply-input-' + c.id + '\').style.display=\'none\'" style="background:none;border:none;cursor:pointer;color:#bbb;font-size:11px">✕</button>' +
+          '</div>' +
+        '</div>' +
       '</div>' +
     '</div>';
   }
   body.innerHTML = html;
+}
+
+async function toggleNpCommentLike(commentId, btn, currentlyLiked) {
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (currentlyLiked) {
+    await sb.from('comment_likes').delete().eq('comment_id', commentId).eq('user_id', currentAuthUser.id);
+    btn.style.color = '#ccc';
+    btn.innerHTML = '<i class="ti ti-heart"></i>';
+    var span = btn.nextElementSibling;
+    if (span) { span.style.color = '#bbb'; span.textContent = Math.max(0, parseInt(span.textContent||0) - 1); }
+    btn.onclick = function(){ toggleNpCommentLike(commentId, btn, false); };
+  } else {
+    await sb.from('comment_likes').insert({ comment_id: commentId, user_id: currentAuthUser.id });
+    btn.style.color = '#e24b4a';
+    btn.innerHTML = '<i class="ti ti-heart-filled"></i>';
+    var span = btn.nextElementSibling;
+    if (span) { span.style.color = '#e24b4a'; span.textContent = parseInt(span.textContent||0) + 1; }
+    btn.onclick = function(){ toggleNpCommentLike(commentId, btn, true); };
+  }
+}
+
+function openNpReplyInput(commentId, userName) {
+  // 他の返信入力を閉じる
+  var all = document.querySelectorAll('[id^="np-reply-input-"]');
+  for (var i = 0; i < all.length; i++) all[i].style.display = 'none';
+  var el = document.getElementById('np-reply-input-' + commentId);
+  if (el) { el.style.display = 'block'; var inp = document.getElementById('np-reply-text-' + commentId); if (inp) inp.focus(); }
+}
+
+async function submitNpReply(parentId, trackId) {
+  var inp = document.getElementById('np-reply-text-' + parentId);
+  if (!inp) return;
+  var text = inp.value.trim();
+  if (!text) return;
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  var avatarUrl = (user && user.avatarUrl) ? user.avatarUrl : null;
+  var res = await sb.from('comments').insert({
+    track_id: trackId, parent_id: parentId,
+    user_id: currentAuthUser.id,
+    user_name: user ? user.name : 'ゲスト',
+    avatar_url: avatarUrl, body: text
+  });
+  if (!res.error) {
+    inp.value = '';
+    document.getElementById('np-reply-input-' + parentId).style.display = 'none';
+    showToast('返信しました！💬');
+    loadNpComments(trackId);
+  }
 }
 
 async function addNpComment() {

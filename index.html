@@ -982,13 +982,15 @@ async function loadTracks() {
     plays[t.id] = {daily: pc, weekly: pc, monthly: pc, yearly: pc, alltime: pc};
   }
 
-  // コメント数をDBから取得
+  // コメント数をDBから取得（リセットしてから）
   var cmtRes = await sb.from('comments').select('track_id').is('parent_id', null);
   if (!cmtRes.error && cmtRes.data) {
+    // 一旦全部空にリセット
+    for (var k = 0; k < tracks.length; k++) commentsData[tracks[k].id] = [];
+    // DBの件数を反映
     for (var k = 0; k < cmtRes.data.length; k++) {
       var tid = cmtRes.data[k].track_id;
-      if (!commentsData[tid]) commentsData[tid] = [];
-      commentsData[tid].push({});
+      if (commentsData[tid]) commentsData[tid].push({});
     }
   }
 

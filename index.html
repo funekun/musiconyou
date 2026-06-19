@@ -612,7 +612,7 @@ audio{display:none}
   <button id="bnav-user" onclick="switchTab('user')"><i class="ti ti-user-circle"></i>ユーザー</button>
   <button id="bnav-notif" style="display:none" onclick="toggleNotifPanel()"><span class="bnav-notif-wrap"><i class="ti ti-bell"></i><span id="notif-badge" class="notif-badge" style="display:none">0</span></span>通知</button>
   <button id="bnav-news" onclick="switchTab('news')"><i class="ti ti-speakerphone"></i>お知らせ</button>
-</div><div class="video-player-wrap" id="video-player-wrap" style="position:fixed"><button class="video-close-btn" onclick="closeVideoPlayer()" title="閉じる"><i class="ti ti-x"></i></button><video id="video-player" controls style="max-width:100%;max-height:240px"></video></div>
+</div><div class="video-player-wrap" id="video-player-wrap" style="position:fixed"><button class="video-close-btn" onclick="closeVideoPlayer()" title="閉じる"><i class="ti ti-x"></i></button><video id="video-player" controls playsinline webkit-playsinline style="max-width:100%;max-height:240px"></video></div>
 
 <div class="comments-panel" id="comments-panel">
   <div class="cp-header">

@@ -814,6 +814,15 @@ audio{display:none}
   </div>
 </div>
 
+<!-- コメントいいねユーザー一覧モーダル -->
+<div class="modal-overlay" id="comment-likers-modal" onclick="if(event.target===this)closeModal('comment-likers-modal')">
+  <div class="modal" style="max-width:320px">
+    <button class="modal-close" onclick="closeModal('comment-likers-modal')"><i class="ti ti-x"></i></button>
+    <h2 style="margin-bottom:14px"><i class="ti ti-heart-filled" style="color:#e24b4a;margin-right:6px"></i>いいねしたユーザー</h2>
+    <div id="comment-likers-list" style="display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- いいねしたユーザー一覧モーダル -->
 <div class="modal-overlay" id="likers-modal" onclick="if(event.target===this)closeModal('likers-modal')">
   <div class="modal" style="max-width:340px">
@@ -985,6 +994,7 @@ async function loadUserProfile(authUser) {
   loadTracks();
   loadNotifications();
   loadWallComment();
+  loadWallLikes(currentAuthUser.id);
   // 30秒ごとに通知を再チェック
   if (window._notifInterval) clearInterval(window._notifInterval);
   window._notifInterval = setInterval(loadNotifications, 30000);
@@ -1459,13 +1469,81 @@ function renderSupaList(entries, title) {
   return '<div class="supa-list"><div class="supa-list-title"><i class="ti ti-coin" style="font-size:11px;color:#c4980a"></i>' + title + '</div><div class="supa-entries">' + rows + '</div></div>';
 }
 
+/* ---- 一言いいね ---- */
+async function loadWallLikes(targetUserId) {
+  if (!targetUserId) targetUserId = currentAuthUser ? currentAuthUser.id : null;
+  if (!targetUserId) return;
+  var res = await sb.from('wall_likes').select('liker_id, profiles(name, username, avatar_url)').eq('wall_user_id', targetUserId);
+  if (!res.error && res.data) {
+    window._wallLikeCount = res.data.length;
+    window._wallLiked = currentAuthUser ? res.data.some(function(l){ return l.liker_id === currentAuthUser.id; }) : false;
+    window._wallLikers = res.data.map(function(l){ return l.profiles || {}; });
+  }
+  var list = document.getElementById('wall-comments-list');
+  if (list) list.innerHTML = wallListHtml();
+}
+
+async function toggleWallLike() {
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  var targetUserId = (wallComments.length && wallComments[0].userId) ? wallComments[0].userId : currentAuthUser.id;
+  if (targetUserId === currentAuthUser.id) { showToast('自分の一言にはいいねできません'); return; }
+  if (window._wallLiked) {
+    await sb.from('wall_likes').delete().eq('wall_user_id', targetUserId).eq('liker_id', currentAuthUser.id);
+    window._wallLiked = false;
+    window._wallLikeCount = Math.max(0, (window._wallLikeCount || 1) - 1);
+  } else {
+    await sb.from('wall_likes').insert({ wall_user_id: targetUserId, liker_id: currentAuthUser.id });
+    window._wallLiked = true;
+    window._wallLikeCount = (window._wallLikeCount || 0) + 1;
+  }
+  var list = document.getElementById('wall-comments-list');
+  if (list) list.innerHTML = wallListHtml();
+}
+
+async function openWallLikersModal() {
+  var targetUserId = (wallComments.length && wallComments[0].userId) ? wallComments[0].userId : (currentAuthUser ? currentAuthUser.id : null);
+  if (!targetUserId) return;
+  var res = await sb.from('wall_likes').select('liker_id, profiles(name, username, avatar_url)').eq('wall_user_id', targetUserId);
+  var likers = (!res.error && res.data) ? res.data : [];
+  var list = document.getElementById('comment-likers-list');
+  if (!likers.length) {
+    list.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#bbb;font-size:12px"><i class="ti ti-heart" style="font-size:24px;display:block;margin-bottom:8px"></i>まだいいねがありません</div>';
+  } else {
+    var html = '';
+    for (var i = 0; i < likers.length; i++) {
+      var u = likers[i].profiles || {};
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #f4f4f0">' +
+        '<div style="width:34px;height:34px;border-radius:50%;overflow:hidden;background:#eef6fc;display:flex;align-items:center;justify-content:center;flex-shrink:0">' +
+          (u.avatar_url ? '<img src="' + u.avatar_url + '" style="width:100%;height:100%;object-fit:cover">' : '<i class="ti ti-user" style="font-size:14px;color:#ccc"></i>') +
+        '</div>' +
+        '<div><div style="font-size:13px;font-weight:500">' + esc(u.name||'') + '</div>' +
+        (u.username ? '<div style="font-size:11px;color:#7ec4e0">@' + esc(u.username) + '</div>' : '') + '</div>' +
+      '</div>';
+    }
+    list.innerHTML = html;
+  }
+  document.getElementById('comment-likers-modal').classList.add('open');
+}
+
 /* ---- wall (一言) ---- */
 function wallListHtml() {
   if (!wallComments.length) return '<div class="wall-empty">まだ一言がありません。最初のコメントを書いてみよう！</div>';
   var c = wallComments[0];
+  var liked = window._wallLiked || false;
+  var likeCount = window._wallLikeCount || 0;
   return '<div class="wall-comment">' +
     '<div class="wall-av">' + (c.avatarUrl ? '<img src="' + c.avatarUrl + '">' : '<i class="ti ti-user" style="font-size:12px;color:#ccc"></i>') + '</div>' +
-    '<div class="wall-body"><div class="wall-uname">' + esc(c.user) + '</div><div class="wall-text">' + esc(c.text) + '</div><div class="wall-time">' + c.time + '</div></div>' +
+    '<div class="wall-body">' +
+      '<div class="wall-uname">' + esc(c.user) + '</div>' +
+      '<div class="wall-text">' + esc(c.text) + '</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-top:4px">' +
+        '<span class="wall-time">' + c.time + '</span>' +
+        '<button onclick="toggleWallLike()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:3px;color:' + (liked?'#e24b4a':'#ccc') + ';font-size:12px;padding:0">' +
+          '<i class="ti ti-heart' + (liked?'-filled':'') + '"></i>' +
+        '</button>' +
+        '<span style="font-size:11px;color:' + (liked?'#e24b4a':'#bbb') + ';cursor:pointer" onclick="openWallLikersModal()">' + likeCount + '</span>' +
+      '</div>' +
+    '</div>' +
     '<button onclick="deleteWallComment()" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:13px;padding:4px;flex-shrink:0;align-self:flex-start"><i class="ti ti-trash"></i></button>' +
     '</div>';
 }
@@ -3332,8 +3410,8 @@ function renderComments() {
             '<div class="reply-text">' + esc(r.text) + '</div>' +
             '<div class="reply-actions">' +
               '<button class="reply-like-btn' + (r.liked ? ' liked' : '') + '" onclick="toggleCommentLike(\'' + r.id + '\',true,\'' + c.id + '\',' + j + ')">' +
-                '<i class="ti ti-heart' + (r.liked ? '-filled' : '') + '"></i><span>' + (r.likes || '') + '</span>' +
-              '</button>' +
+                '<i class="ti ti-heart' + (r.liked ? '-filled' : '') + '"></i></button>' +
+              '<span style="font-size:10px;color:' + (r.liked?'#e24b4a':'#bbb') + ';cursor:pointer;min-width:14px" onclick="openCommentLikersModal(\'' + r.id + '\')">' + (r.likes || 0) + '</span>' +
             '</div>' +
           '</div></div>';
       }
@@ -3353,8 +3431,8 @@ function renderComments() {
         '<div class="cmt-text">' + esc(c.text) + '</div>' +
         '<div class="cmt-actions">' +
           '<button class="cmt-like-btn' + (c.liked ? ' liked' : '') + '" onclick="toggleCommentLike(\'' + c.id + '\',false,null,' + i + ')">' +
-            '<i class="ti ti-heart' + (c.liked ? '-filled' : '') + '"></i><span>' + (c.likes || '') + '</span>' +
-          '</button>' +
+            '<i class="ti ti-heart' + (c.liked ? '-filled' : '') + '"></i></button>' +
+          '<span style="font-size:11px;color:' + (c.liked?'#e24b4a':'#bbb') + ';cursor:pointer;min-width:14px" onclick="openCommentLikersModal(\'' + c.id + '\')">' + (c.likes || 0) + '</span>' +
           '<button class="cmt-reply-btn" onclick="openReplyInput(\'' + c.id + '\')">↩ 返信</button>' +
         '</div>' +
         repHtml +
@@ -3476,6 +3554,29 @@ async function addComment() {
     showToast('エラー: ' + (res.error ? res.error.message : '不明'));
   }
 }
+async function openCommentLikersModal(commentId) {
+  var res = await sb.from('comment_likes').select('user_id, profiles(name, username, avatar_url)').eq('comment_id', commentId);
+  var likers = (!res.error && res.data) ? res.data : [];
+  var list = document.getElementById('comment-likers-list');
+  if (!likers.length) {
+    list.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#bbb;font-size:12px"><i class="ti ti-heart" style="font-size:24px;display:block;margin-bottom:8px"></i>まだいいねがありません</div>';
+  } else {
+    var html = '';
+    for (var i = 0; i < likers.length; i++) {
+      var u = likers[i].profiles || {};
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #f4f4f0">' +
+        '<div style="width:34px;height:34px;border-radius:50%;overflow:hidden;background:#eef6fc;display:flex;align-items:center;justify-content:center;flex-shrink:0">' +
+          (u.avatar_url ? '<img src="' + u.avatar_url + '" style="width:100%;height:100%;object-fit:cover">' : '<i class="ti ti-user" style="font-size:14px;color:#ccc"></i>') +
+        '</div>' +
+        '<div><div style="font-size:13px;font-weight:500">' + esc(u.name||'') + '</div>' +
+        (u.username ? '<div style="font-size:11px;color:#7ec4e0">@' + esc(u.username) + '</div>' : '') + '</div>' +
+      '</div>';
+    }
+    list.innerHTML = html;
+  }
+  document.getElementById('comment-likers-modal').classList.add('open');
+}
+
 function openLikersModal(trackId, trackName) {
   var likers = (window._likeUsers && window._likeUsers[trackId]) || [];
   var count = (window._likeCounts && window._likeCounts[trackId]) || 0;

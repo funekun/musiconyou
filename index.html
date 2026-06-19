@@ -17,8 +17,27 @@ html, body {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f9fc;color:#1a1a1a;min-height:100vh;position:relative}
-body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Ccircle cx='80' cy='80' r='60' fill='%23b8ddf0' opacity='0.30'/%3E%3Ccircle cx='270' cy='60' r='45' fill='%23cce8f5' opacity='0.32'/%3E%3Ccircle cx='420' cy='110' r='50' fill='%23a8d8ee' opacity='0.25'/%3E%3Ccircle cx='150' cy='230' r='55' fill='%23d8f0f8' opacity='0.35'/%3E%3Ccircle cx='370' cy='260' r='65' fill='%23b8ddf0' opacity='0.28'/%3E%3Ccircle cx='60' cy='390' r='48' fill='%23cce8f5' opacity='0.30'/%3E%3Ccircle cx='260' cy='410' r='58' fill='%23a8d8ee' opacity='0.26'/%3E%3Ccircle cx='440' cy='420' r='42' fill='%23d8f0f8' opacity='0.32'/%3E%3C/svg%3E");background-size:500px 500px;background-repeat:repeat}
+/* テーマ */
+:root {
+  --bg: #f4f9fc;
+  --bg-card: #fff;
+  --border: #d0eaf5;
+  --bg-input: #f4f9fc;
+  --dot1: %23b8ddf0;
+  --dot2: %23cce8f5;
+  --dot3: %23a8d8ee;
+  --dot4: %23d8f0f8;
+}
+body.theme-gray {
+  --bg: #f5f5f5;
+  --bg-card: #fff;
+  --border: #e0e0e0;
+  --bg-input: #f8f8f8;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:#1a1a1a;min-height:100vh;position:relative}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-size:500px 500px;background-repeat:repeat}
+body:not(.theme-gray)::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Ccircle cx='80' cy='80' r='60' fill='%23b8ddf0' opacity='0.30'/%3E%3Ccircle cx='270' cy='60' r='45' fill='%23cce8f5' opacity='0.32'/%3E%3Ccircle cx='420' cy='110' r='50' fill='%23a8d8ee' opacity='0.25'/%3E%3Ccircle cx='150' cy='230' r='55' fill='%23d8f0f8' opacity='0.35'/%3E%3Ccircle cx='370' cy='260' r='65' fill='%23b8ddf0' opacity='0.28'/%3E%3Ccircle cx='60' cy='390' r='48' fill='%23cce8f5' opacity='0.30'/%3E%3Ccircle cx='260' cy='410' r='58' fill='%23a8d8ee' opacity='0.26'/%3E%3Ccircle cx='440' cy='420' r='42' fill='%23d8f0f8' opacity='0.32'/%3E%3C/svg%3E")}
+body.theme-gray::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Ccircle cx='80' cy='80' r='60' fill='%23d0d0d0' opacity='0.25'/%3E%3Ccircle cx='270' cy='60' r='45' fill='%23e0e0e0' opacity='0.28'/%3E%3Ccircle cx='420' cy='110' r='50' fill='%23c8c8c8' opacity='0.20'/%3E%3Ccircle cx='150' cy='230' r='55' fill='%23e8e8e8' opacity='0.30'/%3E%3Ccircle cx='370' cy='260' r='65' fill='%23d0d0d0' opacity='0.22'/%3E%3Ccircle cx='60' cy='390' r='48' fill='%23e0e0e0' opacity='0.25'/%3E%3Ccircle cx='260' cy='410' r='58' fill='%23c8c8c8' opacity='0.20'/%3E%3Ccircle cx='440' cy='420' r='42' fill='%23e8e8e8' opacity='0.28'/%3E%3C/svg%3E")}
 header{background:#fff;border-bottom:0.5px solid #d0eaf5;height:56px;position:sticky;top:0;z-index:100}
 .main{max-width:860px;margin:0 auto;padding:2rem 1.5rem 6rem;position:relative;z-index:1}
 .tab-content{display:none}.tab-content.active{display:block}
@@ -814,6 +833,32 @@ audio{display:none}
   </div>
 </div>
 
+<!-- テーマ切り替えモーダル -->
+<div class="modal-overlay" id="theme-modal" onclick="if(event.target===this)closeModal('theme-modal')">
+  <div class="modal" style="max-width:320px">
+    <button class="modal-close" onclick="closeModal('theme-modal')"><i class="ti ti-x"></i></button>
+    <h2 style="margin-bottom:16px"><i class="ti ti-palette" style="margin-right:6px"></i>テーマ切り替え</h2>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="setTheme('blue')" id="theme-btn-blue" style="border-radius:12px;padding:14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:12px;font-weight:500;border:2px solid #d0eaf5;background:#f4f9fc">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#b8ddf0,#d8f0f8);flex-shrink:0"></div>
+        <div style="text-align:left">
+          <div>🩵 水色テーマ</div>
+          <div style="font-size:10px;font-weight:400;color:#aaa;margin-top:2px">爽やかな水色の水玉</div>
+        </div>
+        <i class="ti ti-check" id="theme-check-blue" style="margin-left:auto;color:#1a7aaa;font-size:16px"></i>
+      </button>
+      <button onclick="setTheme('gray')" id="theme-btn-gray" style="border-radius:12px;padding:14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:12px;font-weight:500;border:2px solid #e0e0e0;background:#f8f8f8">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#d0d0d0,#e8e8e8);flex-shrink:0"></div>
+        <div style="text-align:left">
+          <div>🩶 グレーテーマ</div>
+          <div style="font-size:10px;font-weight:400;color:#aaa;margin-top:2px">シンプルなグレーの水玉</div>
+        </div>
+        <i class="ti ti-check" id="theme-check-gray" style="margin-left:auto;color:#888;font-size:16px;display:none"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- コメントいいねユーザー一覧モーダル -->
 <div class="modal-overlay" id="comment-likers-modal" onclick="if(event.target===this)closeModal('comment-likers-modal')">
   <div class="modal" style="max-width:320px">
@@ -1469,7 +1514,36 @@ function renderSupaList(entries, title) {
   return '<div class="supa-list"><div class="supa-list-title"><i class="ti ti-coin" style="font-size:11px;color:#c4980a"></i>' + title + '</div><div class="supa-entries">' + rows + '</div></div>';
 }
 
-/* ---- 一言いいね ---- */
+/* ---- テーマ切り替え ---- */
+function initTheme() {
+  var t = localStorage.getItem('muzik_theme') || 'blue';
+  applyTheme(t);
+}
+
+function setTheme(theme) {
+  localStorage.setItem('muzik_theme', theme);
+  applyTheme(theme);
+  closeModal('theme-modal');
+  showToast(theme === 'gray' ? '🩶 グレーテーマに変更しました' : '🩵 水色テーマに変更しました');
+}
+
+function applyTheme(theme) {
+  if (theme === 'gray') {
+    document.body.classList.add('theme-gray');
+    var bc = document.getElementById('theme-check-blue');
+    var gc = document.getElementById('theme-check-gray');
+    if (bc) bc.style.display = 'none';
+    if (gc) gc.style.display = 'block';
+  } else {
+    document.body.classList.remove('theme-gray');
+    var bc = document.getElementById('theme-check-blue');
+    var gc = document.getElementById('theme-check-gray');
+    if (bc) bc.style.display = 'block';
+    if (gc) gc.style.display = 'none';
+  }
+}
+
+initTheme();
 async function loadWallLikes(targetUserId) {
   if (!targetUserId) targetUserId = currentAuthUser ? currentAuthUser.id : null;
   if (!targetUserId) return;
@@ -2586,6 +2660,7 @@ function renderUserPage() {
         '</button>' +
         '<button onclick="toggleCommentFeed()" style="background:#fff;border:1px solid #d0eaf5;border-radius:16px;padding:5px 11px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-message" style="font-size:13px"></i>コメント</button>' +
         '<button onclick="openRegModal(true)" style="background:#fff;border:1px solid #d0eaf5;border-radius:16px;padding:5px 11px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-edit" style="font-size:13px"></i>編集</button>' +
+        '<button onclick="document.getElementById(\'theme-modal\').classList.add(\'open\')" style="background:#fff;border:1px solid #d0eaf5;border-radius:16px;padding:5px 11px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-palette" style="font-size:13px"></i>テーマ</button>' +
         '<button class="supa-btn" onclick="openSupaModal(\'user\',\'' + esc(user.name) + '\')" style="padding:5px 11px;font-size:11px"><i class="ti ti-coin" style="font-size:13px"></i>サポート</button>' +
         '<button onclick="scrollToUpload()" style="background:#1a1a1a;color:#fff;border:none;border-radius:16px;padding:5px 11px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-upload" style="font-size:13px"></i>投稿</button>' +
         '<button onclick="logout()" style="background:#fff;color:#e24b4a;border:1px solid #e24b4a;border-radius:16px;padding:5px 11px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-logout" style="font-size:13px"></i>ログアウト</button>' +

@@ -982,6 +982,16 @@ async function loadTracks() {
     plays[t.id] = {daily: pc, weekly: pc, monthly: pc, yearly: pc, alltime: pc};
   }
 
+  // コメント数をDBから取得
+  var cmtRes = await sb.from('comments').select('track_id').is('parent_id', null);
+  if (!cmtRes.error && cmtRes.data) {
+    for (var k = 0; k < cmtRes.data.length; k++) {
+      var tid = cmtRes.data[k].track_id;
+      if (!commentsData[tid]) commentsData[tid] = [];
+      commentsData[tid].push({});
+    }
+  }
+
   // likesをDBから取得（プロフィール情報も含む）
   var likesRes = await sb.from('likes').select('track_id, user_id, profiles(name, username, avatar_url)');
   if (!likesRes.error && likesRes.data) {

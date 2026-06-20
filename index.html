@@ -3235,7 +3235,7 @@ function playTrack(i) {
   var cooldownKey = 'play_cd_' + t.id;
   var lastPlayed = parseInt(localStorage.getItem(cooldownKey) || '0');
   var now = Date.now();
-  var ONE_HOUR = 60 * 60 * 1000;
+  var ONE_HOUR = 24 * 60 * 60 * 1000; // 24時間クールダウン
   var canCount = (now - lastPlayed) >= ONE_HOUR;
 
   if (canCount) {

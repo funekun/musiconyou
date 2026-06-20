@@ -38,7 +38,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-size:500px 500px;background-repeat:repeat}
 body:not(.theme-gray)::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Ccircle cx='80' cy='80' r='60' fill='%23b8ddf0' opacity='0.30'/%3E%3Ccircle cx='270' cy='60' r='45' fill='%23cce8f5' opacity='0.32'/%3E%3Ccircle cx='420' cy='110' r='50' fill='%23a8d8ee' opacity='0.25'/%3E%3Ccircle cx='150' cy='230' r='55' fill='%23d8f0f8' opacity='0.35'/%3E%3Ccircle cx='370' cy='260' r='65' fill='%23b8ddf0' opacity='0.28'/%3E%3Ccircle cx='60' cy='390' r='48' fill='%23cce8f5' opacity='0.30'/%3E%3Ccircle cx='260' cy='410' r='58' fill='%23a8d8ee' opacity='0.26'/%3E%3Ccircle cx='440' cy='420' r='42' fill='%23d8f0f8' opacity='0.32'/%3E%3C/svg%3E")}
 body.theme-gray::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Ccircle cx='80' cy='80' r='60' fill='%23ffffff' opacity='0.70'/%3E%3Ccircle cx='270' cy='60' r='45' fill='%23ffffff' opacity='0.65'/%3E%3Ccircle cx='420' cy='110' r='50' fill='%23ffffff' opacity='0.60'/%3E%3Ccircle cx='150' cy='230' r='55' fill='%23ffffff' opacity='0.75'/%3E%3Ccircle cx='370' cy='260' r='65' fill='%23ffffff' opacity='0.68'/%3E%3Ccircle cx='60' cy='390' r='48' fill='%23ffffff' opacity='0.65'/%3E%3Ccircle cx='260' cy='410' r='58' fill='%23ffffff' opacity='0.70'/%3E%3Ccircle cx='440' cy='420' r='42' fill='%23ffffff' opacity='0.62'/%3E%3C/svg%3E")}
-header{background:#fff;border-bottom:0.5px solid #d0eaf5;height:56px;position:sticky;top:0;z-index:100}
+header{background:#fff;border-bottom:0.5px solid #d0eaf5;height:56px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:flex-end;padding:0 14px}
+#header-auth-area{display:flex;align-items:center;gap:8px}
+.header-login-btn{background:none;border:1px solid #d0eaf5;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;color:#555;font-weight:500;transition:all .15s}
+.header-login-btn:hover{border-color:#888;color:#1a1a1a}
+.header-signup-btn{background:#1a1a1a;border:none;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;color:#fff;font-weight:500;transition:opacity .15s}
+.header-signup-btn:hover{opacity:.8}
+.header-avatar-btn{width:34px;height:34px;border-radius:50%;overflow:hidden;border:1.5px solid #d0eaf5;cursor:pointer;background:#eef6fc;display:flex;align-items:center;justify-content:center;transition:border-color .15s}
+.header-avatar-btn:hover{border-color:#888}
+.header-avatar-btn img{width:100%;height:100%;object-fit:cover}
+.header-user-name{font-size:12px;font-weight:500;color:#1a1a1a;cursor:pointer;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-user-name:hover{text-decoration:underline}
 .main{max-width:860px;margin:0 auto;padding:2rem 1.5rem 6rem;position:relative;z-index:1}
 .tab-content{display:none}.tab-content.active{display:block}
 .site-hero{text-align:center;padding:2rem 0 1.5rem;border-bottom:0.5px solid #d0eaf5;margin-bottom:2rem}
@@ -452,7 +462,7 @@ header{background:#fff;border-bottom:0.5px solid #d0eaf5;height:56px;position:st
 .toast.show{opacity:1}
 audio{display:none}
 .auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center}
-.auth-overlay.open{display:flex !important}
+.auth-overlay.open{display:flex}
 .video-player-wrap{display:none;position:fixed;top:56px;left:0;right:0;background:#000;z-index:98;max-height:240px;justify-content:center}
 .video-player-wrap.show{display:flex}
 .video-player-wrap video{max-width:100%;max-height:240px;object-fit:contain}
@@ -576,8 +586,9 @@ audio{display:none}
 </head>
 <body>
 <!-- 認証オーバーレイ -->
-<div class="auth-overlay" id="auth-overlay">
-  <div class="auth-box">
+<div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuthOverlay()">
+  <div class="auth-box" style="position:relative">
+    <button onclick="closeAuthOverlay()" style="position:absolute;top:10px;right:12px;background:none;border:none;cursor:pointer;font-size:18px;color:#bbb;line-height:1;padding:2px"><i class="ti ti-x"></i></button>
     <h2 id="auth-title">ログイン</h2>
     <p id="auth-sub">みゅーじっく音友へようこそ</p>
     <div class="auth-error" id="auth-error"></div>
@@ -599,7 +610,9 @@ audio{display:none}
   </div>
 </div>
 
-<header></header>
+<header id="main-header">
+  <div id="header-auth-area"></div>
+</header>
 <div class="main">
   <div id="tab-feed" class="tab-content active">
     <div class="site-hero">
@@ -1005,10 +1018,11 @@ sb.auth.onAuthStateChange(function(event, session) {
     loadUserProfile(session.user);
   } else {
     currentAuthUser = null;
-    overlay.style.display = 'flex';
-    overlay.classList.add('open');
+    // オーバーレイは自動表示しない（ゲスト閲覧可能）
+    overlay.classList.remove('open');
+    overlay.style.display = 'none';
     user = null;
-    updateNavUser();
+    updateHeaderAuth();
     renderUploadArea();
     renderUserPage();
   }
@@ -1187,7 +1201,7 @@ var _origSaveUser = saveUser;
 saveUser = async function() {
   var name = document.getElementById('reg-name').value.trim();
   if (!name) { showToast('表示名を入力してください'); return; }
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!currentAuthUser) { requireLogin(); return; }
 
   // ユーザーID（新規登録時のみ）
   var username = document.getElementById('reg-username').value.trim().toLowerCase();
@@ -1244,9 +1258,8 @@ saveUser = async function() {
 // 初期化時に認証チェック
 sb.auth.getSession().then(function(res) {
   if (!res.data.session) {
-    var overlay = document.getElementById('auth-overlay');
-    overlay.style.cssText = 'display:flex !important';
-    overlay.classList.add('open');
+    // 未ログインでもサイト閲覧可能 - オーバーレイは表示しない
+    updateHeaderAuth();
     loadTracks();
   }
 });
@@ -1464,9 +1477,9 @@ function nowTime() {
 /* ---- follow ---- */
 function isFollowing(name) { return !!following[name]; }
 async function toggleFollow(name) {
-  if (!user) { showToast('フォローにはユーザー登録が必要です'); return; }
+  if (!user) { requireLogin('フォローするには'); return; }
   if (name === user.name) { showToast('自分はフォローできません'); return; }
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!currentAuthUser) { requireLogin(); return; }
   // フォロー対象のuser_idをprofilesから取得
   var profRes = await sb.from('profiles').select('id').eq('name', name).single();
   if (profRes.error || !profRes.data) { showToast('ユーザーが見つかりません'); return; }
@@ -1515,7 +1528,7 @@ function openFollowModal() {
 
 /* ---- supachat ---- */
 function openSupaModal(type, id) {
-  if (!user) { showToast('サポートにはユーザー登録が必要です'); return; }
+  if (!user) { requireLogin('サポートするには'); return; }
   supaType = type; supaTarget = id; supaAmt = 0;
   var btns = document.querySelectorAll('.amount-btn');
   for (var i = 0; i < btns.length; i++) btns[i].classList.remove('selected');
@@ -1761,7 +1774,7 @@ async function openUserProfile(identifier, identifierType) {
 }
 
 async function toggleFollowFromProfile(name, targetId) {
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!currentAuthUser) { requireLogin(); return; }
   var btn = document.getElementById('prof-follow-btn-' + targetId);
   if (following[name]) {
     await sb.from('follows').delete().eq('follower_id', currentAuthUser.id).eq('following_id', targetId);
@@ -1832,7 +1845,7 @@ async function loadWallLikes(targetUserId) {
 }
 
 async function toggleWallLike() {
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!currentAuthUser) { requireLogin(); return; }
   var targetUserId = (wallComments.length && wallComments[0].userId) ? wallComments[0].userId : currentAuthUser.id;
   if (targetUserId === currentAuthUser.id) { showToast('自分の一言にはいいねできません'); return; }
   if (window._wallLiked) {
@@ -1920,8 +1933,8 @@ async function deleteWallComment() {
 }
 
 async function addWallComment() {
-  if (!user) { showToast('コメントにはユーザー登録が必要です'); return; }
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!user) { requireLogin('コメントするには'); return; }
+  if (!currentAuthUser) { requireLogin(); return; }
   var inp = document.getElementById('wall-input');
   if (!inp) return;
   var text = inp.value.trim();
@@ -2018,14 +2031,66 @@ function saveUser() {
 function updateNavUser() {
   var btn = document.getElementById('bnav-user');
   btn.innerHTML = (user && user.avatarUrl ? '<img src="' + user.avatarUrl + '" style="width:22px;height:22px;border-radius:50%;object-fit:cover">' : '<i class="ti ti-user-circle"></i>') + 'ユーザー';
+  updateHeaderAuth();
+}
+
+function updateHeaderAuth() {
+  var area = document.getElementById('header-auth-area');
+  if (!area) return;
+  if (user) {
+    // ログイン済み：アバター＋名前
+    area.innerHTML =
+      '<span class="header-user-name" onclick="switchTab(\'user\')">' + esc(user.name) + '</span>' +
+      '<div class="header-avatar-btn" onclick="switchTab(\'user\')">' +
+        (user.avatarUrl
+          ? '<img src="' + user.avatarUrl + '">'
+          : '<i class="ti ti-user" style="font-size:16px;color:#ccc"></i>') +
+      '</div>';
+  } else {
+    // 未ログイン：ログイン＆新規登録ボタン
+    area.innerHTML =
+      '<button class="header-login-btn" onclick="openAuthOverlay(\'login\')">ログイン</button>' +
+      '<button class="header-signup-btn" onclick="openAuthOverlay(\'signup\')">新規登録</button>';
+  }
+}
+
+function openAuthOverlay(mode) {
+  authMode = mode || 'login';
+  document.getElementById('auth-title').textContent = authMode === 'login' ? 'ログイン' : '新規登録';
+  document.getElementById('auth-sub').textContent = authMode === 'login' ? 'みゅーじっく音友へようこそ' : 'アカウントを作成してください';
+  document.getElementById('auth-submit-btn').textContent = authMode === 'login' ? 'ログイン' : '登録する';
+  document.getElementById('auth-switch-text').innerHTML = authMode === 'login'
+    ? 'アカウントがない方は<span>新規登録</span>'
+    : 'すでにアカウントをお持ちの方は<span>ログイン</span>';
+  document.getElementById('auth-error').textContent = '';
+  var overlay = document.getElementById('auth-overlay');
+  overlay.style.display = 'flex';
+  overlay.classList.add('open');
+}
+
+function closeAuthOverlay() {
+  var overlay = document.getElementById('auth-overlay');
+  overlay.classList.remove('open');
+  overlay.style.display = 'none';
+}
+
+function requireLogin(msg) {
+  showToast((msg || 'この機能はログインが必要です') + ' 👉 右上からログインできます');
+  setTimeout(function(){ openAuthOverlay('login'); }, 600);
 }
 
 /* ---- upload ---- */
 function renderUploadArea() {
   var area = document.getElementById('upload-area');
   if (!user) {
-    area.innerHTML = '<div class="locked-upload"><i class="ti ti-lock"></i><p>投稿するにはユーザー登録が必要です</p>' +
-      '<button class="btn-primary" style="width:auto;padding:7px 20px;margin:0 auto" onclick="openRegModal(false)">登録する</button></div>';
+    area.innerHTML = '<div class="locked-upload" style="cursor:default">' +
+      '<i class="ti ti-music"></i>' +
+      '<p>曲を投稿するにはログインが必要です</p>' +
+      '<div style="display:flex;gap:8px;justify-content:center">' +
+        '<button class="btn-primary" style="width:auto;padding:7px 20px" onclick="openAuthOverlay(\'login\')">ログイン</button>' +
+        '<button style="background:#f0f8fd;border:1px solid #d0eaf5;border-radius:8px;padding:7px 18px;font-size:13px;cursor:pointer;color:#555" onclick="openAuthOverlay(\'signup\')">新規登録</button>' +
+      '</div>' +
+    '</div>';
     return;
   }
   var uploadMode = window._uploadMode || null;
@@ -2176,7 +2241,7 @@ function clearThumb() {
 async function confirmUpload() {
   if (!pendingFiles.length && !document.getElementById('track-youtube-input')?.value.trim()) return;
   if (!pendingCat) { showToast('カテゴリーを選択してください'); return; }
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!currentAuthUser) { requireLogin(); return; }
   // 著作権モードの場合はYouTubeURLが必須
   if (window._uploadMode === 'copyright') {
     var ytCheck = document.getElementById('track-youtube-input')?.value.trim();
@@ -2851,8 +2916,13 @@ function renderDonut(catCount, total) {
 function renderUserPage() {
   var content = document.getElementById('user-page-content');
   if (!user) {
-    content.innerHTML = '<div class="not-registered"><i class="ti ti-user-circle"></i><p>ユーザー登録をするとプロフィールページが作れます</p>' +
-      '<button class="btn-primary" style="width:auto;padding:9px 24px;margin:0 auto" onclick="openRegModal(false)"><i class="ti ti-user-plus" style="margin-right:5px"></i>登録する</button></div>';
+    content.innerHTML = '<div class="not-registered"><i class="ti ti-user-circle"></i>' +
+      '<p>ログインするとプロフィールページが作れます</p>' +
+      '<div style="display:flex;gap:8px;justify-content:center">' +
+        '<button class="btn-primary" style="width:auto;padding:9px 24px;margin:0 auto" onclick="openAuthOverlay(\'login\')"><i class="ti ti-login" style="margin-right:5px"></i>ログイン</button>' +
+        '<button style="background:#f0f8fd;border:1px solid #d0eaf5;border-radius:8px;padding:9px 20px;font-size:13px;cursor:pointer;color:#555" onclick="openAuthOverlay(\'signup\')">新規登録</button>' +
+      '</div>' +
+    '</div>';
     return;
   }
   var myTracks = [];
@@ -3317,7 +3387,7 @@ async function loadNpComments(trackId) {
 }
 
 async function toggleNpCommentLike(commentId, btn, currentlyLiked) {
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!currentAuthUser) { requireLogin(); return; }
   if (currentlyLiked) {
     await sb.from('comment_likes').delete().eq('comment_id', commentId).eq('user_id', currentAuthUser.id);
     btn.style.color = '#ccc';
@@ -3348,7 +3418,7 @@ async function submitNpReply(parentId, trackId) {
   if (!inp) return;
   var text = inp.value.trim();
   if (!text) return;
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!currentAuthUser) { requireLogin(); return; }
   var avatarUrl = (user && user.avatarUrl) ? user.avatarUrl : null;
   var res = await sb.from('comments').insert({
     track_id: trackId, parent_id: parentId,
@@ -3368,7 +3438,7 @@ async function addNpComment() {
   var inp = document.getElementById('np-cmt-input');
   var text = inp ? inp.value.trim() : '';
   if (!text || currentIdx < 0) return;
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!currentAuthUser) { requireLogin(); return; }
   var t = tracks[currentIdx];
   var avatarUrl = (user && user.avatarUrl) ? user.avatarUrl : null;
   var res = await sb.from('comments').insert({
@@ -3404,7 +3474,7 @@ function setVolume(v) { audio.volume = v / 100; }
 audio.volume = 0.8;
 
 async function toggleLike(id) {
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!currentAuthUser) { requireLogin('いいねするにはログインが必要です'); return; }
   if (likes[id]) {
     // いいね取り消し
     await sb.from('likes').delete().eq('track_id', id).eq('user_id', currentAuthUser.id);
@@ -3525,7 +3595,7 @@ var dmCurrentPartner = null;
 var dmPollingInterval = null;
 
 function openDmModal() {
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!currentAuthUser) { requireLogin(); return; }
   document.getElementById('dm-modal').classList.add('open');
   document.getElementById('dm-back-btn').style.display = 'none';
   document.getElementById('dm-sheet-title').textContent = '💬 みんなのメッセージ';
@@ -3622,7 +3692,7 @@ async function renderDmList() {
 }
 
 async function sendDmRequest(toUserId, toUserName) {
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!currentAuthUser) { requireLogin(); return; }
   if (toUserId === currentAuthUser.id) { showToast('自分にはDMを送れません'); return; }
   // 既存の申請チェック
   var existing = await sb.from('dm_requests').select('id,status').or('and(from_user_id.eq.' + currentAuthUser.id + ',to_user_id.eq.' + toUserId + '),and(from_user_id.eq.' + toUserId + ',to_user_id.eq.' + currentAuthUser.id + ')');
@@ -3918,7 +3988,7 @@ function closeReplyInput(commentId) {
   if (area) area.classList.remove('open');
 }
 async function toggleCommentLike(commentId, isReply, parentId, idx) {
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!currentAuthUser) { requireLogin(); return; }
   var cs = commentsData[openCommentTrackId] || [];
   var target = null;
   if (isReply) {
@@ -3941,7 +4011,7 @@ async function toggleCommentLike(commentId, isReply, parentId, idx) {
   renderComments();
 }
 async function submitReply(parentId) {
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!currentAuthUser) { requireLogin(); return; }
   var inp = document.getElementById('reply-text-' + parentId);
   if (!inp) return;
   var text = inp.value.trim();
@@ -3983,7 +4053,7 @@ async function submitReply(parentId) {
 async function addComment() {
   var inp = document.getElementById('comment-input'); var text = inp.value.trim();
   if (!text || !openCommentTrackId) return;
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!currentAuthUser) { requireLogin(); return; }
   var avatarUrl = (user && user.avatarUrl) ? user.avatarUrl : null;
   var res = await sb.from('comments').insert({
     track_id: openCommentTrackId,
@@ -4344,7 +4414,7 @@ function removeFromMyList(listId, trackId) {
 
 /* リスト選択モーダル（曲の＋ボタンから） */
 function openListSelect(trackId) {
-  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  if (!currentAuthUser) { requireLogin(); return; }
   listSelectTrackId = trackId;
   var t = null; for (var i = 0; i < tracks.length; i++) if (tracks[i].id === trackId) { t = tracks[i]; break; }
   document.getElementById('list-select-title').textContent = (t ? '「' + t.name + '」を追加' : 'リストに追加');

@@ -518,6 +518,60 @@ audio{display:none}
 #user-hero-fixed{display:none}
 #user-header-fixed{position:fixed;top:56px;left:0;right:0;z-index:90;background:#fff;border-bottom:0.5px solid #d0eaf5}
 #tab-user.active #user-header-fixed{display:block}
+
+/* ---- 他ユーザープロフィールモーダル ---- */
+.prof-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;align-items:flex-end;justify-content:center}
+.prof-modal-overlay.open{display:flex}
+.prof-modal-sheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:90vh;display:flex;flex-direction:column;animation:slideUpSheet .22s ease}
+@keyframes slideUpSheet{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.prof-modal-handle{width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:10px auto 0;flex-shrink:0}
+.prof-modal-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 0;flex-shrink:0}
+.prof-modal-close{background:none;border:none;cursor:pointer;color:#aaa;font-size:18px;padding:4px;border-radius:50%;display:flex;align-items:center;justify-content:center;width:32px;height:32px}
+.prof-modal-close:hover{background:#f0f8fd;color:#555}
+.prof-modal-body{overflow-y:auto;flex:1;padding:0 16px 24px}
+.prof-modal-body::-webkit-scrollbar{width:3px}
+.prof-modal-body::-webkit-scrollbar-thumb{background:#b8ddf0;border-radius:2px}
+.prof-hero{display:flex;align-items:flex-start;gap:14px;padding:14px 0 12px}
+.prof-av-lg{width:64px;height:64px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#eef6fc;display:flex;align-items:center;justify-content:center;border:2px solid #d0eaf5}
+.prof-av-lg img{width:100%;height:100%;object-fit:cover}
+.prof-av-lg i{font-size:24px;color:#ccc}
+.prof-info{flex:1;min-width:0}
+.prof-name{font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prof-username{font-size:12px;color:#7ec4e0;margin-bottom:6px}
+.prof-bio{font-size:12px;color:#777;line-height:1.6;word-break:break-word;margin-bottom:8px}
+.prof-stats-row{display:flex;gap:0;margin-bottom:10px}
+.prof-stat{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer}
+.prof-stat:hover strong{text-decoration:underline}
+.prof-stat strong{font-size:15px;font-weight:700;color:#1a1a1a}
+.prof-stat span{font-size:9px;color:#aaa}
+.prof-actions{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.prof-follow-btn{flex:1;border:none;border-radius:20px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.prof-follow-btn.following{background:#eef6fc;color:#555;border:1px solid #d0eaf5}
+.prof-follow-btn.following:hover{background:#ffe8e8;color:#e24b4a;border-color:#e24b4a}
+.prof-follow-btn.not-following{background:#1a1a1a;color:#fff}
+.prof-follow-btn.not-following:hover{opacity:.8}
+.prof-dm-btn{background:#eef6fc;color:#1a7aaa;border:1px solid #d0eaf5;border-radius:20px;padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .15s}
+.prof-dm-btn:hover{background:#d8eef8}
+.prof-section-lbl{font-size:11px;font-weight:600;color:#aaa;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.prof-wall-card{background:#f4f9fc;border:0.5px solid #d0eaf5;border-radius:10px;padding:10px 13px;margin-bottom:12px;font-size:13px;color:#333;line-height:1.65;word-break:break-word;position:relative}
+.prof-wall-card::before{content:'\201C';font-size:28px;color:#d0eaf5;position:absolute;top:4px;left:9px;line-height:1;font-family:serif}
+.prof-wall-text{padding-left:16px}
+.prof-wall-time{font-size:10px;color:#bbb;margin-top:5px;padding-left:16px}
+.prof-track-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.prof-track-card{background:#fff;border:0.5px solid #d0eaf5;border-radius:10px;overflow:hidden;cursor:pointer;transition:all .15s}
+.prof-track-card:hover{border-color:#bbb;transform:translateY(-1px)}
+.prof-track-thumb{width:100%;aspect-ratio:1;background:#eef6fc;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.prof-track-thumb img{width:100%;height:100%;object-fit:cover}
+.prof-track-thumb i{font-size:26px;color:#ddd}
+.prof-track-ov{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background .15s}
+.prof-track-card:hover .prof-track-ov{background:rgba(0,0,0,.28)}
+.prof-track-ov i{color:#fff;font-size:22px;opacity:0;transition:opacity .15s}
+.prof-track-card:hover .prof-track-ov i{opacity:1}
+.prof-track-info{padding:7px 9px 9px}
+.prof-track-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prof-track-meta{font-size:10px;color:#aaa;margin-top:3px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.prof-empty{text-align:center;padding:2rem;color:#bbb;font-size:12px}
+.prof-empty i{font-size:28px;display:block;margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -896,6 +950,20 @@ audio{display:none}
         <i class="ti ti-link" style="font-size:16px"></i>
         リンクをコピー
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- 他ユーザープロフィールモーダル -->
+<div class="prof-modal-overlay" id="prof-modal" onclick="if(event.target===this)closeProfModal()">
+  <div class="prof-modal-sheet" id="prof-modal-sheet">
+    <div class="prof-modal-handle"></div>
+    <div class="prof-modal-header">
+      <span style="font-size:13px;font-weight:500;color:#888" id="prof-modal-header-title"></span>
+      <button class="prof-modal-close" onclick="closeProfModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="prof-modal-body" id="prof-modal-body">
+      <div style="text-align:center;padding:3rem;color:#bbb;font-size:12px"><i class="ti ti-loader" style="font-size:24px;display:block;margin-bottom:8px"></i>読み込み中...</div>
     </div>
   </div>
 </div>
@@ -1434,10 +1502,10 @@ function openFollowModal() {
       for (var j = 0; j < tracks.length; j++) if (tracks[j].uploader === name) mc++;
       var isF = isFollowing(name);
       html += '<div class="follow-user-row">' +
-        '<div class="follow-user-av"><i class="ti ti-user" style="font-size:16px;color:#ccc"></i></div>' +
-        '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500">' + name + '</div>' +
+        '<div class="follow-user-av" style="cursor:pointer" onclick="closeModal(\'follow-modal\');openUserProfile(\'' + esc(name) + '\',\'name\')"><i class="ti ti-user" style="font-size:16px;color:#ccc"></i></div>' +
+        '<div style="flex:1;min-width:0;cursor:pointer" onclick="closeModal(\'follow-modal\');openUserProfile(\'' + esc(name) + '\',\'name\')"><div style="font-size:13px;font-weight:500">' + esc(name) + '</div>' +
         '<div style="font-size:11px;color:#999">' + mc + '曲投稿</div></div>' +
-        '<button onclick="toggleFollow(\'' + name + '\');openFollowModal()" style="background:' + (isF ? '#eef6fc' : '#1a1a1a') + ';color:' + (isF ? '#555' : '#fff') + ';border:0.5px solid ' + (isF ? '#d0eaf5' : '#1a1a1a') + ';border-radius:16px;padding:4px 12px;font-size:11px;cursor:pointer">' + (isF ? 'フォロー中' : 'フォロー') + '</button>' +
+        '<button onclick="toggleFollow(\'' + esc(name) + '\');openFollowModal()" style="background:' + (isF ? '#eef6fc' : '#1a1a1a') + ';color:' + (isF ? '#555' : '#fff') + ';border:0.5px solid ' + (isF ? '#d0eaf5' : '#1a1a1a') + ';border-radius:16px;padding:4px 12px;font-size:11px;cursor:pointer">' + (isF ? 'フォロー中' : 'フォロー') + '</button>' +
         '</div>';
     }
   }
@@ -1524,6 +1592,200 @@ function renderSupaList(entries, title) {
       '</div></div>';
   }
   return '<div class="supa-list"><div class="supa-list-title"><i class="ti ti-coin" style="font-size:11px;color:#c4980a"></i>' + title + '</div><div class="supa-entries">' + rows + '</div></div>';
+}
+
+/* ---- 他ユーザープロフィールモーダル ---- */
+var profModalUserId = null;
+
+function closeProfModal() {
+  document.getElementById('prof-modal').classList.remove('open');
+  profModalUserId = null;
+}
+
+// username または name でプロフィールを開く
+async function openUserProfile(identifier, identifierType) {
+  // identifierType: 'username' | 'name' | 'id'
+  if (!identifier) return;
+  // 自分自身の場合はユーザータブへ
+  if (user) {
+    if (identifierType === 'id' && identifier === (currentAuthUser && currentAuthUser.id)) { switchTab('user'); return; }
+    if (identifierType === 'username' && identifier === user.username) { switchTab('user'); return; }
+    if (identifierType === 'name' && identifier === user.name) { switchTab('user'); return; }
+  }
+  var overlay = document.getElementById('prof-modal');
+  var body = document.getElementById('prof-modal-body');
+  var headerTitle = document.getElementById('prof-modal-header-title');
+  body.innerHTML = '<div style="text-align:center;padding:3rem;color:#bbb;font-size:12px"><i class="ti ti-loader" style="font-size:24px;display:block;margin-bottom:8px"></i>読み込み中...</div>';
+  headerTitle.textContent = '';
+  overlay.classList.add('open');
+
+  // プロフィールをDBから取得
+  var profRes;
+  if (identifierType === 'id') {
+    profRes = await sb.from('profiles').select('*').eq('id', identifier).single();
+  } else if (identifierType === 'username') {
+    profRes = await sb.from('profiles').select('*').eq('username', identifier).single();
+  } else {
+    profRes = await sb.from('profiles').select('*').eq('name', identifier).single();
+  }
+
+  if (profRes.error || !profRes.data) {
+    body.innerHTML = '<div class="prof-empty"><i class="ti ti-user-off"></i><p>ユーザーが見つかりませんでした</p></div>';
+    return;
+  }
+
+  var prof = profRes.data;
+  profModalUserId = prof.id;
+  headerTitle.textContent = '@' + (prof.username || prof.name);
+
+  // フォロワー数・フォロー中数を取得
+  var [followerRes, followingRes, wallRes] = await Promise.all([
+    sb.from('follows').select('follower_id', {count:'exact',head:true}).eq('following_id', prof.id),
+    sb.from('follows').select('following_id', {count:'exact',head:true}).eq('follower_id', prof.id),
+    sb.from('wall_messages').select('*').eq('user_id', prof.id).single()
+  ]);
+
+  var followerCount = followerRes.count || 0;
+  var followingCount = followingRes.count || 0;
+  var wallMsg = (!wallRes.error && wallRes.data) ? wallRes.data : null;
+
+  // この人の曲を取得
+  var userTracks = [];
+  for (var i = 0; i < tracks.length; i++) {
+    var t = tracks[i];
+    if (t.uploader_id === prof.id || t.uploader === prof.name) {
+      // 公開のみ表示（フォロワー限定は判定）
+      var vis = t.visibility || 'public';
+      var iFollow = following[prof.name] ? true : false;
+      if (vis === 'private') continue;
+      if (vis === 'followers' && !iFollow) continue;
+      userTracks.push(t);
+    }
+  }
+
+  // 統計
+  var totalPlay = 0, totalLike = 0;
+  for (var i = 0; i < userTracks.length; i++) {
+    totalPlay += (plays[userTracks[i].id] || {}).alltime || 0;
+    totalLike += (window._likeCounts && window._likeCounts[userTracks[i].id]) || 0;
+  }
+
+  // 自分がフォローしているか
+  var iAmFollowing = following[prof.name] ? true : false;
+  var isSelf = currentAuthUser && prof.id === currentAuthUser.id;
+
+  // アバター
+  var avHtml = prof.avatar_url
+    ? '<img src="' + prof.avatar_url + '">'
+    : '<i class="ti ti-user" style="font-size:26px;color:#ccc"></i>';
+
+  // 一言
+  var wallHtml = '';
+  if (wallMsg && wallMsg.body) {
+    var wallTime = wallMsg.updated_at
+      ? new Date(wallMsg.updated_at).toLocaleString('ja-JP', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})
+      : '';
+    wallHtml = '<div class="prof-wall-card">' +
+      '<div class="prof-wall-text">' + esc(wallMsg.body) + '</div>' +
+      '<div class="prof-wall-time">' + wallTime + '</div>' +
+    '</div>';
+  }
+
+  // 曲グリッド
+  var tracksHtml = '';
+  if (userTracks.length === 0) {
+    tracksHtml = '<div class="prof-empty"><i class="ti ti-music-off"></i><p>公開中の投稿はありません</p></div>';
+  } else {
+    tracksHtml = '<div class="prof-track-grid">';
+    for (var i = 0; i < userTracks.length; i++) {
+      var t = userTracks[i];
+      var tIdx = tracks.indexOf(t);
+      var ci = catInfo(t.cat);
+      var lk = (window._likeCounts && window._likeCounts[t.id]) || 0;
+      var pl = (plays[t.id] || {}).alltime || 0;
+      var thumbInner = t.thumbUrl
+        ? '<img src="' + t.thumbUrl + '">'
+        : '<i class="ti ti-' + (t.isVideo ? 'video' : 'music') + '"></i>';
+      tracksHtml += '<div class="prof-track-card" onclick="closeProfModal();playTrack(' + tIdx + ')">' +
+        '<div class="prof-track-thumb">' + thumbInner +
+          '<div class="prof-track-ov"><i class="ti ti-player-play"></i></div>' +
+        '</div>' +
+        '<div class="prof-track-info">' +
+          '<div class="prof-track-name">' + esc(t.name) + '</div>' +
+          '<div class="prof-track-meta">' +
+            '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' +
+          '</div>' +
+          '<div class="prof-track-meta" style="margin-top:3px">' +
+            '<span><i class="ti ti-player-play" style="font-size:9px"></i> ' + pl + '</span>' +
+            '<span style="color:#e24b4a"><i class="ti ti-heart' + (lk>0?'-filled':'') + '" style="font-size:9px"></i> ' + lk + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+    tracksHtml += '</div>';
+  }
+
+  // アクションボタン
+  var actionsHtml = '';
+  if (!isSelf && currentAuthUser) {
+    actionsHtml += '<button class="prof-follow-btn ' + (iAmFollowing ? 'following' : 'not-following') + '" id="prof-follow-btn-' + prof.id + '" onclick="toggleFollowFromProfile(\'' + esc(prof.name) + '\',\'' + prof.id + '\')">' +
+      (iAmFollowing
+        ? '<i class="ti ti-user-check"></i>フォロー中'
+        : '<i class="ti ti-user-plus"></i>フォローする') +
+    '</button>';
+    actionsHtml += '<button class="prof-dm-btn" onclick="sendDmFromProfile(\'' + prof.id + '\',\'' + esc(prof.name) + '\')">' +
+      '<i class="ti ti-send"></i>メッセージ' +
+    '</button>';
+  }
+
+  body.innerHTML =
+    '<div class="prof-hero">' +
+      '<div class="prof-av-lg">' + avHtml + '</div>' +
+      '<div class="prof-info">' +
+        '<div class="prof-name">' + esc(prof.name || '') + '</div>' +
+        (prof.username ? '<div class="prof-username">@' + esc(prof.username) + '</div>' : '') +
+        (prof.bio ? '<div class="prof-bio">' + esc(prof.bio) + '</div>' : '') +
+      '</div>' +
+    '</div>' +
+    '<div class="prof-stats-row" style="margin-bottom:12px">' +
+      '<div class="prof-stat"><strong>' + userTracks.length + '</strong><span>投稿</span></div>' +
+      '<div class="prof-stat"><strong>' + totalPlay + '</strong><span>再生</span></div>' +
+      '<div class="prof-stat"><strong>' + totalLike + '</strong><span>いいね</span></div>' +
+      '<div class="prof-stat"><strong>' + followerCount + '</strong><span>フォロワー</span></div>' +
+      '<div class="prof-stat"><strong>' + followingCount + '</strong><span>フォロー中</span></div>' +
+    '</div>' +
+    (actionsHtml ? '<div class="prof-actions">' + actionsHtml + '</div>' : '') +
+    (wallHtml ? '<div class="prof-section-lbl"><i class="ti ti-message-2" style="font-size:12px"></i>一言</div>' + wallHtml : '') +
+    '<div class="prof-section-lbl" style="margin-top:' + (wallHtml ? '16px' : '4px') + '"><i class="ti ti-music" style="font-size:12px"></i>投稿した曲 <span style="font-size:11px;color:#ccc;font-weight:400;text-transform:none;letter-spacing:0">(' + userTracks.length + '曲)</span></div>' +
+    tracksHtml;
+}
+
+async function toggleFollowFromProfile(name, targetId) {
+  if (!currentAuthUser) { showToast('ログインが必要です'); return; }
+  var btn = document.getElementById('prof-follow-btn-' + targetId);
+  if (following[name]) {
+    await sb.from('follows').delete().eq('follower_id', currentAuthUser.id).eq('following_id', targetId);
+    following[name] = false;
+    followerCounts[name] = Math.max(0, (followerCounts[name] || 1) - 1);
+    if (btn) { btn.className = 'prof-follow-btn not-following'; btn.innerHTML = '<i class="ti ti-user-plus"></i>フォローする'; }
+    showToast(name + ' のフォローを解除しました');
+  } else {
+    await sb.from('follows').insert({ follower_id: currentAuthUser.id, following_id: targetId });
+    following[name] = true;
+    followerCounts[name] = (followerCounts[name] || 0) + 1;
+    if (btn) { btn.className = 'prof-follow-btn following'; btn.innerHTML = '<i class="ti ti-user-check"></i>フォロー中'; }
+    showToast(name + ' をフォローしました！');
+    // フォロー通知
+    await sendNotification(targetId, 'follow', (user ? user.name : 'ゲスト') + ' さんがあなたをフォローしました 👤', null, null);
+  }
+  renderTracks(); renderUserPage();
+}
+
+async function sendDmFromProfile(toUserId, toUserName) {
+  closeProfModal();
+  await sendDmRequest(toUserId, toUserName);
+  // DM申請後、DMモーダルを開く
+  setTimeout(openDmModal, 300);
 }
 
 /* ---- テーマ切り替え ---- */
@@ -2178,12 +2440,12 @@ async function renderWallsFeed() {
     var w = items[i];
     var timeStr = w.updated_at ? new Date(w.updated_at).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
     html += '<div style="background:#fff;border:0.5px solid #d0eaf5;border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start">' +
-      '<div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:#eef6fc;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid #d0eaf5">' +
+      '<div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:#eef6fc;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid #d0eaf5;cursor:pointer" onclick="openUserProfile(\'' + esc(w.user_id||'') + '\',\'id\')">' +
         (w.avatar_url ? '<img src="' + w.avatar_url + '" style="width:100%;height:100%;object-fit:cover">' : '<i class="ti ti-user" style="font-size:15px;color:#ccc"></i>') +
       '</div>' +
       '<div style="flex:1;min-width:0">' +
         '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">' +
-          '<span style="font-size:12px;font-weight:600;color:#1a1a1a">' + esc(w.user_name||'') + '</span>' +
+          '<span style="font-size:12px;font-weight:600;color:#1a1a1a;cursor:pointer" onclick="openUserProfile(\'' + esc(w.user_id||'') + '\',\'id\')">' + esc(w.user_name||'') + '</span>' +
           '<span style="font-size:10px;color:#bbb">' + timeStr + '</span>' +
         '</div>' +
         '<div style="font-size:13px;color:#333;line-height:1.6;word-break:break-word">' + esc(w.body) + '</div>' +
@@ -2239,7 +2501,7 @@ function trackRowHtml(t, idx, opts) {
         '</div>' +
         '<div style="display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap">' +
           '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' +
-          (t.uploader ? '<span style="font-size:10px;color:#bbb"><i class="ti ti-user" style="font-size:9px"></i> ' + esc(t.uploader) + '</span>' : '') +
+          (t.uploader ? '<span style="font-size:10px;color:#bbb;cursor:pointer" onclick="event.stopPropagation();openUserProfile(\'' + esc(t.uploader) + '\',\'name\')"><i class="ti ti-user" style="font-size:9px"></i> ' + esc(t.uploader) + '</span>' : '') +
         '</div>' +
       '</div>' +
       '<div class="track-actions" style="flex-shrink:0">' +
@@ -2372,7 +2634,7 @@ function renderRankBlock(src, label, color) {
           '<div style="display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap">' +
             (isNew ? '<span style="font-size:9px;font-weight:700;color:#1a7aaa;background:#e0f2fe;border-radius:6px;padding:1px 6px;letter-spacing:.3px">NEW</span>' : '') +
             '<span class="cat-badge" style="background:' + ci.bg + ';color:' + ci.color + '">' + ci.label + '</span>' +
-            (t.uploader ? '<span style="font-size:10px;color:#bbb"><i class="ti ti-user" style="font-size:9px"></i> ' + esc(t.uploader) + '</span>' : '') +
+            (t.uploader ? '<span style="font-size:10px;color:#bbb;cursor:pointer" onclick="event.stopPropagation();openUserProfile(\'' + esc(t.uploader) + '\',\'name\')"><i class="ti ti-user" style="font-size:9px"></i> ' + esc(t.uploader) + '</span>' : '') +
           '</div>' +
         '</div>' +
         '<button onclick="playTrack(' + tIdx + ')" style="background:#1a1a1a;color:#fff;border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:14px"><i class="ti ti-player-play"></i></button>' +
@@ -2799,9 +3061,25 @@ function runSearch() {
     if (searchSortVal && sortFns[searchSortVal]) matchedTracks.sort(sortFns[searchSortVal]);
   }
   var matchedUsers = [];
-  if (searchFilter !== 'track' && user) {
-    var uMatch = !q || user.name.toLowerCase().indexOf(q) >= 0 || (user.bio && user.bio.toLowerCase().indexOf(q) >= 0);
-    if (uMatch) matchedUsers.push(user);
+  if (searchFilter !== 'track' && q) {
+    // 全ユーザー（曲のアップローダー）を収集
+    var seenIds = {};
+    for (var i = 0; i < tracks.length; i++) {
+      var t = tracks[i];
+      if (!t.uploader_id || seenIds[t.uploader_id]) continue;
+      var uName = (t.uploader || '').toLowerCase();
+      if (uName.indexOf(q) >= 0) {
+        seenIds[t.uploader_id] = true;
+        matchedUsers.push({ id: t.uploader_id, name: t.uploader, bio: '', avatarUrl: null, isSelf: user && t.uploader === user.name });
+      }
+    }
+    // 自分自身もbio検索対象に
+    if (user) {
+      var uMatch = user.name.toLowerCase().indexOf(q) >= 0 || (user.bio && user.bio.toLowerCase().indexOf(q) >= 0) || (user.username && user.username.toLowerCase().indexOf(q) >= 0);
+      if (uMatch && !seenIds[user.id]) {
+        matchedUsers.push({ id: user.id, name: user.name, bio: user.bio || '', avatarUrl: user.avatarUrl, isSelf: true });
+      }
+    }
   }
   if (!matchedTracks.length && !matchedUsers.length) { area.innerHTML = '<div class="no-results"><i class="ti ti-mood-sad"></i><p>「' + searchQuery + '」の結果は見つかりませんでした</p></div>'; return; }
   var html = '';
@@ -2811,16 +3089,17 @@ function runSearch() {
       var u = matchedUsers[i];
       var mc = 0; for (var j = 0; j < tracks.length; j++) if (tracks[j].uploader === u.name) mc++;
       var isF = isFollowing(u.name);
+      var isSelf = u.isSelf || (user && u.name === user.name);
       html += '<div class="user-result">' +
-        '<div class="user-result-av">' + (u.avatarUrl ? '<img src="' + u.avatarUrl + '">' : '<i class="ti ti-user" style="font-size:16px;color:#ccc"></i>') + '</div>' +
-        '<div style="flex:1;min-width:0;cursor:pointer" onclick="switchTab(\'user\')">' +
-          '<div style="font-size:13px;font-weight:500">' + u.name + '</div>' +
-          '<div style="font-size:11px;color:#999">' + (u.bio||'自己紹介なし') + '</div>' +
+        '<div class="user-result-av" style="cursor:pointer" onclick="openUserProfile(\'' + esc(u.name) + '\',\'name\')">' + (u.avatarUrl ? '<img src="' + u.avatarUrl + '">' : '<i class="ti ti-user" style="font-size:16px;color:#ccc"></i>') + '</div>' +
+        '<div style="flex:1;min-width:0;cursor:pointer" onclick="openUserProfile(\'' + esc(u.name) + '\',\'name\')">' +
+          '<div style="font-size:13px;font-weight:500">' + esc(u.name) + '</div>' +
+          '<div style="font-size:11px;color:#999">' + (u.bio||'') + '</div>' +
           '<div style="font-size:10px;color:#bbb;margin-top:2px">' + mc + '曲投稿</div>' +
         '</div>' +
-        (user && u.name !== user.name ? '<button onclick="toggleFollow(\'' + u.name + '\')" class="follow-btn ' + (isF?'following':'not-following') + '">' + (isF?'<i class="ti ti-user-check"></i>フォロー中':'<i class="ti ti-user-plus"></i>フォロー') + '</button>' : '') +
-        (user && u.id && u.name !== user.name ? '<button onclick="sendDmRequest(\'' + u.id + '\',\'' + esc(u.name) + '\')" style="background:#eef6fc;border:0.5px solid #d0eaf5;border-radius:16px;padding:5px 10px;font-size:11px;cursor:pointer;color:#1a7aaa;display:inline-flex;align-items:center;gap:3px;margin-left:4px"><i class="ti ti-send" style="font-size:12px"></i>DM</button>' : '') +
-        '</div>';
+        (!isSelf && currentAuthUser ? '<button onclick="event.stopPropagation();toggleFollow(\'' + esc(u.name) + '\')" class="follow-btn ' + (isF?'following':'not-following') + '">' + (isF?'<i class="ti ti-user-check"></i>フォロー中':'<i class="ti ti-user-plus"></i>フォロー') + '</button>' : '') +
+        (!isSelf && u.id && currentAuthUser ? '<button onclick="event.stopPropagation();sendDmRequest(\'' + u.id + '\',\'' + esc(u.name) + '\')" style="background:#eef6fc;border:0.5px solid #d0eaf5;border-radius:16px;padding:5px 10px;font-size:11px;cursor:pointer;color:#1a7aaa;display:inline-flex;align-items:center;gap:3px;margin-left:4px"><i class="ti ti-send" style="font-size:12px"></i>DM</button>' : '') +
+      '</div>';
     }
   }
   if (matchedTracks.length) {

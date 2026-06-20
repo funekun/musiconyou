@@ -719,7 +719,7 @@ audio{display:none}
 </div>
 
 <div class="bottom-nav">
-  <button class="active" id="bnav-feed" onclick="switchTab('feed')"><i class="ti ti-music"></i>すべて</button>
+  <button class="active" id="bnav-feed" onclick="switchTab('feed')"><i class="ti ti-music"></i>メイン</button>
   <button id="bnav-ranking" onclick="switchTab('ranking')"><i class="ti ti-trophy"></i>ランキング</button>
   <button id="bnav-search" onclick="switchTab('search')"><i class="ti ti-search"></i>検索</button>
   <button id="bnav-playlist" onclick="switchTab('playlist')"><i class="ti ti-playlist"></i>プレイリスト</button>
@@ -2499,6 +2499,15 @@ async function renderWallsFeed() {
 
   // フォロー中ユーザーのIDを取得
   var followedNames = followingList();
+  if (!currentAuthUser) {
+    area.innerHTML = '<div class="empty"><i class="ti ti-lock"></i><p>フォロー中の一言を見るにはログインが必要です<br>' +
+      '<span style="font-size:11px;color:#bbb">右上のボタンからログイン・新規登録できます</span></p>' +
+      '<div style="display:flex;gap:8px;justify-content:center;margin-top:12px">' +
+        '<button class="btn-primary" style="width:auto;padding:7px 20px" onclick="openAuthOverlay(\'login\')">ログイン</button>' +
+        '<button style="background:#f0f0f0;border:none;border-radius:8px;padding:7px 16px;font-size:13px;cursor:pointer;color:#555" onclick="openAuthOverlay(\'signup\')">新規登録</button>' +
+      '</div></div>';
+    return;
+  }
   if (!followedNames.length) {
     area.innerHTML = '<div class="empty"><i class="ti ti-message-2"></i><p>フォロー中のユーザーの一言がここに表示されます<br><span style="font-size:11px;color:#bbb">まずユーザーをフォローしてみよう！</span></p></div>';
     return;
@@ -2637,6 +2646,15 @@ function renderTracks() {
   var list = document.getElementById('track-list');
   var src = tracks;
   if (feedTab === 'follow') {
+    if (!currentAuthUser) {
+      list.innerHTML = '<div class="empty"><i class="ti ti-lock"></i><p>フォロー中の曲を見るにはログインが必要です<br>' +
+        '<span style="font-size:11px;color:#bbb">右上のボタンからログイン・新規登録できます</span></p>' +
+        '<div style="display:flex;gap:8px;justify-content:center;margin-top:12px">' +
+          '<button class="btn-primary" style="width:auto;padding:7px 20px" onclick="openAuthOverlay(\'login\')">ログイン</button>' +
+          '<button style="background:#f0f0f0;border:none;border-radius:8px;padding:7px 16px;font-size:13px;cursor:pointer;color:#555" onclick="openAuthOverlay(\'signup\')">新規登録</button>' +
+        '</div></div>';
+      return;
+    }
     var fl = followingList();
     src = [];
     for (var i = 0; i < tracks.length; i++) {
